@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import Quickshell.Services.Notifications
 import QtQuick
 import "bar"
@@ -103,7 +104,13 @@ ShellRoot {
 
             property var panelRelayConn: Connections {
                 target: panelRelay
-                function onToggle(name) { scope.open(name) }
+                // Open keybind-triggered panels (e.g. the wallpaper picker)
+                // only on the monitor that currently has focus, so it shows
+                // up where you're looking instead of on every screen.
+                function onToggle(name) {
+                    var fm = Hyprland.focusedMonitor
+                    if (!fm || fm.name === scope.modelData.name) scope.open(name)
+                }
             }
 
             // ── Bar ──────────────────────────────────────────────────────
@@ -198,9 +205,10 @@ ShellRoot {
             }
 
             property var wallpaperPanel: WallpaperPanel {
-                screen:  scope.modelData
-                visible: scope.activePanel === "wallpaper"
-                onClose: scope.closeAll()
+                screen:     scope.modelData
+                outputName: scope.modelData.name   // apply only to this monitor
+                visible:    scope.activePanel === "wallpaper"
+                onClose:    scope.closeAll()
             }
 
             property var osdWin: OSD {

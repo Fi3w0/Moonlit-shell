@@ -13,6 +13,11 @@ PanelWindow {
     id: root
     signal close()
 
+    // Hyprland output this picker belongs to (set per-screen from shell.qml).
+    // When set, wallpapers are applied to THIS monitor only, so each screen
+    // can carry its own wallpaper.
+    property string outputName: ""
+
     anchors { top: true; bottom: true; left: true; right: true }
     exclusiveZone: 0
     color: "transparent"
@@ -46,10 +51,17 @@ PanelWindow {
     function apply(path) {
         if (!path) return
         applyProc.running = false
+        // $1 = wallpaper path, $2 = output name (empty → all monitors).
+        // When an output is given we target it with `awww -o` and remember
+        // this monitor's pick in a per-output cache, while still updating the
+        // shared cache hyprlock/SDDM read.
         applyProc.command = ["sh", "-c",
-            "awww img \"$1\" -t grow --transition-pos 0.5,0.5 --transition-fps 60 " +
-            "--transition-duration 1.1 --resize crop && printf '%s' \"$1\" > ~/.cache/wallpaper-current",
-            "sh", path]
+            "if [ -n \"$2\" ]; then OUT=\"-o $2\"; else OUT=\"\"; fi; " +
+            "awww img \"$1\" $OUT -t grow --transition-pos 0.5,0.5 --transition-fps 60 " +
+            "--transition-duration 1.1 --resize crop && " +
+            "printf '%s' \"$1\" > ~/.cache/wallpaper-current; " +
+            "[ -n \"$2\" ] && printf '%s' \"$1\" > \"$HOME/.cache/wallpaper-$2\"",
+            "sh", path, root.outputName]
         applyProc.running = true
         root.appliedPath = path
         root.close()            // dismiss the picker once a wallpaper is chosen
@@ -60,11 +72,14 @@ PanelWindow {
     function nextWall() { if (wallModel.count > 0) strip.currentIndex = (strip.currentIndex + 1) % wallModel.count }
     function prevWall() { if (wallModel.count > 0) strip.currentIndex = (strip.currentIndex - 1 + wallModel.count) % wallModel.count }
 
-    // Read the last pick on startup so the strip can highlight it (awww's own
-    // cache handles the actual wallpaper restore on boot)
+    // Read this monitor's last pick on startup so the strip can highlight it
+    // (per-output cache when we know our output, else the shared one). awww's
+    // own cache handles the actual wallpaper restore on boot.
     FileView {
         id: currentFile
-        path: "/home/fiw/.cache/wallpaper-current"
+        path: root.outputName
+              ? "/home/fiw/.cache/wallpaper-" + root.outputName
+              : "/home/fiw/.cache/wallpaper-current"
         onLoaded: root.appliedPath = text().trim()
     }
 

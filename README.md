@@ -4,6 +4,10 @@
 
 My Hyprland setup rebuilt from scratch — this time with a custom Quickshell shell instead of Waybar, a proper widget bar with real panels, and Catppuccin Mocha soaked into every last config. My daily driver on the ThinkPad T14.
 
+<p align="center">
+  <img src="assets/screenshots/mainscreen.png" alt="Moonlit Shell" width="800"/>
+</p>
+
 ---
 
 ## Why a new rice?
@@ -16,7 +20,30 @@ So I tore it all down and rebuilt on Quickshell — a Qt6/QML shell framework th
 
 ## Screenshots
 
-<!-- Add screenshots here -->
+<p align="center">
+  <img src="assets/screenshots/rofi+hardware.png" alt="Rofi + Fastfetch" width="800"/>
+  <br><i>Rofi launcher + fastfetch system info</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/settings+soundbar.png" alt="Quick Settings + Audio" width="800"/>
+  <br><i>Quick settings panel with volume and brightness sliders</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/powermenu.png" alt="Power Menu" width="800"/>
+  <br><i>Power menu — Lock, Logout, Sleep, Reboot, Shutdown</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/wallpaperselector.png" alt="Wallpaper Picker" width="800"/>
+  <br><i>Wallpaper carousel with momentum scrolling</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/lockscreen.png" alt="Lock Screen" width="800"/>
+  <br><i>Hyprlock with frosted glass blur over the current wallpaper</i>
+</p>
 
 ---
 

@@ -134,7 +134,7 @@ The bar itself shows workspaces (pill for active, dot for occupied), current win
 
 ## Install
 
-Not a copy-paste job — read the guide.
+Not a copy-paste job read the guide.
 
 → **[MANUAL-INSTALL.md](MANUAL-INSTALL.md)**
 
@@ -158,24 +158,15 @@ sudo cp .config/keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
 
 ---
 
-## Compared to Fi3w0-Hyprland
-
-- **Waybar → Quickshell** — went from JSON config hell to writing actual QML panels with real state management
-- **swww → awww** — animated wallpapers with grow transitions and proper GIF support
-- **No more SwayNC** — notifications are now native to Quickshell with a toast system
-- **Bluetooth/WiFi actually work** — proper connect dialogs instead of hoping nmcli scripts don't fail
-- **SDDM + GTK themed** — the rice starts at the login screen now, not just after login
-
----
-
 ## Notes
 
 - The bar polls `/proc` and `sysfs` directly — no external monitoring daemon needed
-- Hyprlock reads your current wallpaper from cache so it always shows what you left on screen, blurred into frosted glass
 - Caffeine mode inhibits idle → no accidental suspend during presentations or long downloads
 - nightLight toggles `hyprsunset -t 4500` for warm color at night
 - Airplane mode calls `rfkill block all` — make sure `rfkill` is installed if you use it
 - These are my dots, tailored to my workflow. Steal what you like, adapt the rest. That's how I learned too
+
+- If you're reading this this is not final version of the Moonlit Shell in final version it will have a install script with minimal/max/dev/gaming presets so everyone could get one they enjoy. A video with showcase of dots, maybe some custom apps, more costumized apps and themes, fixed bugs and updates with new Arch versions. THIS IS STILL IN DEV STATUS SO EXPECT BUGS SYSTEM BRICKS AND USE AT OWN RISK
 
 ---
 

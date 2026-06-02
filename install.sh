@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # ╭───────────────────────────────────────────────────────────────╮
-# │  Moonlit Shell — automated installer                          │
+# │  Moonlit Shell - automated installer                          │
 # │  Tiers: minimal · dev · full      GPU: AMD / Intel only        │
 # ╰───────────────────────────────────────────────────────────────╯
 #
-#  EXPERIMENTAL — this installer is young and may not work perfectly
+#  EXPERIMENTAL - this installer is young and may not work perfectly
 #  on every machine. It logs everything; if a step breaks, read the
 #  log it prints at the end and you can finish from MANUAL-INSTALL.md.
 #
@@ -116,7 +116,7 @@ banner() {
   printf '      %sHyprland · Quickshell · Catppuccin Mocha%s\n' "$GREY" "$R"
   printf '   %s────────────────────────────────────%s %s🌒%s\n' "$MAUVE" "$R" "$SKY" "$R"
   printf '\n'
-  printf '   %s⚠ experimental%s — may not work on every setup; everything\n' "$YELLOW" "$R"
+  printf '   %s⚠ experimental%s - may not work on every setup; everything\n' "$YELLOW" "$R"
   printf '   is logged so you can recover from %sMANUAL-INSTALL.md%s if needed.\n\n' "$DIM" "$R"
 }
 
@@ -129,7 +129,7 @@ preflight() {
     die "Run this as your normal user, not root (it will call sudo when needed)."
   fi
   # arch-ish
-  command -v pacman >/dev/null || die "pacman not found — this installer targets Arch Linux."
+  command -v pacman >/dev/null || die "pacman not found - this installer targets Arch Linux."
 
   # GPU guard: AMD / Intel only
   local gpu=""
@@ -179,7 +179,7 @@ choose_tier() {
   local n=${#opts[@]} sel=2   # default highlight = Full
 
   if [[ ! -t 0 || ! -t 1 ]]; then
-    info "No TTY — defaulting to Full tier."
+    info "No TTY - defaulting to Full tier."
     TIER=full; return
   fi
 
@@ -293,7 +293,7 @@ phase() {                      # phase "Label" function_name
   wait "$pid"; local rc=$?
   end_line "$rc" "$label"
   if [[ $rc -ne 0 ]]; then
-    warn "Phase '$label' exited $rc — see log:"
+    warn "Phase '$label' exited $rc - see log:"
     tail -n 15 "$LOG" | sed 's/^/    /' >&2
   fi
   return $rc
@@ -412,7 +412,7 @@ ph_themes() {
   else
     warn "GTK theme download failed (non-fatal)"
   fi
-  # SDDM theme — full tier only
+  # SDDM theme - full tier only
   if [[ $SDDM_THEME -eq 1 ]]; then
     local tmp; tmp="$(mktemp -d)"
     if run git clone --depth 1 https://github.com/catppuccin/sddm.git "$tmp/sddm"; then
@@ -492,13 +492,13 @@ main() {
   summary
   get_sudo
 
-  info "Starting — live progress below, every command goes to the log."
+  info "Starting - live progress below, every command goes to the log."
   echo
 
   phase "Ensuring AUR helper (yay)"        ph_aur_helper || die "Could not set up an AUR helper."
   [[ $MULTILIB -eq 1 ]] && { phase "Enabling [multilib] repo" ph_multilib || warn "multilib step failed"; }
   phase "Installing packages (pacman)"     ph_pacman     || die "Package installation failed."
-  phase "Building AUR packages"            ph_aur        || warn "Some AUR packages failed — check the log."
+  phase "Building AUR packages"            ph_aur        || warn "Some AUR packages failed - check the log."
   phase "Enabling system services"         ph_services
   phase "Deploying dotfiles"               ph_deploy     || die "Deploying configs failed."
   phase "Installing themes"                ph_themes

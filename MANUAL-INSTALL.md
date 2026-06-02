@@ -1,4 +1,4 @@
-# Moonlit Shell — Manual Install Guide
+# Moonlit Shell - Manual Install Guide
 
 > Fresh Arch Linux → fully riced desktop. Follow steps 1–7 in order.
 
@@ -98,7 +98,7 @@ yay -S dgop
 ```bash
 sudo pacman -S ranger 7zip zip wget
 
-# ranger_devicons plugin is bundled in this repo — no extra install needed
+# ranger_devicons plugin is bundled in this repo - no extra install needed
 ```
 
 ### 2.13 Networking Extras
@@ -152,10 +152,10 @@ sudo systemctl enable sddm
 git clone https://github.com/catppuccin/sddm.git /tmp/catppuccin-sddm
 sudo cp -r /tmp/catppuccin-sddm/src /usr/share/sddm/themes/catppuccin-mocha-mauve
 
-# Drop-in config — sets theme without touching the existing SDDM config
+# Drop-in config - sets theme without touching the existing SDDM config
 sudo cp sddm/sddm.conf /etc/sddm.conf.d/10-theme.conf
 
-# Background — copy a wallpaper so the SDDM user can read it (no symlinks!)
+# Background - copy a wallpaper so the SDDM user can read it (no symlinks!)
 sudo cp "$(cat ~/.cache/wallpaper-current 2>/dev/null || echo '/usr/share/sddm/themes/catppuccin-mocha-mauve/backgrounds/wall.png')" \
   /usr/share/sddm/themes/catppuccin-mocha-mauve/backgrounds/wall.png
 ```
@@ -190,7 +190,7 @@ cp -r .config/* ~/.config/
 # Wallpapers
 cp -r Wallpapers/ ~/Pictures/Wallpapers/
 
-# keyd — requires reload after copying
+# keyd - requires reload after copying
 sudo cp .config/keyd/default.conf /etc/keyd/default.conf
 sudo keyd reload
 ```
@@ -210,9 +210,9 @@ nvim --headless "+Lazy! sync" +qa
 # Make the lock script executable
 chmod +x ~/.config/hypr/scripts/lock.sh
 
-# ADJUST PATHS — these files reference /home/fiw/ and need your username:
+# ADJUST PATHS - these files reference /home/fiw/ and need your username:
 #   .config/quickshell/panels/WallpaperPanel.qml  (wallDir + cache path)
-#   The rofi, fish, and hyprlock configs are portable — no change needed
+#   The rofi, fish, and hyprlock configs are portable - no change needed
 ```
 
 ---
@@ -232,7 +232,7 @@ systemctl reboot
 | Quickshell | Top bar with workspaces, stats, tray, clock |
 | Keybinds | `SUPER+Space` (rofi), `SUPER+B` (wallpaper picker), `SUPER+Q` (kitty) |
 | Panels | Click clock → calendar, settings gear → quick settings, power → power menu |
-| Hyprlock | `SUPER+Ctrl+L` or idle — wallpaper with frosted glass |
+| Hyprlock | `SUPER+Ctrl+L` or idle - wallpaper with frosted glass |
 | Rofi | Catppuccin themed app launcher + quicklinks (`>`) + file search (`!`) |
 | Thunar | Frosted semi-transparent, catppuccin GTK theme |
 | Kitty | 42% opacity, catppuccin palette |

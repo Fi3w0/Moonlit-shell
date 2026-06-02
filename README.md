@@ -32,7 +32,7 @@ So I tore it all down and rebuilt on Quickshell, a Qt6/QML shell framework that 
 
 <p align="center">
   <img src="assets/screenshots/powermenu.png" alt="Power Menu" width="800"/>
-  <br><i>Power menu — Lock, Logout, Sleep, Reboot, Shutdown</i>
+  <br><i>Power menu - Lock, Logout, Sleep, Reboot, Shutdown</i>
 </p>
 
 <p align="center">
@@ -51,18 +51,18 @@ So I tore it all down and rebuilt on Quickshell, a Qt6/QML shell framework that 
 
 ```
 .config/
-├── hypr/              Hyprland — split configs, gradient borders, frosted blur
+├── hypr/              Hyprland - split configs, gradient borders, frosted blur
 │   └── scripts/
 │       └── lock.sh    Hyprlock wrapper (reads current wallpaper for blur)
 ├── quickshell/        The bar + 12 panels
 │   ├── bar/           Workspaces, tray, stats, clock
 │   └── panels/        QS, audio, wifi, bt, power, calendar,
 │                      sysmon, clipboard, wallpaper picker, OSD, toasts
-├── kitty/             Terminal — catppuccin palette, 42% opacity
+├── kitty/             Terminal - catppuccin palette, 42% opacity
 ├── rofi/              Launcher with pinned apps + quicklinks + file search
-├── fish/              Shell — frozen theme, aliases
-├── nvim/              Editor — catppuccin, lazy.nvim
-├── ranger/            File manager — miller columns, devicons, catppuccin
+├── fish/              Shell - frozen theme, aliases
+├── nvim/              Editor - catppuccin, lazy.nvim
+├── ranger/            File manager - miller columns, devicons, catppuccin
 ├── fastfetch/         System info
 ├── dgop/              System monitor
 ├── Thunar/            File manager actions + keybinds
@@ -154,13 +154,13 @@ It asks for `sudo` up front, then offers three tiers:
 
 It shows the full package/action list and asks to confirm before touching
 anything, backs up any configs it overwrites, and logs every command to
-`~/.cache/moonlit/install-*.log`. **AMD / Intel GPUs only** for now —
+`~/.cache/moonlit/install-*.log`. **AMD / Intel GPUs only** for now -
 NVIDIA isn't tested with these dots. Still experimental; if a step breaks,
 the log tells you exactly where, and you can finish from the manual guide.
 
 ### Manual
 
-Prefer to do it by hand (or on NVIDIA)? It's not a copy-paste job — read the guide.
+Prefer to do it by hand (or on NVIDIA)? It's not a copy-paste job - read the guide.
 
 → **[MANUAL-INSTALL.md](MANUAL-INSTALL.md)**
 
@@ -186,10 +186,10 @@ sudo cp .config/keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
 
 ## Notes
 
-- The bar polls `/proc` and `sysfs` directly — no external monitoring daemon needed
+- The bar polls `/proc` and `sysfs` directly - no external monitoring daemon needed
 - Caffeine mode inhibits idle → no accidental suspend during presentations or long downloads
 - nightLight toggles `hyprsunset -t 4500` for warm color at night
-- Airplane mode calls `rfkill block all` — make sure `rfkill` is installed if you use it
+- Airplane mode calls `rfkill block all` - make sure `rfkill` is installed if you use it
 - These are my dots, tailored to my workflow. Steal what you like, adapt the rest. That's how I learned too
 
 - If you're reading this this is not final version of the Moonlit Shell in final version it will have a install script with minimal/max/dev/gaming presets so everyone could get one they enjoy. A video with showcase of dots, maybe some custom apps, more costumized apps and themes, fixed bugs and updates with new Arch versions. THIS IS STILL IN DEV STATUS SO EXPECT BUGS SYSTEM BRICKS AND USE AT OWN RISK
@@ -198,4 +198,4 @@ sudo cp .config/keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
 
 ## License
 
-[GPLv3](LICENSE) — explore, fork, break things, make it yours.
+[GPLv3](LICENSE) - explore, fork, break things, make it yours.

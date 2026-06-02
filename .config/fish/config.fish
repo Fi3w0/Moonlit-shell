@@ -19,5 +19,8 @@ set -gx PATH $HOME/.local/bin $PATH
 set -gx EDITOR nvim
 set -gx VISUAL nvim
 
+# Darker autosuggestion (catppuccin surface1) so it's less washed-out
+set -g fish_color_autosuggestion 45475a
+
 # opencode
 fish_add_path $HOME/.opencode/bin

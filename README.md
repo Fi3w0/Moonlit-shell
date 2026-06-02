@@ -22,7 +22,7 @@ So I tore it all down and rebuilt on Quickshell, a Qt6/QML shell framework that 
 
 <p align="center">
   <img src="assets/screenshots/rofi+hardware.png" alt="Rofi + Fastfetch" width="800"/>
-  <br><i>Rofi launcher + fastfetch system info</i>
+  <br><i>Rofi launcher + live hardware system info</i>
 </p>
 
 <p align="center">

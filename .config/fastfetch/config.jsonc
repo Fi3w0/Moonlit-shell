@@ -1,0 +1,119 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+    	"source": "~/.config/fastfetch/images/arch.png",
+    	"type": "kitty-direct",
+    	"height": 12,
+    	"padding": {
+    		"top": 1
+    	}
+    },
+    "display": {
+        "separator": " "
+    },
+    "modules": [
+        
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;203;166;247m┌─── Software / System ──────────────────┐"
+        },
+	
+        {
+            "type": "os",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "kernel",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "host",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "command",
+            "key": " ", 
+            "keyColor": "38;2;203;166;247",
+            "text": "PACMAN_COUNT=$(pacman -Q | wc -l); FLATPAK_COUNT=$(flatpak list | wc -l); NIX_COUNT=$(nix-env -q 2>/dev/null | wc -l); echo \"$PACMAN_COUNT (pacman), $FLATPAK_COUNT (flatpak), $NIX_COUNT (nix)\""
+        },
+        {
+            "type": "shell",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "terminal",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "wm",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;203;166;247m┌─── Hardware ───────────────────────────┐"
+        },
+
+        {
+            "type": "display",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "cpu",
+            "format": "{1}",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "gpu",
+            "format": "{2}",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "memory",
+            "key": "󰍛 ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "swap",
+            "key": "󰾴 ",
+            "keyColor": "38;2;203;166;247"
+        },
+        
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;203;166;247m┌─── Storage ────────────────────────────┐"
+        },
+        
+        {
+            "type": "disk",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;203;166;247m┌─── Uptime / Age ───────────────────────┐"
+        },
+        
+        {
+            "type": "uptime",
+            "key": " ",
+            "keyColor": "38;2;203;166;247"
+        },
+        {
+            "type": "command",
+            "key": "󱦟 ",
+            "keyColor": "38;2;203;166;247",
+            "text": "birth_install=$(stat -c %W /); current=$(date +%s); time_progression=$((current - birth_install)); days_difference=$((time_progression / 86400)); echo $days_difference days"
+        }
+    ]
+}

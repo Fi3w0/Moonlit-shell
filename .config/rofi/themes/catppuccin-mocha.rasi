@@ -1,0 +1,120 @@
+/* Catppuccin Mocha — Rofi theme */
+* {
+    bg:       #1e1e2e;
+    mantle:   #181825;
+    crust:    #11111b;
+    surface0: #313244;
+    surface1: #45475a;
+    overlay0: #6c7086;
+    subtext0: #a6adc8;
+    text:     #cdd6f4;
+    pink:     #f38ba8;
+    maroon:   #eba0ac;
+
+    background-color: transparent;
+    text-color:       @text;
+    font:             "JetBrainsMono Nerd Font Mono 13";
+}
+
+window {
+    width:            560px;
+    background-color: @bg;
+    border:           1px;
+    border-color:     rgba(205,214,244,0.08);
+    border-radius:    22px;
+    padding:          0;
+}
+
+mainbox {
+    background-color: transparent;
+    padding:          0;
+    spacing:          0;
+}
+
+inputbar {
+    background-color: transparent;
+    border:           0px 0px 1px 0px;
+    border-color:     rgba(205,214,244,0.06);
+    padding:          18px 20px;
+    spacing:          12px;
+    children:         [prompt, entry];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @pink;
+    font:             "JetBrainsMono Nerd Font Mono 18";
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @text;
+    placeholder:      "Search apps, run a command…";
+    placeholder-color: @overlay0;
+    font:             "JetBrainsMono Nerd Font Mono 14";
+    cursor:           text;
+}
+
+listview {
+    background-color: transparent;
+    padding:          12px;
+    spacing:          4px;
+    columns:          4;
+    lines:            3;
+    fixed-height:     false;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    16px;
+    padding:          16px 8px;
+    orientation:      vertical;
+    spacing:          9px;
+}
+
+element selected {
+    background-color: @surface0;
+    border:           1px;
+    border-color:     @pink;
+}
+
+element normal.normal,
+element normal.urgent,
+element normal.active {
+    background-color: transparent;
+}
+
+element alternate.normal,
+element alternate.urgent,
+element alternate.active {
+    background-color: transparent;
+}
+
+element-icon {
+    size:             46px;
+    border-radius:    14px;
+    horizontal-align: 0.5;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       @subtext0;
+    font:             "JetBrainsMono Nerd Font Mono 11";
+    horizontal-align: 0.5;
+}
+
+element selected.normal element-text {
+    text-color: @text;
+}
+
+message {
+    background-color: transparent;
+    padding:          4px 20px 12px;
+}
+
+textbox {
+    background-color: transparent;
+    text-color:       @overlay0;
+    font:             "JetBrainsMono Nerd Font Mono 10";
+    horizontal-align: 0.5;
+}

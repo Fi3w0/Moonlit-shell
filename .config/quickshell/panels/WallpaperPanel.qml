@@ -37,6 +37,7 @@ PanelWindow {
     readonly property color   pink:     "#f38ba8"
     readonly property color   mauve:    "#cba6f7"
 
+    // ← adjust these two paths to your home directory
     readonly property string wallDir: "/home/fiw/Pictures/Wallpapers"
 
     // ── Apply a wallpaper via awww (animated grow transition; handles gifs) ──

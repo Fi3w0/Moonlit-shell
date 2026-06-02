@@ -1,8 +1,8 @@
 configuration {
-    modi:         "script:/home/fiw/.config/rofi/scripts/launcher.sh";
+    modi:         "script:~/.config/rofi/scripts/launcher.sh";
     show-icons:   true;
     icon-theme:   "Papirus-Dark";
     display-script: "";
 }
 
-@theme "/home/fiw/.config/rofi/themes/catppuccin-mocha.rasi"
+@theme "~/.config/rofi/themes/catppuccin-mocha.rasi"

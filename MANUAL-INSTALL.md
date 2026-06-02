@@ -209,6 +209,10 @@ nvim --headless "+Lazy! sync" +qa
 
 # Make the lock script executable
 chmod +x ~/.config/hypr/scripts/lock.sh
+
+# ADJUST PATHS — these files reference /home/fiw/ and need your username:
+#   .config/quickshell/panels/WallpaperPanel.qml  (wallDir + cache path)
+#   The rofi, fish, and hyprlock configs are portable — no change needed
 ```
 
 ---

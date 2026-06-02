@@ -158,7 +158,7 @@ Prefer to do it by hand, or running NVIDIA? It is not a copy-paste job, so read 
 
 > **[MANUAL-INSTALL.md](MANUAL-INSTALL.md)**
 
-These configs assume a single laptop display (ThinkPad T14, 1920x1080, 1x scale), PipeWire audio, and NetworkManager. Adjust monitors, interface names, and paths before applying.
+**Multi-monitor:** Quickshell spawns a bar and panels on every connected screen automatically, and the shipped `monitors.conf` is a universal wildcard (any output, preferred mode, scale 1), so external displays work out of the box. The installer detects your monitors and can write explicit per-display scale lines if you want HiDPI handling. These configs otherwise assume PipeWire audio and NetworkManager; adjust interface names if yours differ.
 
 ---
 

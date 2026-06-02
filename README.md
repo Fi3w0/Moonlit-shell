@@ -134,7 +134,33 @@ The bar itself shows workspaces (pill for active, dot for occupied), current win
 
 ## Install
 
-Not a copy-paste job read the guide.
+### Automated (experimental)
+
+There's an installer that handles packages, services, themes and dotfiles for you:
+
+```bash
+git clone https://github.com/Fi3w0/Moonlit-shell.git
+cd Moonlit-shell
+./install.sh            # pick a tier; --progress for a progress-bar UI
+```
+
+It asks for `sudo` up front, then offers three tiers:
+
+| Tier | What you get |
+|------|--------------|
+| **Minimal** | Hyprland + Quickshell desktop, all sensors, SDDM (no theme) |
+| **Developer** | Minimal + VS Code, Neovim config, Ranger, dgop |
+| **Full** ★ | Everything + Catppuccin SDDM theme + Discord/Steam/Spotify |
+
+It shows the full package/action list and asks to confirm before touching
+anything, backs up any configs it overwrites, and logs every command to
+`~/.cache/moonlit/install-*.log`. **AMD / Intel GPUs only** for now —
+NVIDIA isn't tested with these dots. Still experimental; if a step breaks,
+the log tells you exactly where, and you can finish from the manual guide.
+
+### Manual
+
+Prefer to do it by hand (or on NVIDIA)? It's not a copy-paste job — read the guide.
 
 → **[MANUAL-INSTALL.md](MANUAL-INSTALL.md)**
 

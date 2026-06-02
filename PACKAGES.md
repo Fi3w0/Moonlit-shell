@@ -1,8 +1,7 @@
 # Moonlit Shell — Full Package List
 
 > Everything needed to make this rice work on a fresh Arch install.
-> Lines marked `[AUR]` come from the AUR.
-> Lines marked `[manual]` are manual installs (git clone / copy).
+> Matched against the live system. `[AUR]` = AUR.
 
 ---
 
@@ -15,15 +14,15 @@ sudo pacman -S \
   hyprlock \
   hyprsunset \
   xdg-desktop-portal-hyprland \
-  xdg-desktop-portal-gtk
+  xdg-desktop-portal-gtk \
+  sddm \
+  qt6-wayland
 ```
 
 ## Shell / Bar / Panels
 
 ```bash
-# quickshell — the bar, panels, and IPC system
-# [AUR] — yay -S quickshell
-# or build from source: https://gitlab.com/quickshell/quickshell
+# [AUR] quickshell — bar + panels + IPC
 yay -S quickshell
 ```
 
@@ -45,24 +44,20 @@ sudo pacman -S \
   network-manager-applet \
   bluez \
   bluez-utils
+
 sudo systemctl enable NetworkManager bluetooth
 ```
 
 ## Wallpaper, Screenshots & Clipboard
 
 ```bash
-# awww — animated wallpaper daemon
-# [AUR] — yay -S awww
-yay -S awww
+# [AUR]
+yay -S awww cliphist
 
 sudo pacman -S \
   grim \
   slurp \
   wl-clipboard
-
-# cliphist — clipboard history (part of wl-clipboard on some distros)
-# [AUR] if not bundled — yay -S cliphist
-yay -S cliphist
 ```
 
 ## Terminal, Launcher & File Manager
@@ -73,31 +68,24 @@ sudo pacman -S \
   rofi \
   thunar \
   tumbler \
+  ffmpegthumbnailer \
+  gvfs \
+  gnome-themes-extra \
   xdg-utils
 ```
 
 ## Shell & Editor
 
 ```bash
-sudo pacman -S \
-  fish \
-  neovim \
-  git
+sudo pacman -S fish neovim git
 ```
 
 ## Fonts & Icons
 
 ```bash
-sudo pacman -S \
-  ttf-jetbrains-mono-nerd \
-  papirus-icon-theme
-```
+sudo pacman -S ttf-jetbrains-mono-nerd papirus-icon-theme
 
-### Cursor Theme
-
-```bash
-# Bibata-Modern-Classic is included in this repo under .icons/
-# Copy it to your system:
+# Cursor — included in this repo
 cp -r .icons/Bibata-Modern-Classic ~/.icons/
 ```
 
@@ -106,35 +94,27 @@ cp -r .icons/Bibata-Modern-Classic ~/.icons/
 ```bash
 sudo pacman -S \
   brightnessctl \
-  upower \
-  lm_sensors \
-  rfkill \
-  procps-ng \
-  coreutils \
-  findutils \
-  gawk \
-  sed \
-  util-linux \
-  keyd
+  keyd \
+  htop
 
-# Enable keyd
+# Enable keyd, then copy config
 sudo systemctl enable --now keyd
-# Then copy keyd config: cp .config/keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
+sudo cp .config/keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
 ```
 
 ## My Apps
 
 ```bash
-sudo pacman -S \
-  firefox \
-  discord
+sudo pacman -S firefox discord steam code
 
-# [AUR] — spotify-launcher
+# [AUR]
 yay -S spotify-launcher
+```
 
-sudo pacman -S \
-  steam \
-  code
+## Media
+
+```bash
+sudo pacman -S mpv imv
 ```
 
 ## System Info & Monitoring
@@ -142,79 +122,103 @@ sudo pacman -S \
 ```bash
 sudo pacman -S fastfetch
 
-# dgop — system monitor
-# [AUR] — yay -S dgop
+# [AUR]
 yay -S dgop
 ```
 
 ## Ranger (File Manager)
 
 ```bash
-sudo pacman -S \
-  ranger \
-  w3m \
-  python-pillow \
-  file \
-  atool \
-  p7zip \
-  unrar \
-  unzip
+sudo pacman -S ranger 7zip
 
-# ranger_devicons plugin is included in this repo already
-# (git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons)
+# ranger_devicons plugin is bundled in this repo
 ```
 
-## Optional / Extra
+## Archive & Download
 
 ```bash
-# Minecraft server alias in fish
+sudo pacman -S 7zip zip wget
+```
+
+## Networking extras
+
+```bash
+sudo pacman -S openssh
+```
+
+## Optional (config references but not required)
+
+```bash
+# CPU temp in bar — sensors command
+sudo pacman -S lm_sensors
+
+# Airplane mode toggle — rfkill command
+sudo pacman -S rfkill
+
+# Battery info in SysMon panel
+sudo pacman -S upower
+
+# Ranger image previews
+sudo pacman -S w3m python-pillow
+
+# Archive handling in ranger
+sudo pacman -S atool p7zip unrar unzip
+
+# Fish aliases (mc = docker, ai = ollama)
 sudo pacman -S docker
-
-# AI via ollama
-# [manual] — curl -fsSL https://ollama.com/install.sh | sh
-# or yay -S ollama
-
-# Spotify customization
-# [manual] — curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
+# ollama — curl -fsSL https://ollama.com/install.sh | sh
+# spicetify — curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
 ```
 
 ---
 
-## Quick Install (copy-paste)
+## Quick Install
 
 ```bash
-# Core + Utils
+# Pacman — everything essential
 sudo pacman -S --needed \
   hyprland hypridle hyprlock hyprsunset \
   xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
+  sddm qt6-wayland \
   pipewire wireplumber pipewire-pulse pipewire-alsa \
   networkmanager network-manager-applet bluez bluez-utils \
-  grim slurp wl-clipboard kitty rofi thunar tumbler xdg-utils \
+  grim slurp wl-clipboard kitty rofi thunar tumbler \
+  ffmpegthumbnailer gvfs gnome-themes-extra xdg-utils \
   fish neovim git ttf-jetbrains-mono-nerd papirus-icon-theme \
-  brightnessctl upower lm_sensors rfkill keyd \
-  firefox discord steam code fastfetch \
-  ranger w3m python-pillow file atool p7zip unrar unzip docker \
-  procps-ng coreutils findutils gawk sed util-linux
+  brightnessctl keyd htop mpv imv \
+  firefox discord steam code fastfetch ranger 7zip \
+  zip wget openssh
 
 # AUR
 yay -S quickshell awww cliphist spotify-launcher dgop
 
 # Enable services
-sudo systemctl enable --now NetworkManager bluetooth keyd
+sudo systemctl enable NetworkManager bluetooth sddm keyd
 ```
 
 ## Deploy Dots
 
 ```bash
-# Copy everything from this repo to ~/.config/
+# Dotfiles
 cp -r .config/* ~/.config/
 cp -r .icons/Bibata-Modern-Classic ~/.icons/
 cp -r Wallpapers/ ~/Pictures/Wallpapers/
 
-# keyd config (as root)
-sudo cp .config/keyd/default.conf /etc/keyd/default.conf
-sudo keyd reload
+# SDDM — install theme + config + wallpaper
+sudo cp -r sddm/catppuccin-mocha /usr/share/sddm/themes/
+sudo cp sddm/sddm.conf /etc/sddm.conf
+sudo ln -sf "$(cat ~/.cache/wallpaper-current)" /usr/share/sddm/themes/catppuccin-mocha/backgrounds/wall.jpg
 
-# Setup nvim plugins (first launch auto-installs lazy.nvim)
+# GTK — install theme (from GitHub releases)
+mkdir -p ~/.themes ~/.config/gtk-3.0 ~/.config/gtk-4.0
+curl -sL "https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-mocha-lavender-standard%2Bdefault.zip" -o /tmp/catppuccin-gtk.zip
+unzip -o /tmp/catppuccin-gtk.zip -d ~/.themes/
+
+# GTK settings are already in .config/gtk-3.0/ and .config/gtk-4.0/
+
+# keyd
+sudo cp .config/keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
+
+# Neovim
 nvim --headless "+Lazy! sync" +qa
 ```

@@ -204,10 +204,16 @@ cp -r .config/* ~/.config/
 cp -r .icons/Bibata-Modern-Classic ~/.icons/
 cp -r Wallpapers/ ~/Pictures/Wallpapers/
 
-# SDDM — install theme + config + wallpaper
-sudo cp -r sddm/catppuccin-mocha /usr/share/sddm/themes/
-sudo cp sddm/sddm.conf /etc/sddm.conf
-sudo ln -sf "$(cat ~/.cache/wallpaper-current)" /usr/share/sddm/themes/catppuccin-mocha/backgrounds/wall.jpg
+# SDDM — theme (AUR) + config
+# The catppuccin-mocha-mauve QML theme:
+git clone https://github.com/catppuccin/sddm.git /tmp/catppuccin-sddm
+sudo cp -r /tmp/catppuccin-sddm/src /usr/share/sddm/themes/catppuccin-mocha-mauve
+
+# Drop-in config (won't overwrite any existing sddm.conf)
+sudo cp sddm/sddm.conf /etc/sddm.conf.d/10-theme.conf
+
+# Wallpaper for SDDM greeter background (copy to system, not symlink — sddm user needs read access)
+sudo cp "$(cat ~/.cache/wallpaper-current)" /usr/share/sddm/themes/catppuccin-mocha-mauve/backgrounds/wall.png
 
 # GTK — install theme (from GitHub releases)
 mkdir -p ~/.themes ~/.config/gtk-3.0 ~/.config/gtk-4.0

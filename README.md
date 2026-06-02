@@ -2,7 +2,7 @@
 
 > Arch Linux · Hyprland · Quickshell · Catppuccin Mocha · Winter 2026
 
-My Hyprland setup rebuilt from scratch — this time with a custom Quickshell shell instead of Waybar, a proper widget bar with real panels, and Catppuccin Mocha soaked into every last config. My daily driver on the ThinkPad T14.
+My Hyprland setup rebuilt from scratch, this time with a custom Quickshell shell instead of Waybar, a proper widget bar with real panels, and Catppuccin Mocha soaked into every last config. My daily driver on the ThinkPad T14.
 
 <p align="center">
   <img src="assets/screenshots/mainscreen.png" alt="Moonlit Shell" width="800"/>
@@ -12,9 +12,9 @@ My Hyprland setup rebuilt from scratch — this time with a custom Quickshell sh
 
 ## Why a new rice?
 
-Fi3w0-Hyprland served me well, but Waybar had limits I kept hitting — no proper WiFi connect dialog, no Bluetooth pairing UI, no clipboard history, no wallpaper carousel. Every fix was another hacky script.
+Fi3w0-Hyprland served me well, but Waybar had limits I kept hitting: no proper WiFi connect dialog, no Bluetooth pairing UI, no clipboard history, no wallpaper carousel. Every fix was another hacky script.
 
-So I tore it all down and rebuilt on Quickshell — a Qt6/QML shell framework that lets me write the bar and panels like an app, not a config. The result is cleaner, faster, and everything works through IPC instead of shell scripts racing each other.
+So I tore it all down and rebuilt on Quickshell, a Qt6/QML shell framework that lets me write the bar and panels like an app, not a config. The result is cleaner, faster, and everything works through IPC instead of shell scripts racing each other.
 
 ---
 
@@ -83,7 +83,7 @@ A Quickshell bar that's more functional than most DEs I've used:
 | **Audio** | MPRIS now-playing with seek bar, play/pause/skip, master volume, mic level |
 | **WiFi** | Scan nearby networks, connect with password dialog, signal strength bars |
 | **Bluetooth** | Paired device list, scan, connect/disconnect, power toggle |
-| **Power** | Lock, Logout, Sleep, Reboot, Shutdown — all with keyboard shortcuts |
+| **Power** | Lock, Logout, Sleep, Reboot, Shutdown with keyboard shortcuts |
 | **System Monitor** | CPU sparkline, RAM/DISK/TEMP ring charts, network throughput, top processes |
 | **Calendar** | Full month grid + live clock + now-playing widget + notification history |
 | **Clipboard** | cliphist history with copy-to-clipboard and clear |

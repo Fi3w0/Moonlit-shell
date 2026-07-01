@@ -10,17 +10,77 @@ import "panels"
 ShellRoot {
     // Global notification list (shared across all screen instances)
     ListModel { id: notifModel }
+    property var notifItems: []
+
+    Timer {
+        id: clearNotifTimer
+        interval: 300
+        repeat: false
+        onTriggered: {
+            notifModel.clear()
+            notifItems = []
+        }
+    }
+
+    function pushNotification(app, title, body) {
+        var item = {
+            nid: Date.now(),
+            app: app || "Moonlit",
+            title: title || "",
+            body: body || "",
+            time: Qt.formatDateTime(new Date(), "hh:mm"),
+            closing: false
+        }
+        notifModel.insert(0, item)
+        var next = notifItems.slice()
+        next.unshift(item)
+        while (next.length > 50)
+            next.pop()
+        notifItems = next
+        while (notifModel.count > 50)
+            notifModel.remove(notifModel.count - 1)
+    }
+
+    function setNotificationClosing(nid) {
+        var next = notifItems.slice()
+        for (var i = 0; i < next.length; i++) {
+            if (next[i].nid === nid) {
+                var item = {}
+                for (var key in next[i])
+                    item[key] = next[i][key]
+                item.closing = true
+                next[i] = item
+                notifItems = next
+                for (var j = 0; j < notifModel.count; j++) {
+                    if (notifModel.get(j).nid === nid) {
+                        notifModel.setProperty(j, "closing", true)
+                        break
+                    }
+                }
+                break
+            }
+        }
+    }
+
+    function removeNotification(nid) {
+        var next = []
+        for (var i = 0; i < notifItems.length; i++) {
+            if (notifItems[i].nid !== nid)
+                next.push(notifItems[i])
+        }
+        notifItems = next
+        for (var j = 0; j < notifModel.count; j++) {
+            if (notifModel.get(j).nid === nid) {
+                notifModel.remove(j)
+                break
+            }
+        }
+    }
 
     NotificationServer {
         keepOnReload: true
         onNotification: notif => {
-            notifModel.insert(0, {
-                nid:   notif.id,
-                app:   notif.appName,
-                title: notif.summary,
-                body:  notif.body,
-                time:  Qt.formatDateTime(new Date(), "hh:mm")
-            })
+            pushNotification(notif.appName, notif.summary, notif.body)
             // Forward to toast stacks unless Do Not Disturb is on
             // (notification still lands in the center via notifModel above)
             if (!sys.dnd)
@@ -59,6 +119,17 @@ ShellRoot {
         target: "osd"
         function set(kind: string, value: real): void {
             osdRelay.fire(kind, value)
+        }
+    }
+
+    // `qs ipc call notify send Moonlit "Title" "Body"` for internal shell messages.
+    IpcHandler {
+        target: "notify"
+        property int count: notifItems.length
+        function send(app: string, title: string, body: string): void {
+            pushNotification(app, title, body)
+            if (!sys.dnd)
+                toastRelay.notify(app, title, body)
         }
     }
 
@@ -119,6 +190,10 @@ ShellRoot {
                 activePanel: scope.activePanel
                 onOpenPanel: p  => scope.open(p)
                 onShowOsd:  (k,v) => scope.showOsd(k, v)
+                onShowToast: (a,t,b) => {
+                    pushNotification(a, t, b)
+                    toastRelay.notify(a, t, b)
+                }
             }
 
             // Caffeine — inhibits compositor idle while enabled (attached to the
@@ -146,10 +221,24 @@ ShellRoot {
             property var calPanel: CalendarPanel {
                 screen:        scope.modelData
                 visible:       scope.activePanel === "cal"
-                notifModel:    notifModel
+                notifications: notifItems
+                removeNotifFunc: removeNotification
                 onClose:       scope.closeAll()
-                onClearNotifs: notifModel.clear()
-                onDismissNotif: i => notifModel.remove(i)
+                onClearNotifs: {
+                    var next = []
+                    for (var i = 0; i < notifItems.length; i++) {
+                        var item = {}
+                        for (var key in notifItems[i])
+                            item[key] = notifItems[i][key]
+                        item.closing = true
+                        next.push(item)
+                    }
+                    notifItems = next
+                    for (var j = 0; j < notifModel.count; j++)
+                        notifModel.setProperty(j, "closing", true)
+                    clearNotifTimer.restart()
+                }
+                onDismissNotif: nid => setNotificationClosing(nid)
             }
 
             property var qsPanel: QuickSettingsPanel {

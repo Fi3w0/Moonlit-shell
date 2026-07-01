@@ -7,15 +7,17 @@ PanelWindow {
     id: root
     signal close()
     signal clearNotifs()
-    signal dismissNotif(int index)
+    signal dismissNotif(var nid)
 
-    required property var notifModel
+    required property var notifications
+    required property var removeNotifFunc
+    readonly property int notifCount: notifications ? notifications.length : 0
 
     anchors { top: true; right: true }
     margins.top: 42
     exclusiveZone: 0
     implicitWidth: 372
-    implicitHeight: content.implicitHeight + 10
+    implicitHeight: content.height + 10
     color: "transparent"
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
@@ -81,7 +83,7 @@ PanelWindow {
                         color: root.text
                         font { pixelSize: 40; bold: true; family: root.nfFont }
                         Timer {
-                            interval: 1000; running: true; repeat: true; triggeredOnStart: true
+                            interval: 1000; running: root.visible; repeat: true; triggeredOnStart: true
                             onTriggered: {
                                 bigClock.text = Qt.formatDateTime(new Date(), "hh:mm:ss")
                                 dateLabel.text = Qt.formatDateTime(new Date(), "dddd, MMMM d")
@@ -261,9 +263,9 @@ PanelWindow {
 
             // ── Notifications ────────────────────────────────────────────
             Item {
+                id: notifRoot
                 Layout.fillWidth: true
-                implicitHeight: notifSect.implicitHeight + 8
-
+                implicitHeight: notifSect.implicitHeight + 12
                 ColumnLayout {
                     id: notifSect
                     anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 16; rightMargin: 16 }
@@ -278,14 +280,40 @@ PanelWindow {
                             color: root.subtext0
                             font { pixelSize: 11; bold: true; family: root.nfFont }
                         }
+                        Rectangle {
+                            visible: root.notifCount > 0
+                            radius: 999
+                            color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.14)
+                            implicitWidth: notifCountText.implicitWidth + 14
+                            implicitHeight: 20
+                            Text {
+                                id: notifCountText
+                                anchors.centerIn: parent
+                                text: root.notifCount
+                                color: root.mauve
+                                font { pixelSize: 10; bold: true; family: root.nfFont }
+                            }
+                        }
                         Item { Layout.fillWidth: true }
-                        Text {
-                            text: "Clear all"
-                            color: root.pink
-                            font { pixelSize: 11; family: root.nfFont }
-                            visible: (notifModel ? notifModel.count : 0) > 0
+                        Rectangle {
+                            visible: root.notifCount > 0
+                            radius: 999
+                            color: clearHov.containsMouse ? Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.14) : "transparent"
+                            border.width: 1
+                            border.color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.22)
+                            implicitWidth: clearTxt.implicitWidth + 18
+                            implicitHeight: 24
+                            Text {
+                                id: clearTxt
+                                anchors.centerIn: parent
+                                text: "Clear"
+                                color: root.pink
+                                font { pixelSize: 11; bold: true; family: root.nfFont }
+                            }
                             MouseArea {
+                                id: clearHov
                                 anchors.fill: parent
+                                hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: root.clearNotifs()
                             }
@@ -296,7 +324,7 @@ PanelWindow {
                     Item {
                         Layout.fillWidth: true
                         implicitHeight: 60
-                        visible: !notifModel || notifModel.count === 0
+                        visible: root.notifCount === 0
 
                         ColumnLayout {
                             anchors.centerIn: parent
@@ -317,78 +345,120 @@ PanelWindow {
                         }
                     }
 
-                    // Notification items
-                    Repeater {
-                        model: notifModel
-                        delegate: Rectangle {
-                            required property var model
-                            required property int index
+                    Flickable {
+                        Layout.fillWidth: true
+                        implicitHeight: Math.min(Math.max(root.notifCount * 84 - 8, 76), 260)
+                        visible: root.notifCount > 0
+                        clip: true
+                        contentHeight: notifList.implicitHeight
+                        boundsBehavior: Flickable.StopAtBounds
 
-                            Layout.fillWidth: true
-                            implicitHeight: nfBody.implicitHeight + 24
-                            radius: 16
-                            color: root.surface0
+                        Column {
+                            id: notifList
+                            width: parent.width
+                            spacing: 8
+                            move: Transition {
+                                NumberAnimation { properties: "y"; duration: 190; easing.type: Easing.OutCubic }
+                            }
 
-                            RowLayout {
-                                anchors { fill: parent; margins: 12 }
-                                spacing: 11
+                            Repeater {
+                                model: root.notifications
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    required property int index
+                                    property bool entered: false
 
-                                Rectangle {
-                                    width: 36; height: 36; radius: 11
-                                    color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.18)
-                                    Layout.alignment: Qt.AlignTop
+                                    width: notifList.width
+                                    height: 76
+                                    implicitHeight: height
+                                    radius: 14
+                                    color: root.surface0
+                                    border.width: 1
+                                    border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.06)
+                                    opacity: modelData.closing ? 0 : (entered ? 1 : 0)
+                                    x: modelData.closing ? width + 28 : 0
+                                    clip: true
 
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "󰂚"
-                                        color: root.pink
-                                        font { pixelSize: 17; family: root.nfFont }
+                                    Component.onCompleted: entered = true
+                                    Behavior on x { NumberAnimation { duration: 230; easing.type: Easing.InOutCubic } }
+                                    Behavior on opacity { NumberAnimation { duration: 210; easing.type: modelData.closing ? Easing.InCubic : Easing.OutCubic } }
+                                    Timer {
+                                        interval: 260
+                                        running: modelData.closing
+                                        onTriggered: root.removeNotifFunc(modelData.nid)
                                     }
-                                }
-
-                                ColumnLayout {
-                                    id: nfBody
-                                    spacing: 2
-                                    Layout.fillWidth: true
 
                                     RowLayout {
-                                        Text {
-                                            text: model.app
-                                            color: root.subtext0
-                                            font { pixelSize: 10; bold: true; family: root.nfFont }
-                                        }
-                                        Item { Layout.fillWidth: true }
-                                        Text {
-                                            text: model.time
-                                            color: root.overlay0
-                                            font { pixelSize: 10; family: root.nfFont }
-                                        }
-                                    }
-                                    Text {
-                                        text: model.title
-                                        color: root.text
-                                        font { pixelSize: 13; bold: true; family: root.nfFont }
-                                        Layout.fillWidth: true
-                                    }
-                                    Text {
-                                        text: model.body
-                                        color: root.subtext0
-                                        font { pixelSize: 12; family: root.nfFont }
-                                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                        Layout.fillWidth: true
-                                    }
-                                }
+                                        anchors { fill: parent; margins: 11 }
+                                        spacing: 10
 
-                                Text {
-                                    text: "󰅖"
-                                    color: root.overlay0
-                                    font { pixelSize: 14; family: root.nfFont }
-                                    Layout.alignment: Qt.AlignTop
+                                        Rectangle {
+                                            width: 32; height: 32; radius: 10
+                                            color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.16)
+                                            Layout.alignment: Qt.AlignTop
 
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.dismissNotif(parent.parent.parent.index)
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "󰂚"
+                                                color: root.pink
+                                                font { pixelSize: 15; family: root.nfFont }
+                                            }
+                                        }
+
+                                        ColumnLayout {
+                                            id: nfBody
+                                            spacing: 3
+                                            Layout.fillWidth: true
+
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                Text {
+                                                    text: modelData.app || "Notification"
+                                                    color: root.subtext0
+                                                    font { pixelSize: 10; bold: true; family: root.nfFont }
+                                                    elide: Text.ElideRight
+                                                    Layout.fillWidth: true
+                                                }
+                                                Text {
+                                                    text: modelData.time
+                                                    color: root.overlay0
+                                                    font { pixelSize: 10; family: root.nfFont }
+                                                }
+                                            }
+                                            Text {
+                                                text: modelData.title
+                                                color: root.text
+                                                font { pixelSize: 12; bold: true; family: root.nfFont }
+                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                maximumLineCount: 2
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+                                            Text {
+                                                text: modelData.body
+                                                color: root.subtext0
+                                                font { pixelSize: 11; family: root.nfFont }
+                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                maximumLineCount: 4
+                                                elide: Text.ElideRight
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+
+                                        Text {
+                                            text: "󰅖"
+                                            color: closeHov.containsMouse ? root.pink : root.overlay0
+                                            font { pixelSize: 14; family: root.nfFont }
+                                            Layout.alignment: Qt.AlignTop
+
+                                            MouseArea {
+                                                id: closeHov
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: root.dismissNotif(modelData.nid)
+                                            }
+                                        }
                                     }
                                 }
                             }

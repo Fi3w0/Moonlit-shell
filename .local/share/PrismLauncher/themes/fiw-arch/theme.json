@@ -1,0 +1,36 @@
+{
+  "name": "Fiw Terminal",
+  "widgets": "Fusion",
+  "qssFilePath": "themeStyle.css",
+  "colors": {
+    "Window": "#24111820",
+    "WindowText": "#cdd6f4",
+    "Base": "#38111820",
+    "AlternateBase": "#5617212c",
+    "ToolTipBase": "#17212c",
+    "ToolTipText": "#cdd6f4",
+    "Text": "#cdd6f4",
+    "Button": "#4a1c2734",
+    "ButtonText": "#cdd6f4",
+    "BrightText": "#f38ba8",
+    "Link": "#89b4fa",
+    "Highlight": "#a6e3a1",
+    "HighlightedText": "#111820",
+    "fadeColor": "#111820",
+    "fadeAmount": 0.55
+  },
+  "logColors": {
+    "Message": "#cdd6f4",
+    "Launcher": "#89dceb",
+    "Debug": "#a6adc8",
+    "Warning": "#f9e2af",
+    "Error": "#f38ba8",
+    "Fatal": "#f38ba8",
+    "MessageHighlight": "#17212c",
+    "LauncherHighlight": "#182f36",
+    "DebugHighlight": "#17212c",
+    "WarningHighlight": "#332f20",
+    "ErrorHighlight": "#34202a",
+    "FatalHighlight": "#45202d"
+  }
+}

@@ -406,6 +406,8 @@ ph_themes() {
   [[ -d .icons/Bibata-Modern-Classic ]] && run cp -an .icons/Bibata-Modern-Classic "$HOME/.icons/" 2>/dev/null
   mkdir -p "$HOME/.local/share/icons"
   [[ -d .local/share/icons/Moonlit-Terminal ]] && run cp -an .local/share/icons/Moonlit-Terminal "$HOME/.local/share/icons/" 2>/dev/null
+  mkdir -p "$HOME/.local/share/PrismLauncher/themes"
+  [[ -d .local/share/PrismLauncher/themes/fiw-arch ]] && run cp -a .local/share/PrismLauncher/themes/fiw-arch "$HOME/.local/share/PrismLauncher/themes/" 2>/dev/null
   # GTK catppuccin
   mkdir -p "$HOME/.themes"
   local url="https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-mocha-lavender-standard+default.zip"

@@ -1,0 +1,53 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  dotfiles:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Check shell syntax
+        run: |
+          bash -n install.sh
+          bash -n .config/rofi/scripts/launcher.sh
+          bash -n .config/hypr/scripts/lock.sh
+          bash -n .config/ranger/scope.sh
+          bash -n scripts/moonlit-doctor
+
+      - name: Run shellcheck
+        run: |
+          shellcheck install.sh
+          shellcheck .config/rofi/scripts/launcher.sh
+          shellcheck .config/hypr/scripts/lock.sh
+          shellcheck -e SC2034,SC2317 .config/ranger/scope.sh
+          shellcheck scripts/moonlit-doctor
+
+      - name: Validate XML
+        run: python3 -m xml.etree.ElementTree .config/Thunar/uca.xml
+
+      - name: Verify required files
+        run: |
+          test -f .config/quickshell/shell.qml
+          test -f .config/quickshell/bar/Bar.qml
+          test -f .config/hypr/hyprland.conf
+          test -f .config/rofi/config.rasi
+          test -f .local/share/icons/Moonlit-Terminal/index.theme
+          test -d .local/share/icons/Moonlit-Terminal/scalable
+
+      - name: Check for personal absolute paths
+        run: |
+          if git grep -n '/home/fiw' -- ':!README.md' ':!MANUAL-INSTALL.md' ':!assets/**'; then
+            echo "Found hardcoded /home/fiw path in tracked config files."
+            exit 1
+          fi

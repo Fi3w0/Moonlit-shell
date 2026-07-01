@@ -152,7 +152,7 @@ check_wallpapers() {
 check_paths() {
   local repo="${1:-}"
   if [[ -n "$repo" && -d "$repo/.git" ]]; then
-    if git -C "$repo" grep -n '/home/fiw' -- ':!README.md' ':!MANUAL-INSTALL.md' ':!assets/**' >/tmp/moonlit-doctor-paths.$$ 2>/dev/null; then
+    if git -C "$repo" grep -n '/home/fiw' -- ':!README.md' ':!MANUAL-INSTALL.md' ':!assets/**' ':!.github/**' ':!scripts/moonlit-doctor' >/tmp/moonlit-doctor-paths.$$ 2>/dev/null; then
       fail "repo contains hardcoded /home/fiw paths"
       sed 's/^/  /' "/tmp/moonlit-doctor-paths.$$"
     else

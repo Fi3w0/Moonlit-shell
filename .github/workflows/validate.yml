@@ -47,7 +47,7 @@ jobs:
 
       - name: Check for personal absolute paths
         run: |
-          if git grep -n '/home/fiw' -- ':!README.md' ':!MANUAL-INSTALL.md' ':!assets/**'; then
+          if git grep -n '/home/fiw' -- ':!README.md' ':!MANUAL-INSTALL.md' ':!assets/**' ':!.github/**' ':!scripts/moonlit-doctor'; then
             echo "Found hardcoded /home/fiw path in tracked config files."
             exit 1
           fi

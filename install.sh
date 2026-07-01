@@ -95,7 +95,7 @@ PAC_MINIMAL=(
   unzip wget
 )
 AUR_MINIMAL=( quickshell awww cliphist )
-CFG_MINIMAL=( hypr quickshell kitty rofi fish gtk-3.0 gtk-4.0 Thunar fastfetch keyd )
+CFG_MINIMAL=( hypr quickshell kitty rofi fish gtk-3.0 gtk-4.0 Thunar fastfetch keyd xdg-desktop-portal )
 
 # Dev: minimal + developer tooling
 PAC_DEV=( code ranger w3m python-pillow atool p7zip 7zip unrar zip openssh docker )

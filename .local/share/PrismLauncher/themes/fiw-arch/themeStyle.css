@@ -7,7 +7,7 @@
 QMainWindow,
 QDialog,
 QWidget {
-  background-color: rgba(17, 24, 32, 36);
+  background-color: rgba(17, 24, 32, 4);
   color: #cdd6f4;
 }
 
@@ -17,7 +17,7 @@ QSplitter::handle {
 }
 
 QToolBar {
-  background-color: rgba(23, 33, 44, 62);
+  background-color: rgba(23, 33, 44, 28);
   border: 0;
   border-bottom: 1px solid #315661;
   spacing: 3px;
@@ -26,7 +26,7 @@ QToolBar {
 
 QStatusBar,
 QMenuBar {
-  background-color: rgba(23, 33, 44, 56);
+  background-color: rgba(23, 33, 44, 16);
   color: #7f849c;
   border-top: 1px solid #315661;
 }
@@ -48,13 +48,13 @@ QMenu::item {
 }
 
 QMenu::item:selected {
-  background-color: #1d3a42;
+  background-color: rgba(137, 220, 235, 36);
   color: #89dceb;
 }
 
 QPushButton,
 QToolButton {
-  background-color: rgba(28, 39, 52, 70);
+  background-color: rgba(28, 39, 52, 22);
   color: #cdd6f4;
   border: 1px solid #2b414c;
   border-radius: 3px;
@@ -63,7 +63,7 @@ QToolButton {
 
 QPushButton:hover,
 QToolButton:hover {
-  background-color: rgba(32, 52, 61, 105);
+  background-color: rgba(137, 220, 235, 16);
   border-color: #89dceb;
   color: #89dceb;
 }
@@ -71,14 +71,14 @@ QToolButton:hover {
 QPushButton:pressed,
 QToolButton:pressed,
 QToolButton:checked {
-  background-color: rgba(32, 58, 45, 125);
+  background-color: rgba(166, 227, 161, 28);
   border-color: #a6e3a1;
   color: #a6e3a1;
 }
 
 QPushButton:disabled,
 QToolButton:disabled {
-  background-color: rgba(23, 33, 44, 38);
+  background-color: rgba(23, 33, 44, 14);
   border-color: #22323c;
   color: #585b70;
 }
@@ -89,12 +89,12 @@ QPlainTextEdit,
 QComboBox,
 QSpinBox,
 QDoubleSpinBox {
-  background-color: rgba(13, 19, 25, 70);
+  background-color: rgba(17, 24, 32, 22);
   color: #cdd6f4;
   border: 1px solid #315661;
   border-radius: 3px;
   padding: 2px 5px;
-  selection-background-color: #203a2d;
+  selection-background-color: rgba(166, 227, 161, 42);
   selection-color: #a6e3a1;
 }
 
@@ -113,20 +113,20 @@ QComboBox::drop-down {
 }
 
 QComboBox QAbstractItemView {
-  background-color: rgba(13, 19, 25, 238);
+  background-color: rgba(17, 24, 32, 205);
   color: #cdd6f4;
   border: 1px solid #315661;
-  selection-background-color: #203a2d;
+  selection-background-color: rgba(166, 227, 161, 42);
   selection-color: #a6e3a1;
 }
 
 QTabWidget::pane {
-  background-color: rgba(17, 24, 32, 30);
+  background-color: rgba(17, 24, 32, 2);
   border: 1px solid #315661;
 }
 
 QTabBar::tab {
-  background-color: rgba(23, 33, 44, 62);
+  background-color: rgba(23, 33, 44, 18);
   color: #7f849c;
   border: 1px solid #2b414c;
   border-bottom: 0;
@@ -135,7 +135,7 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected {
-  background-color: rgba(17, 24, 32, 72);
+  background-color: rgba(17, 24, 32, 12);
   color: #89dceb;
   border-color: #89dceb;
 }
@@ -144,12 +144,12 @@ QTreeView,
 QListView,
 QTableView,
 QColumnView {
-  background-color: rgba(13, 19, 25, 42);
-  alternate-background-color: rgba(18, 29, 38, 70);
+  background-color: rgba(17, 24, 32, 1);
+  alternate-background-color: rgba(23, 33, 44, 5);
   color: #cdd6f4;
   border: 1px solid #315661;
   gridline-color: #24434b;
-  selection-background-color: #203a2d;
+  selection-background-color: rgba(166, 227, 161, 42);
   selection-color: #a6e3a1;
 }
 
@@ -163,19 +163,19 @@ QTableView::item {
 QTreeView::item:hover,
 QListView::item:hover,
 QTableView::item:hover {
-  background-color: rgba(24, 37, 47, 95);
+  background-color: rgba(205, 214, 244, 7);
   color: #89dceb;
 }
 
 QTreeView::item:selected,
 QListView::item:selected,
 QTableView::item:selected {
-  background-color: rgba(32, 58, 45, 125);
+  background-color: rgba(166, 227, 161, 34);
   color: #a6e3a1;
 }
 
 QHeaderView::section {
-  background-color: rgba(20, 29, 39, 140);
+  background-color: rgba(20, 29, 39, 34);
   color: #7f849c;
   border: 0;
   border-right: 1px solid #24434b;
@@ -199,7 +199,7 @@ QGroupBox::title {
 
 QScrollBar:vertical,
 QScrollBar:horizontal {
-  background-color: rgba(13, 19, 25, 42);
+  background-color: rgba(17, 24, 32, 6);
   border: 0;
   width: 8px;
   height: 8px;
@@ -227,7 +227,7 @@ QScrollBar::sub-page {
 }
 
 QProgressBar {
-  background-color: rgba(13, 19, 25, 70);
+  background-color: rgba(17, 24, 32, 14);
   color: #cdd6f4;
   border: 1px solid #315661;
   border-radius: 3px;
@@ -253,7 +253,7 @@ QRadioButton::indicator {
 
 QCheckBox::indicator:unchecked,
 QRadioButton::indicator:unchecked {
-  background-color: rgba(13, 19, 25, 70);
+  background-color: rgba(17, 24, 32, 22);
   border: 1px solid #315661;
 }
 
@@ -266,12 +266,92 @@ QRadioButton::indicator:checked {
 QFrame,
 QStackedWidget,
 QScrollArea {
-  background-color: rgba(17, 24, 32, 32);
+  background-color: rgba(17, 24, 32, 1);
   border-color: #315661;
 }
 
+QFileDialog {
+  background-color: rgba(17, 24, 32, 36);
+  color: #cdd6f4;
+}
+
+QFileDialog QLabel {
+  background-color: transparent;
+  color: #a6adc8;
+}
+
+QFileDialog QFrame,
+QFileDialog QSplitter,
+QFileDialog QStackedWidget,
+QFileDialog QScrollArea {
+  background-color: rgba(17, 24, 32, 20);
+  border-color: #315661;
+}
+
+QFileDialog QTreeView,
+QFileDialog QListView {
+  background-color: rgba(17, 24, 32, 28);
+  alternate-background-color: rgba(23, 33, 44, 36);
+  color: #cdd6f4;
+  border: 1px solid #315661;
+  selection-background-color: rgba(166, 227, 161, 46);
+  selection-color: #a6e3a1;
+}
+
+QFileDialog QTreeView::item,
+QFileDialog QListView::item {
+  min-height: 22px;
+  padding: 2px 6px;
+}
+
+QFileDialog QTreeView::item:hover,
+QFileDialog QListView::item:hover {
+  background-color: rgba(137, 220, 235, 18);
+  color: #89dceb;
+}
+
+QFileDialog QHeaderView::section {
+  background-color: rgba(20, 29, 39, 120);
+  color: #7f849c;
+  border: 0;
+  border-right: 1px solid #24434b;
+  border-bottom: 1px solid #315661;
+  padding: 3px 7px;
+}
+
+QFileDialog QLineEdit,
+QFileDialog QComboBox {
+  background-color: rgba(17, 24, 32, 70);
+  color: #cdd6f4;
+  border: 1px solid #315661;
+  border-radius: 3px;
+  padding: 3px 6px;
+}
+
+QFileDialog QToolButton,
+QFileDialog QPushButton {
+  background-color: rgba(28, 39, 52, 54);
+  color: #cdd6f4;
+  border: 1px solid #315661;
+  border-radius: 3px;
+  padding: 3px 7px;
+}
+
+QFileDialog QToolButton:hover,
+QFileDialog QPushButton:hover {
+  background-color: rgba(137, 220, 235, 24);
+  border-color: #89dceb;
+  color: #89dceb;
+}
+
+QFileDialog QPushButton:disabled {
+  background-color: rgba(23, 33, 44, 30);
+  border-color: #24434b;
+  color: #585b70;
+}
+
 QToolTip {
-  background-color: rgba(23, 33, 44, 238);
+  background-color: rgba(23, 33, 44, 220);
   color: #cdd6f4;
   border: 1px solid #89dceb;
   padding: 4px;

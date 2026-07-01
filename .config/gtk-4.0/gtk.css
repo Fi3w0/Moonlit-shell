@@ -1,0 +1,411 @@
+@define-color moon_bg rgba(17, 24, 32, 0.14);
+@define-color moon_panel rgba(23, 33, 44, 0.24);
+@define-color moon_panel_alt rgba(28, 39, 52, 0.22);
+@define-color moon_line rgba(137, 220, 235, 0.26);
+@define-color moon_text #cdd6f4;
+@define-color moon_muted #7f849c;
+@define-color moon_green #a6e3a1;
+@define-color moon_cyan #89dceb;
+@define-color moon_mauve #cba6f7;
+
+filechooser,
+filechooser box,
+filechooser paned,
+filechooser stack,
+filechooser scrolledwindow,
+filechooser viewport,
+filechooser windowhandle,
+filechooser contents,
+filechooser .background,
+filechooser .view,
+window.background filechooser,
+window.background filechooser box,
+window.background filechooser contents {
+  background-image: none;
+  background-color: @moon_bg;
+  color: @moon_text;
+  font-family: "JetBrainsMono Nerd Font Mono";
+  font-size: 9pt;
+}
+
+filechooser headerbar,
+filechooser .titlebar,
+filechooser actionbar,
+filechooser toolbar,
+filechooser statusbar,
+filechooser > box > box:first-child,
+filechooser > box > box:last-child,
+window.background filechooser headerbar,
+window.background filechooser actionbar,
+window.background filechooser toolbar,
+window.background filechooser statusbar {
+  background-image: none;
+  background-color: @moon_panel;
+  color: @moon_text;
+  border-color: @moon_line;
+  border-bottom: 1px solid @moon_line;
+  box-shadow: none;
+}
+
+filechooser actionbar,
+filechooser statusbar,
+filechooser > box > box:last-child,
+window.background filechooser actionbar,
+window.background filechooser statusbar {
+  border-top: 1px solid @moon_line;
+  border-bottom: 0;
+}
+
+filechooser button,
+filechooser menubutton,
+filechooser entry,
+filechooser dropdown,
+filechooser searchentry,
+filechooser spinbutton,
+filechooser combobox,
+filechooser switch {
+  background-image: none;
+  background: @moon_panel_alt;
+  color: @moon_text;
+  border: 1px solid rgba(205, 214, 244, 0.08);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+filechooser button:hover,
+filechooser menubutton:hover,
+filechooser dropdown:hover,
+filechooser entry:focus,
+filechooser searchentry:focus {
+  background: rgba(137, 220, 235, 0.10);
+  border-color: rgba(137, 220, 235, 0.32);
+  color: @moon_cyan;
+}
+
+filechooser button.suggested-action {
+  background: rgba(137, 180, 250, 0.35);
+  border-color: rgba(137, 180, 250, 0.48);
+  color: @moon_text;
+}
+
+filechooser placessidebar,
+filechooser placessidebar row,
+filechooser .sidebar,
+filechooser navigation-sidebar,
+filechooser navigation-sidebar row {
+  background-color: rgba(23, 33, 44, 0.30);
+  color: @moon_muted;
+  border-right: 1px solid @moon_line;
+}
+
+filechooser placessidebar row,
+filechooser navigation-sidebar row {
+  min-height: 30px;
+  padding: 2px 8px;
+}
+
+filechooser placessidebar row:selected,
+filechooser navigation-sidebar row:selected {
+  background-color: rgba(203, 166, 247, 0.16);
+  color: @moon_mauve;
+}
+
+filechooser listview,
+filechooser columnview,
+filechooser gridview,
+filechooser .view,
+filechooser row,
+filechooser cell,
+filechooser columnview listview,
+filechooser columnview listview row {
+  background-color: rgba(17, 24, 32, 0.08);
+  color: @moon_text;
+  border-color: @moon_line;
+}
+
+filechooser columnview row:selected,
+filechooser listview row:selected,
+filechooser gridview child:selected,
+filechooser .view:selected {
+  background-color: rgba(166, 227, 161, 0.16);
+  color: @moon_green;
+}
+
+filechooser columnview row:hover,
+filechooser listview row:hover,
+filechooser gridview child:hover,
+filechooser .view:hover {
+  background-color: rgba(205, 214, 244, 0.04);
+}
+
+filechooser columnview header,
+filechooser columnview header button,
+filechooser treeview header button {
+  background: rgba(20, 29, 39, 0.55);
+  color: @moon_muted;
+  border-color: @moon_line;
+  border-radius: 0;
+  padding: 2px 6px;
+}
+
+window.background,
+window.dialog,
+window.csd,
+window.background > contents,
+window.dialog > contents,
+window.csd > contents {
+  background-image: none;
+  background-color: @moon_bg;
+  color: @moon_text;
+  font-family: "JetBrainsMono Nerd Font Mono";
+  font-size: 9pt;
+}
+
+window.background headerbar,
+window.dialog headerbar,
+window.csd headerbar,
+window.background headerbar windowhandle,
+window.dialog headerbar windowhandle,
+window.csd headerbar windowhandle,
+window.background headerbar box,
+window.dialog headerbar box,
+window.csd headerbar box,
+window.background actionbar,
+window.dialog actionbar,
+window.background statusbar,
+window.dialog statusbar {
+  background-image: none;
+  background-color: @moon_panel;
+  color: @moon_text;
+  border-color: @moon_line;
+  box-shadow: none;
+}
+
+window.background headerbar button,
+window.dialog headerbar button,
+window.csd headerbar button,
+window.background actionbar button,
+window.dialog actionbar button,
+window.background statusbar button,
+window.dialog statusbar button {
+  background-image: none;
+  background: @moon_panel_alt;
+  color: @moon_text;
+  border: 1px solid rgba(205, 214, 244, 0.08);
+  border-radius: 3px;
+  padding: 2px 8px;
+}
+
+window.background headerbar button.suggested-action,
+window.dialog headerbar button.suggested-action,
+window.csd headerbar button.suggested-action,
+window.background actionbar button.suggested-action,
+window.dialog actionbar button.suggested-action,
+filechooser button.suggested-action {
+  background-image: none;
+  background: rgba(137, 180, 250, 0.34);
+  border-color: rgba(137, 180, 250, 0.50);
+  color: @moon_text;
+}
+
+filechooser placessidebar button,
+filechooser placessidebar row button,
+filechooser .sidebar button,
+filechooser navigation-sidebar button {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+filechooser placessidebar row:hover,
+filechooser navigation-sidebar row:hover {
+  background-color: rgba(137, 220, 235, 0.10);
+  color: @moon_cyan;
+}
+
+filechooser label,
+filechooser text,
+filechooser image,
+filechooser checkbutton,
+filechooser checkbutton label {
+  color: @moon_text;
+}
+
+filechooser image,
+filechooser button image,
+filechooser placessidebar image,
+filechooser navigation-sidebar image {
+  -gtk-icon-style: symbolic;
+  -gtk-icon-effect: none;
+  color: @moon_cyan;
+  opacity: 0.88;
+}
+
+filechooser checkbutton check {
+  background-color: @moon_panel_alt;
+  border: 1px solid rgba(205, 214, 244, 0.14);
+  border-radius: 999px;
+  color: @moon_green;
+}
+
+filechooser popover,
+filechooser popover contents,
+filechooser menu,
+filechooser modelbutton {
+  background-color: rgba(23, 33, 44, 0.92);
+  color: @moon_text;
+  border-color: @moon_line;
+}
+
+filechooser modelbutton:hover {
+  background-color: rgba(137, 220, 235, 0.12);
+  color: @moon_cyan;
+}
+
+filechooser scrollbar,
+filechooser scrollbar trough {
+  background-color: transparent;
+}
+
+filechooser scrollbar slider {
+  background-color: rgba(137, 220, 235, 0.24);
+  border-radius: 3px;
+  min-width: 4px;
+  min-height: 4px;
+}
+
+/* GTK4 portal header/footer containers live outside the filechooser node. */
+window.background.csd,
+window.background.csd > contents,
+window.background.csd > contents > box {
+  background: @moon_bg;
+  color: @moon_text;
+}
+
+window.background.csd headerbar,
+window.background.csd .titlebar,
+window.background.csd windowhandle,
+window.background.csd > contents > box > box:first-child,
+window.background.csd > contents > box > box:first-child *,
+window.background.csd filechooser > box > box:first-child,
+window.background.csd filechooser > box > box:first-child * {
+  background: @moon_panel;
+  background-image: none;
+  color: @moon_text;
+  border-color: @moon_line;
+  box-shadow: none;
+}
+
+window.background.csd actionbar,
+window.background.csd statusbar,
+window.background.csd > contents > box > box:last-child,
+window.background.csd > contents > box > box:last-child *,
+window.background.csd filechooser > box > box:last-child,
+window.background.csd filechooser > box > box:last-child * {
+  background: @moon_panel;
+  background-image: none;
+  color: @moon_text;
+  border-color: @moon_line;
+  box-shadow: none;
+}
+
+window.background.csd headerbar button,
+window.background.csd .titlebar button,
+window.background.csd actionbar button,
+window.background.csd statusbar button,
+window.background.csd > contents > box > box:first-child button,
+window.background.csd > contents > box > box:last-child button {
+  background: @moon_panel_alt;
+  background-image: none;
+  color: @moon_text;
+  border: 1px solid rgba(205, 214, 244, 0.10);
+  border-radius: 3px;
+}
+
+window.background.csd headerbar button.suggested-action,
+window.background.csd .titlebar button.suggested-action,
+window.background.csd actionbar button.suggested-action,
+window.background.csd > contents > box > box:first-child button.suggested-action {
+  background: rgba(137, 180, 250, 0.42);
+  background-image: none;
+  border-color: rgba(137, 180, 250, 0.58);
+  color: @moon_text;
+}
+
+/* Final pass: beat Catppuccin's GTK4 header/actionbar backgrounds. */
+headerbar,
+.titlebar,
+windowhandle,
+actionbar,
+statusbar,
+toolbar,
+window.background headerbar,
+window.background .titlebar,
+window.background windowhandle,
+window.background actionbar,
+window.background statusbar,
+window.background toolbar,
+window.csd headerbar,
+window.csd .titlebar,
+window.csd windowhandle,
+window.csd actionbar,
+window.csd statusbar,
+window.csd toolbar {
+  background: rgba(17, 24, 32, 0.58);
+  background-image: none;
+  color: @moon_text;
+  border-color: @moon_line;
+  box-shadow: none;
+}
+
+actionbar,
+statusbar,
+window.background actionbar,
+window.background statusbar,
+window.csd actionbar,
+window.csd statusbar {
+  border-top: 1px solid @moon_line;
+}
+
+headerbar,
+.titlebar,
+window.background headerbar,
+window.background .titlebar,
+window.csd headerbar,
+window.csd .titlebar {
+  border-bottom: 1px solid @moon_line;
+}
+
+headerbar button,
+.titlebar button,
+actionbar button,
+statusbar button,
+toolbar button,
+windowhandle button,
+window.background headerbar button,
+window.background .titlebar button,
+window.background actionbar button,
+window.background statusbar button,
+window.csd headerbar button,
+window.csd .titlebar button,
+window.csd actionbar button,
+window.csd statusbar button {
+  background: rgba(28, 39, 52, 0.42);
+  background-image: none;
+  color: @moon_text;
+  border: 1px solid rgba(205, 214, 244, 0.10);
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+headerbar button:hover,
+.titlebar button:hover,
+actionbar button:hover,
+statusbar button:hover,
+toolbar button:hover,
+windowhandle button:hover {
+  background: rgba(137, 220, 235, 0.14);
+  color: @moon_cyan;
+  border-color: rgba(137, 220, 235, 0.34);
+}

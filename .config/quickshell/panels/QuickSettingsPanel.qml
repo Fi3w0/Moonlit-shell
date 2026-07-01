@@ -254,7 +254,7 @@ PanelWindow {
                             Qt.createQmlObject(
                                 'import Quickshell.Io; Process { command: ["sh","-c","' +
                                 (root.air ? "rfkill block all" : "rfkill unblock all") +
-                                '"]; running: true }', root)
+                                '"]; running: true; onRunningChanged: if (!running) destroy() }', root)
                         }
                     }
                 }
@@ -385,7 +385,7 @@ PanelWindow {
                                     root.showOsd("brightness", pct)
                                     if (commit)
                                         Qt.createQmlObject(
-                                            'import Quickshell.Io; Process { command: ["brightnessctl","s","' + pct + '%"]; running: true }',
+                                            'import Quickshell.Io; Process { command: ["brightnessctl","s","' + pct + '%"]; running: true; onRunningChanged: if (!running) destroy() }',
                                             root)
                                 }
                                 onPressed: mouse => { brightCard.dragging = true; setBright(mouse.x, true) }

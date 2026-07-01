@@ -13,6 +13,7 @@ Item {
     property int    wifiSignal: 0
     property string wifiSsid:  ""
     property var    _prevCpu:  []
+    property bool   enabled: true
 
     // CPU history for sparklines (last 40 samples)
     property var cpuHistory: []
@@ -71,7 +72,7 @@ Item {
     }
 
     Timer {
-        interval: 3000; running: true; repeat: true; triggeredOnStart: true
+        interval: 5000; running: root.enabled; repeat: true; triggeredOnStart: true
         onTriggered: {
             cpuProc.running     = true
             ramProc.running     = true

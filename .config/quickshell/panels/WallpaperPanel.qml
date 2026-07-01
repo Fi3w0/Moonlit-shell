@@ -153,8 +153,10 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
+                visible: root.visible
+                enabled: root.visible
 
-                pathItemCount: 7
+                pathItemCount: 5
                 preferredHighlightBegin: 0.5
                 preferredHighlightEnd:   0.5
                 highlightRangeMode: PathView.StrictlyEnforceRange
@@ -177,7 +179,9 @@ PanelWindow {
                     PathAttribute { name: "iopacity"; value: 0.45 }
                 }
 
-                model: FolderListModel {
+                model: root.visible ? wallModel : null
+
+                FolderListModel {
                     id: wallModel
                     folder: "file://" + root.wallDir
                     showDirs: false
@@ -259,8 +263,8 @@ PanelWindow {
                             source: cell.fileUrl
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            cache: true
-                            sourceSize.width: 420
+                            cache: false
+                            sourceSize.width: 280
                             visible: false
                         }
                         MultiEffect {

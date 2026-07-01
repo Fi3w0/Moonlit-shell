@@ -18,7 +18,7 @@ PanelWindow {
 
     function run(cmd) {
         Qt.createQmlObject(
-            'import Quickshell.Io; Process { command: ["sh","-c","' + cmd + '"]; running: true }',
+            'import Quickshell.Io; Process { command: ["sh","-c","' + cmd + '"]; running: true; onRunningChanged: if (!running) destroy() }',
             root)
         root.close()
     }

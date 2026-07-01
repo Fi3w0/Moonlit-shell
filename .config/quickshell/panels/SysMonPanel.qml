@@ -31,14 +31,14 @@ PanelWindow {
     readonly property color maroon:   "#eba0ac"
 
     // Stats
-    SystemStats { id: sysStats }
+    SystemStats { id: sysStats; enabled: root.visible }
 
     // Disk usage
     property int diskPct: 0
     Process {
+        id: diskProc
         command: ["sh", "-c", "df / | awk 'NR==2{gsub(/%/,\"\",$5); print $5}'"]
         stdout: SplitParser { onRead: d => root.diskPct = parseInt(d) || 0 }
-        running: true
     }
 
     // Process list — buffer then swap atomically (no flicker)
@@ -88,12 +88,15 @@ PanelWindow {
 
     onVisibleChanged: if (visible) {
         root.procBuffer = []
+        diskProc.running = true
+        netProc.running = true
         procProc.running = true
     }
 
     Timer {
-        interval: 5000; running: true; repeat: true; triggeredOnStart: true
+        interval: 5000; running: root.visible; repeat: true; triggeredOnStart: true
         onTriggered: {
+            diskProc.running = true
             netProc.running = true
             if (root.visible) { root.procBuffer = []; procProc.running = true }
         }

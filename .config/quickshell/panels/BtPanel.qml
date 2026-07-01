@@ -64,7 +64,7 @@ PanelWindow {
         }
     }
     Timer {
-        interval: 3000; running: true; repeat: true; triggeredOnStart: true
+        interval: 5000; running: root.visible && root.btOn; repeat: true; triggeredOnStart: true
         onTriggered: if (root.visible && root.btOn) { root.devBuffer = []; devProc.running = true }
     }
 
@@ -265,7 +265,7 @@ PanelWindow {
                                         var addr = devRow.model.address
                                         var cmd = devRow.model.connected ? "disconnect" : "connect"
                                         Qt.createQmlObject(
-                                            'import Quickshell.Io; Process { command: ["bluetoothctl","' + cmd + '","' + addr + '"]; running: true }',
+                                            'import Quickshell.Io; Process { command: ["bluetoothctl","' + cmd + '","' + addr + '"]; running: true; onRunningChanged: if (!running) destroy() }',
                                             root)
                                         Qt.callLater(() => { root.devBuffer = []; devProc.running = true })
                                     }

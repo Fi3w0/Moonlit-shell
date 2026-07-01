@@ -3,10 +3,35 @@
 
 input="${1:-}"
 retv="${ROFI_RETV:-0}"
+info="${ROFI_INFO:-}"
+
+run_app() {
+    if command -v "$1" >/dev/null 2>&1; then
+        hyprctl dispatch exec "$1" &>/dev/null
+        return 0
+    fi
+    return 1
+}
+
+run_desktop() {
+    if command -v gtk-launch >/dev/null 2>&1; then
+        gtk-launch "$1" &>/dev/null &
+        return 0
+    fi
+    return 1
+}
 
 # Handle selection — $1 is the displayed text, ROFI_INFO is unreliable in 2.x
 if [[ "$retv" -ge 1 ]]; then
     item="$1"
+    if [[ "$info" == url:* ]]; then
+        xdg-open "${info#url:}" &>/dev/null &
+        exit 0
+    fi
+    if [[ "$info" == file:* ]]; then
+        xdg-open "${info#file:}" &>/dev/null &
+        exit 0
+    fi
     # File search results: item text is the path
     if [[ -e "$item" ]]; then
         xdg-open "$item" &>/dev/null &
@@ -23,12 +48,12 @@ if [[ "$retv" -ge 1 ]]; then
     esac
     # Pinned apps
     case "$item" in
-        Firefox)  hyprctl dispatch exec firefox ;;
-        Discord)  hyprctl dispatch exec discord ;;
-        Kitty)    hyprctl dispatch exec kitty ;;
-        Spotify)  hyprctl dispatch exec spotify-launcher ;;
-        Steam)    hyprctl dispatch exec steam ;;
-        "VS Code") hyprctl dispatch exec code-oss ;;
+        Firefox)  run_app firefox ;;
+        Discord)  run_app discord ;;
+        Kitty)    run_app kitty ;;
+        Spotify)  run_app spotify-launcher ;;
+        Steam)    run_desktop steam || run_desktop steam.desktop || run_app steam ;;
+        "VS Code") run_app code || run_app code-oss ;;
     esac
     exit 0
 fi
@@ -72,7 +97,10 @@ if [[ "$input" == "!"* ]]; then
     exit 0
 fi
 
-# Default: pinned apps
+# Default: pinned apps. Only show them before typing, so drun search
+# does not duplicate Firefox/Steam/VS Code after the first letter.
+[[ -n "$input" ]] && exit 0
+
 printf '\x00theme\x1flistview { columns: 3; lines: 2; }\n'
 
 apps=(
@@ -81,9 +109,9 @@ apps=(
     "Kitty|kitty|run:kitty"
     "Spotify|spotify-launcher|run:spotify-launcher"
     "Steam|steam|run:steam"
-    "VS Code|com.visualstudio.code.oss|run:code-oss"
+    "VS Code|visual-studio-code|run:code"
 )
 for e in "${apps[@]}"; do
-    IFS='|' read -r name icon info <<< "$e"
-    printf '%s\x00icon\x1f%s\x00info\x1f%s\n' "$name" "$icon" "$info"
+    IFS='|' read -r name icon app_info <<< "$e"
+    printf '%s\x00icon\x1f%s\x00info\x1f%s\n' "$name" "$icon" "$app_info"
 done

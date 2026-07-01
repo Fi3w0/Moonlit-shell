@@ -1,8 +1,11 @@
 configuration {
-    modi:         "script:~/.config/rofi/scripts/launcher.sh";
-    show-icons:   true;
-    icon-theme:   "Papirus-Dark";
-    display-script: "";
+    modi:                 "script:~/.config/rofi/scripts/launcher.sh,drun";
+    combi-modes:          "script,drun";
+    combi-display-format: "{text}";
+    show-icons:           true;
+    icon-theme:           "Papirus-Dark";
+    display-script:       "";
+    display-drun:         "";
 }
 
 @theme "~/.config/rofi/themes/catppuccin-mocha.rasi"

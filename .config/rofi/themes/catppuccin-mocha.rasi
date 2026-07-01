@@ -60,7 +60,7 @@ listview {
     padding:          12px;
     spacing:          4px;
     columns:          4;
-    lines:            3;
+    lines:            2;
     fixed-height:     false;
 }
 

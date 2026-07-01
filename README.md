@@ -107,7 +107,7 @@ The bar itself shows workspaces (a pill for the active one, a dot for occupied),
 | Audio | PipeWire and WirePlumber |
 | Theme | Catppuccin Mocha |
 | Font | JetBrainsMono Nerd Font Mono |
-| Icons | Papirus-Dark |
+| Icons | Moonlit-Terminal for GTK/Thunar, Papirus-Dark fallback |
 | Cursor | Bibata-Modern-Classic |
 
 ---

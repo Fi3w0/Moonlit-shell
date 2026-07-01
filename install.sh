@@ -261,7 +261,7 @@ summary() {
   [[ $MULTILIB -eq 1 ]]   && printf '%s│%s   • enable [multilib] repo (for Steam)\n' "$MAUVE" "$R"
   printf '%s│%s   • enable services: NetworkManager · bluetooth · keyd · sddm\n' "$MAUVE" "$R"
   printf '%s│%s   • deploy configs (existing ones backed up first)\n' "$MAUVE" "$R"
-  printf '%s│%s   • GTK + Bibata cursor theme\n' "$MAUVE" "$R"
+  printf '%s│%s   • GTK + Bibata cursor + Moonlit terminal icons\n' "$MAUVE" "$R"
   [[ $SDDM_THEME -eq 1 ]] && printf '%s│%s   • Catppuccin Mocha SDDM theme\n' "$MAUVE" "$R"
   [[ -n "${MON_CONF:-}" ]] && printf '%s│%s   • write detected monitors.conf\n' "$MAUVE" "$R"
   printf '%s│%s   • copy wallpapers → ~/Pictures/Wallpapers\n' "$MAUVE" "$R"
@@ -401,9 +401,11 @@ ph_deploy() {
 }
 
 ph_themes() {
-  # cursor (bundled)
+  # cursor and icon themes (bundled)
   mkdir -p "$HOME/.icons"
   [[ -d .icons/Bibata-Modern-Classic ]] && run cp -an .icons/Bibata-Modern-Classic "$HOME/.icons/" 2>/dev/null
+  mkdir -p "$HOME/.local/share/icons"
+  [[ -d .local/share/icons/Moonlit-Terminal ]] && run cp -an .local/share/icons/Moonlit-Terminal "$HOME/.local/share/icons/" 2>/dev/null
   # GTK catppuccin
   mkdir -p "$HOME/.themes"
   local url="https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-mocha-lavender-standard+default.zip"

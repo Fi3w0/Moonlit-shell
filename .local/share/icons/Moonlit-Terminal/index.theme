@@ -1,0 +1,26 @@
+[Icon Theme]
+Name=Moonlit-Terminal
+Comment=Minimal terminal-style overrides for Moonlit Shell
+Inherits=Papirus-Dark,hicolor
+Directories=scalable/places,scalable/mimetypes,scalable/devices
+
+[scalable/places]
+Size=16
+Type=Scalable
+MinSize=8
+MaxSize=64
+Context=Places
+
+[scalable/mimetypes]
+Size=16
+Type=Scalable
+MinSize=8
+MaxSize=64
+Context=MimeTypes
+
+[scalable/devices]
+Size=16
+Type=Scalable
+MinSize=8
+MaxSize=64
+Context=Devices

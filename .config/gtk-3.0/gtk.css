@@ -1,0 +1,168 @@
+/* Moonlit GTK3 terminal layer. Thunar stays a normal GUI file manager. */
+
+@define-color moon_bg rgba(17, 24, 32, 0.14);
+@define-color moon_panel rgba(23, 33, 44, 0.24);
+@define-color moon_panel_alt rgba(28, 39, 52, 0.22);
+@define-color moon_line rgba(137, 220, 235, 0.26);
+@define-color moon_text #cdd6f4;
+@define-color moon_muted #7f849c;
+@define-color moon_green #a6e3a1;
+@define-color moon_cyan #89dceb;
+@define-color moon_mauve #cba6f7;
+
+window.thunar {
+  font-family: "JetBrainsMono Nerd Font Mono";
+  font-size: 9pt;
+}
+
+window.thunar,
+window.thunar box,
+window.thunar paned,
+window.thunar stack,
+window.thunar scrolledwindow {
+  background-color: @moon_bg;
+  color: @moon_text;
+}
+
+window.thunar toolbar,
+window.thunar headerbar,
+window.thunar .toolbar {
+  background-color: @moon_panel;
+  border-bottom: 1px solid @moon_line;
+  box-shadow: none;
+  padding: 1px;
+}
+
+window.thunar separator {
+  background-color: @moon_line;
+}
+
+window.thunar button,
+window.thunar menubutton,
+window.thunar entry {
+  background: @moon_panel_alt;
+  color: @moon_text;
+  border: 1px solid rgba(205, 214, 244, 0.08);
+  border-radius: 3px;
+  padding: 2px 5px;
+}
+
+window.thunar button:hover,
+window.thunar menubutton:hover {
+  background: rgba(137, 220, 235, 0.10);
+  border-color: rgba(137, 220, 235, 0.32);
+  color: @moon_cyan;
+}
+
+window.thunar entry {
+  caret-color: @moon_green;
+  selection-background-color: rgba(166, 227, 161, 0.25);
+  selection-color: @moon_text;
+}
+
+window.thunar treeview,
+window.thunar iconview,
+window.thunar .view {
+  background-color: rgba(17, 24, 32, 0.08);
+  color: @moon_text;
+  border-color: @moon_line;
+  font-family: "JetBrainsMono Nerd Font Mono";
+  font-size: 9pt;
+}
+
+window.thunar treeview {
+  -ThunarAbstractIconView-row-spacing: 0;
+  -ThunarAbstractIconView-column-spacing: 4;
+}
+
+window.thunar iconview {
+  -ThunarAbstractIconView-row-spacing: 2;
+  -ThunarAbstractIconView-column-spacing: 10;
+}
+
+window.thunar treeview header button {
+  background: rgba(20, 29, 39, 0.55);
+  color: @moon_muted;
+  border-radius: 0;
+  border-width: 0 0 1px 0;
+  border-color: @moon_line;
+  padding: 2px 6px;
+  font-size: 8.5pt;
+}
+
+window.thunar treeview header button:hover {
+  background: rgba(137, 220, 235, 0.08);
+  color: @moon_cyan;
+}
+
+window.thunar treeview:selected,
+window.thunar iconview:selected,
+window.thunar .view:selected {
+  background-color: rgba(166, 227, 161, 0.16);
+  color: @moon_green;
+}
+
+window.thunar treeview:hover,
+window.thunar iconview:hover,
+window.thunar .view:hover {
+  background-color: rgba(205, 214, 244, 0.04);
+}
+
+window.thunar sidebar,
+window.thunar placessidebar,
+window.thunar placessidebar row,
+window.thunar .sidebar {
+  background-color: rgba(23, 33, 44, 0.30);
+  color: @moon_muted;
+  border-right: 1px solid @moon_line;
+}
+
+window.thunar placessidebar row,
+window.thunar .sidebar row {
+  min-height: 22px;
+  padding: 1px 5px;
+}
+
+window.thunar placessidebar row:selected,
+window.thunar .sidebar row:selected {
+  background-color: rgba(203, 166, 247, 0.16);
+  color: @moon_mauve;
+}
+
+window.thunar statusbar,
+window.thunar .statusbar {
+  background-color: rgba(23, 33, 44, 0.22);
+  color: @moon_muted;
+  border-top: 1px solid @moon_line;
+  font-size: 8.5pt;
+}
+
+window.thunar menu,
+window.thunar menuitem {
+  background-color: @moon_panel;
+  color: @moon_text;
+}
+
+window.thunar menuitem:hover {
+  background-color: rgba(137, 220, 235, 0.14);
+  color: @moon_cyan;
+}
+
+window.thunar image,
+window.thunar button image,
+window.thunar placessidebar image {
+  -gtk-icon-style: symbolic;
+  -gtk-icon-effect: none;
+  color: @moon_cyan;
+  opacity: 0.82;
+  -gtk-icon-transform: scale(0.86);
+}
+
+window.thunar .view image,
+window.thunar treeview image,
+window.thunar iconview image {
+  -gtk-icon-effect: none;
+  color: @moon_cyan;
+  opacity: 0.78;
+  -gtk-icon-transform: scale(0.82);
+}

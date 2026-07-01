@@ -42,8 +42,8 @@ PanelWindow {
     readonly property color   pink:     "#f38ba8"
     readonly property color   mauve:    "#cba6f7"
 
-    // ← adjust these two paths to your home directory
-    readonly property string wallDir: "/home/fiw/Pictures/Wallpapers"
+    readonly property string homeDir: Quickshell.env("HOME")
+    readonly property string wallDir: homeDir + "/Pictures/Wallpapers"
 
     // ── Apply a wallpaper via awww (animated grow transition; handles gifs) ──
     // Apply via awww and record the pick (path passed as $1 to dodge quoting issues)
@@ -78,8 +78,8 @@ PanelWindow {
     FileView {
         id: currentFile
         path: root.outputName
-              ? "/home/fiw/.cache/wallpaper-" + root.outputName
-              : "/home/fiw/.cache/wallpaper-current"
+              ? root.homeDir + "/.cache/wallpaper-" + root.outputName
+              : root.homeDir + "/.cache/wallpaper-current"
         onLoaded: root.appliedPath = text().trim()
     }
 

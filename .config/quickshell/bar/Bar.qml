@@ -12,6 +12,7 @@ PanelWindow {
     required property string activePanel
     signal openPanel(string name)
     signal showOsd(string kind, real value)
+    signal showToast(string app, string title, string body)
 
     // ── Colors ───────────────────────────────────────────────────────────
     readonly property color crust:    "#11111b"
@@ -29,6 +30,7 @@ PanelWindow {
     readonly property color maroon:   "#eba0ac"
     readonly property color green:    "#a6e3a1"
     readonly property color yellow:   "#f9e2af"
+    readonly property color peach:    "#fab387"
     readonly property color red:      "#f38ba8"
     readonly property color mauve:    "#cba6f7"
 
@@ -44,6 +46,12 @@ PanelWindow {
     // ── Battery via sysfs ────────────────────────────────────────────────
     property real battPct:      100
     property bool battCharging: false
+    property int updateCount: 0
+    property int pacmanUpdateCount: 0
+    property int aurUpdateCount: 0
+    property string aurHelper: ""
+    property bool recordingActive: false
+    property bool tempWarned: false
 
     Process {
         id: battProc
@@ -67,7 +75,47 @@ PanelWindow {
     SystemStats { id: sysStats }
 
     // ── Rofi via Hyprland dispatch (gets proper Wayland env) ─────────────
-    Process { id: rofiProc; command: ["hyprctl", "dispatch", "exec", "rofi -show script"] }
+    Process { id: rofiProc; command: ["hyprctl", "dispatch", "exec", "rofi -show combi"] }
+
+    Process {
+        id: updateProc
+        command: ["sh", "-c", "p=$(pacman -Qu 2>/dev/null | wc -l); if command -v paru >/dev/null 2>&1; then h=paru; a=$(paru -Qua 2>/dev/null | wc -l); elif command -v yay >/dev/null 2>&1; then h=yay; a=$(yay -Qua 2>/dev/null | wc -l); else h=; a=0; fi; printf '%s %s %s\\n' \"$p\" \"$a\" \"$h\""]
+        stdout: SplitParser {
+            onRead: d => {
+                var p = d.trim().split(/\s+/)
+                root.pacmanUpdateCount = parseInt(p[0]) || 0
+                root.aurUpdateCount = parseInt(p[1]) || 0
+                root.aurHelper = p.length >= 3 ? p[2] : ""
+                root.updateCount = root.pacmanUpdateCount + root.aurUpdateCount
+            }
+        }
+    }
+    Timer {
+        interval: 1800000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: updateProc.running = true
+    }
+
+    Process {
+        id: recordingProc
+        command: ["sh", "-c", "pgrep -x 'obs|wf-recorder|gpu-screen-recorder|kooha|simplescreenrecorder' >/dev/null && echo 1 || echo 0"]
+        stdout: SplitParser { onRead: d => root.recordingActive = d.trim() === "1" }
+    }
+    Timer {
+        interval: 5000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: recordingProc.running = true
+    }
+
+    Timer {
+        interval: 10000; running: true; repeat: true
+        onTriggered: {
+            if (sysStats.cpuTemp >= 75 && !root.tempWarned) {
+                root.showToast("Moonlit", "Temperature warning", "CPU is " + Math.round(sysStats.cpuTemp) + "C")
+                root.tempWarned = true
+            } else if (sysStats.cpuTemp < 68) {
+                root.tempWarned = false
+            }
+        }
+    }
 
     // ── Window setup ─────────────────────────────────────────────────────
     anchors { top: true; left: true; right: true }
@@ -187,6 +235,17 @@ PanelWindow {
             }
 
             BarMod {
+                icon: "󰔏"; label: ""
+                value: Math.round(sysStats.cpuTemp) + "C"
+                iconSize: 15
+                iconColor: root.peach
+                visible: sysStats.cpuTemp >= 75
+                active: true
+                barColors: root
+                onClicked: root.openPanel("sysmon")
+            }
+
+            BarMod {
                 icon: root.battCharging ? "󰂄" : (root.battPct > 20 ? "󰁹" : "󰁺")
                 label: ""
                 value: root.battPct + "%"
@@ -206,7 +265,33 @@ PanelWindow {
                 onClicked: root.openPanel("net")
             }
 
+            BarMod {
+                icon: "󰑓"; label: ""
+                value: root.updateCount.toString()
+                iconSize: 24
+                iconColor: root.mauve
+                visible: root.updateCount > 0
+                barColors: root
+                onClicked: root.showToast(
+                    "Moonlit",
+                    "Updates available",
+                    root.aurHelper !== ""
+                        ? root.pacmanUpdateCount + " pacman and " + root.aurUpdateCount + " AUR updates are waiting when you have time <3"
+                        : root.pacmanUpdateCount + " pacman updates are waiting when you have time <3"
+                )
+            }
+
             Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+
+            TrayBtn {
+                icon: "󰕧"
+                iconSize: 19
+                iconColor: root.recordingActive ? root.red : root.overlay0
+                visible: root.recordingActive
+                active: true
+                barColors: root
+                onClicked: root.showToast("Moonlit", "Recording active", "A screen recording app is currently running")
+            }
 
             // Bluetooth
             TrayBtn {

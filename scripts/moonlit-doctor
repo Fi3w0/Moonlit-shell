@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+set -u
+
+ok_count=0
+warn_count=0
+fail_count=0
+
+if [[ -t 1 ]]; then
+  R=$'\e[0m'
+  GREEN=$'\e[38;2;166;227;161m'
+  YELLOW=$'\e[38;2;249;226;175m'
+  RED=$'\e[38;2;243;139;168m'
+  BLUE=$'\e[38;2;137;180;250m'
+  DIM=$'\e[2m'
+else
+  R=''; GREEN=''; YELLOW=''; RED=''; BLUE=''; DIM=''
+fi
+
+ok() { ok_count=$((ok_count + 1)); printf '%s✓%s %s\n' "$GREEN" "$R" "$*"; }
+warn() { warn_count=$((warn_count + 1)); printf '%s!%s %s\n' "$YELLOW" "$R" "$*"; }
+fail() { fail_count=$((fail_count + 1)); printf '%s✗%s %s\n' "$RED" "$R" "$*"; }
+info() { printf '%s::%s %s\n' "$BLUE" "$R" "$*"; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+check_cmd() {
+  local cmd="$1"
+  local label="${2:-$1}"
+  if have "$cmd"; then ok "$label found"; else fail "$label missing"; fi
+}
+
+check_optional_cmd() {
+  local cmd="$1"
+  local label="${2:-$1}"
+  if have "$cmd"; then ok "$label found"; else warn "$label missing"; fi
+}
+
+check_file() {
+  local path="$1"
+  local label="${2:-$1}"
+  if [[ -f "$path" ]]; then ok "$label exists"; else fail "$label missing"; fi
+}
+
+check_dir() {
+  local path="$1"
+  local label="${2:-$1}"
+  if [[ -d "$path" ]]; then ok "$label exists"; else fail "$label missing"; fi
+}
+
+check_service() {
+  local svc="$1"
+  if have systemctl && systemctl is-enabled "$svc" >/dev/null 2>&1; then
+    ok "$svc enabled"
+  else
+    warn "$svc is not enabled"
+  fi
+}
+
+check_user_service() {
+  local svc="$1"
+  if have systemctl && systemctl --user is-active "$svc" >/dev/null 2>&1; then
+    ok "$svc user service active"
+  else
+    warn "$svc user service not active"
+  fi
+}
+
+check_font() {
+  if have fc-match && fc-match "JetBrainsMono Nerd Font Mono" | grep -qi "JetBrains"; then
+    ok "JetBrainsMono Nerd Font Mono available"
+  else
+    fail "JetBrainsMono Nerd Font Mono missing"
+  fi
+}
+
+check_battery() {
+  local bats=()
+  shopt -s nullglob
+  bats=(/sys/class/power_supply/BAT*)
+  shopt -u nullglob
+  if (( ${#bats[@]} > 0 )); then
+    ok "battery detected (${bats[0]##*/})"
+  else
+    warn "no battery detected"
+  fi
+}
+
+check_brightness() {
+  local backs=()
+  shopt -s nullglob
+  backs=(/sys/class/backlight/*)
+  shopt -u nullglob
+  if (( ${#backs[@]} > 0 )); then
+    ok "backlight detected (${backs[0]##*/})"
+  else
+    warn "no backlight device detected"
+  fi
+}
+
+check_audio() {
+  if have pactl && pactl info >/dev/null 2>&1; then
+    ok "PipeWire/Pulse audio responds"
+  else
+    warn "audio server did not respond to pactl"
+  fi
+}
+
+check_network() {
+  if have nmcli && nmcli general status >/dev/null 2>&1; then
+    ok "NetworkManager responds"
+  else
+    warn "NetworkManager did not respond"
+  fi
+}
+
+check_quickshell() {
+  if have quickshell; then
+    ok "quickshell found"
+    if quickshell list >/dev/null 2>&1; then
+      ok "quickshell IPC responds"
+    else
+      warn "quickshell is installed but no running instance responded"
+    fi
+  else
+    fail "quickshell missing"
+  fi
+}
+
+check_aur_helper() {
+  if have paru; then
+    ok "AUR helper found: paru"
+  elif have yay; then
+    ok "AUR helper found: yay"
+  else
+    warn "no AUR helper found (paru/yay)"
+  fi
+}
+
+check_wallpapers() {
+  if [[ -d "$HOME/Pictures/Wallpapers" ]] && find "$HOME/Pictures/Wallpapers" -maxdepth 1 -type f | grep -q .; then
+    ok "wallpapers available"
+  else
+    warn "no wallpapers found in ~/Pictures/Wallpapers"
+  fi
+  if [[ -s "$HOME/.cache/wallpaper-current" ]]; then
+    ok "current wallpaper cache exists"
+  else
+    warn "current wallpaper cache missing"
+  fi
+}
+
+check_paths() {
+  local repo="${1:-}"
+  if [[ -n "$repo" && -d "$repo/.git" ]]; then
+    if git -C "$repo" grep -n '/home/fiw' -- ':!README.md' ':!MANUAL-INSTALL.md' ':!assets/**' >/tmp/moonlit-doctor-paths.$$ 2>/dev/null; then
+      fail "repo contains hardcoded /home/fiw paths"
+      sed 's/^/  /' "/tmp/moonlit-doctor-paths.$$"
+    else
+      ok "repo has no hardcoded /home/fiw paths"
+    fi
+    rm -f "/tmp/moonlit-doctor-paths.$$"
+  fi
+}
+
+main() {
+  local repo="${1:-}"
+  info "Moonlit doctor"
+  printf '%s\n\n' "${DIM}Pass a repo path to also check tracked files: moonlit-doctor /path/to/Moonlit-shell${R}"
+
+  info "Core commands"
+  check_cmd hyprland Hyprland
+  check_cmd quickshell Quickshell
+  check_cmd rofi Rofi
+  check_cmd kitty Kitty
+  check_cmd thunar Thunar
+  check_cmd fish Fish
+  check_cmd nvim Neovim
+
+  info "Wayland desktop helpers"
+  check_cmd grim grim
+  check_cmd slurp slurp
+  check_cmd wl-copy wl-clipboard
+  check_cmd cliphist cliphist
+  check_cmd awww awww
+  check_optional_cmd hyprsunset hyprsunset
+
+  info "Hardware and services"
+  check_cmd brightnessctl brightnessctl
+  check_cmd rfkill rfkill
+  check_cmd pactl pactl
+  check_cmd nmcli NetworkManager
+  check_optional_cmd bluetoothctl bluetoothctl
+  check_service NetworkManager
+  check_service bluetooth
+  check_service keyd
+  check_audio
+  check_network
+  check_battery
+  check_brightness
+
+  info "Theme assets"
+  check_font
+  check_dir "$HOME/.local/share/icons/Moonlit-Terminal" "Moonlit-Terminal icon theme"
+  check_dir "$HOME/.icons/Bibata-Modern-Classic" "Bibata cursor theme"
+
+  info "Moonlit state"
+  check_quickshell
+  check_aur_helper
+  check_wallpapers
+  check_file "$HOME/.config/quickshell/shell.qml" "live quickshell config"
+  check_file "$HOME/.config/hypr/hyprland.conf" "live Hyprland config"
+  check_file "$HOME/.config/rofi/config.rasi" "live Rofi config"
+  check_paths "$repo"
+
+  printf '\n%sSummary:%s %d ok, %d warnings, %d failures\n' "$BLUE" "$R" "$ok_count" "$warn_count" "$fail_count"
+  if (( fail_count > 0 )); then
+    exit 1
+  fi
+}
+
+main "$@"

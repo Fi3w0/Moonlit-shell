@@ -79,7 +79,7 @@ PanelWindow {
 
     Process {
         id: updateProc
-        command: ["sh", "-c", "p=$(pacman -Qu 2>/dev/null | wc -l); if command -v paru >/dev/null 2>&1; then h=paru; a=$(paru -Qua 2>/dev/null | wc -l); elif command -v yay >/dev/null 2>&1; then h=yay; a=$(yay -Qua 2>/dev/null | wc -l); else h=; a=0; fi; printf '%s %s %s\\n' \"$p\" \"$a\" \"$h\""]
+        command: ["sh", "-c", "if command -v checkupdates >/dev/null 2>&1; then p=$(checkupdates 2>/dev/null | wc -l); else p=$(pacman -Qu 2>/dev/null | wc -l); fi; if command -v paru >/dev/null 2>&1; then h=paru; a=$(paru -Qua 2>/dev/null | wc -l); elif command -v yay >/dev/null 2>&1; then h=yay; a=$(yay -Qua 2>/dev/null | wc -l); else h=; a=0; fi; printf '%s %s %s\\n' \"$p\" \"$a\" \"$h\""]
         stdout: SplitParser {
             onRead: d => {
                 var p = d.trim().split(/\s+/)

@@ -33,12 +33,14 @@ logh() { printf '\n=== %s ===\n' "$*" >>"$LOG"; }
 
 # ── colours (catppuccin mocha) ────────────────────────────────────
 if [[ -t 1 ]]; then
+  TTY=1
   R=$'\e[0m'; B=$'\e[1m'; DIM=$'\e[2m'
   MAUVE=$'\e[38;2;203;166;247m'; GREEN=$'\e[38;2;166;227;161m'
   YELLOW=$'\e[38;2;249;226;175m'; RED=$'\e[38;2;243;139;168m'
   BLUE=$'\e[38;2;137;180;250m';  SKY=$'\e[38;2;137;220;235m'
   GREY=$'\e[38;2;108;112;134m';  LAV=$'\e[38;2;180;190;254m'
 else
+  TTY=0
   R=''; B=''; DIM=''; MAUVE=''; GREEN=''; YELLOW=''; RED=''; BLUE=''; SKY=''; GREY=''; LAV=''
 fi
 
@@ -291,7 +293,10 @@ phase() {                      # phase "Label" function_name
   logh "[$PHASE_NO/$PHASE_TOTAL] $label"
   ( "$fn" ) >>"$LOG" 2>&1 &
   local pid=$!
-  if [[ "$STYLE" == bar ]]; then bar_anim "$pid" "$label"; else spin_anim "$pid" "$label"; fi
+  # No TTY (piped / CI / logged): skip the carriage-return animation, print one plain line.
+  if [[ $TTY -eq 0 ]]; then
+    printf ' • [%d/%d] %s…\n' "$PHASE_NO" "$PHASE_TOTAL" "$label"
+  elif [[ "$STYLE" == bar ]]; then bar_anim "$pid" "$label"; else spin_anim "$pid" "$label"; fi
   wait "$pid"; local rc=$?
   end_line "$rc" "$label"
   if [[ $rc -ne 0 ]]; then
@@ -328,7 +333,7 @@ bar_anim() {
 
 end_line() {
   local rc="$1" label="$2"
-  printf '\r\e[K'
+  [[ $TTY -eq 1 ]] && printf '\r\e[K'
   if [[ $rc -eq 0 ]]; then printf ' %s✓%s %s\n' "$GREEN" "$R" "$label"
   else                     printf ' %s✗%s %s\n' "$RED" "$R" "$label"; fi
 }

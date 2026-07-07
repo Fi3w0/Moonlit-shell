@@ -116,8 +116,7 @@ sudo pacman -S openssh
 grep -q AuthenticAMD /proc/cpuinfo && M=k10temp || M=coretemp
 echo "$M" | sudo tee /etc/modules-load.d/moonlit-temp.conf
 
-# Airplane mode toggle in quick settings
-sudo pacman -S rfkill
+# Airplane mode toggle uses `rfkill` — already provided by util-linux (base), no install needed
 
 # Battery stats in system monitor panel
 sudo pacman -S upower
@@ -125,8 +124,8 @@ sudo pacman -S upower
 # Ranger image previews
 sudo pacman -S w3m python-pillow
 
-# Ranger archive handling
-sudo pacman -S atool p7zip unrar unzip
+# Ranger archive handling (7zip from step 2.12 already provides p7zip)
+sudo pacman -S atool unrar unzip
 
 # Fish aliases
 sudo pacman -S docker

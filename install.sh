@@ -259,7 +259,7 @@ summary() {
   printf '%s│%s %sactions:%s\n' "$MAUVE" "$R" "$B$YELLOW" "$R"
   printf '%s│%s   • install/ensure yay (AUR helper)\n' "$MAUVE" "$R"
   [[ $MULTILIB -eq 1 ]]   && printf '%s│%s   • enable [multilib] repo (for Steam)\n' "$MAUVE" "$R"
-  printf '%s│%s   • enable services: NetworkManager · bluetooth · keyd · sddm\n' "$MAUVE" "$R"
+  printf '%s│%s   • enable services: NetworkManager · bluetooth · keyd · sddm · paccache.timer\n' "$MAUVE" "$R"
   printf '%s│%s   • detect CPU · load temp sensor module (k10temp / coretemp)\n' "$MAUVE" "$R"
   printf '%s│%s   • deploy configs (existing ones backed up first)\n' "$MAUVE" "$R"
   printf '%s│%s   • GTK + Bibata cursor + Moonlit terminal icons\n' "$MAUVE" "$R"
@@ -374,6 +374,8 @@ ph_services() {
   run sudo systemctl enable --now NetworkManager || warn "NetworkManager enable failed"
   run sudo systemctl enable --now bluetooth      || warn "bluetooth enable failed"
   run sudo systemctl enable --now keyd           || warn "keyd enable failed"
+  # weekly pacman cache trim (paccache ships with pacman-contrib, already installed)
+  run sudo systemctl enable --now paccache.timer || warn "paccache.timer enable failed"
   # enable (not --now) so we don't kill the current TTY session mid-install
   run sudo systemctl enable sddm                 || warn "sddm enable failed"
   return 0

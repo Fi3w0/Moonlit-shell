@@ -148,7 +148,7 @@ It asks for `sudo` up front, shows the full package and action list to confirm b
 
 | Tier | What you get |
 |------|--------------|
-| **Minimal** | Hyprland and Quickshell desktop, all sensors, SDDM (no theme) |
+| **Minimal** | Hyprland and Quickshell desktop, SDDM (no theme) |
 | **Developer** | Minimal plus VS Code, Neovim config, Ranger, dgop |
 | **Full** ★ | Everything plus the Catppuccin SDDM theme and Discord/Steam/Spotify |
 
@@ -191,7 +191,7 @@ A few behaviors worth knowing:
 - The bar polls `/proc` and `sysfs` directly, with no external monitoring daemon.
 - Caffeine mode inhibits idle so there is no accidental suspend during presentations or long downloads.
 - Night Light toggles `hyprsunset -t 4500` for warm color at night.
-- Airplane mode calls `rfkill block all`, so make sure `rfkill` is installed if you use it.
+- Airplane mode calls `rfkill block all`; the `rfkill` tool ships with `util-linux`, so it is always available.
 
 ---
 

@@ -53,7 +53,13 @@ Item {
 
     Process {
         id: tempProc
-        command: ["sh", "-c", "sensors 2>/dev/null | awk '/^CPU:/{gsub(/[^0-9.]/,\"\",$2); print $2; exit}'"]
+        // Read CPU temp straight from sysfs (~3ms) instead of `sensors` (~45ms).
+        // Portable across hardware, three fallback tiers:
+        //  1) hwmon by chip NAME (hwmonN isn't stable across reboots) — AMD
+        //     k10temp, Intel coretemp, ARM cpu_thermal/soc_thermal, ThinkPad, acpitz
+        //  2) thermal zone whose type looks like a CPU/package sensor (Intel
+        //     x86_pkg_temp, ARM SoCs, …)  3) first thermal zone as last resort.
+        command: ["sh", "-c", 'for n in k10temp coretemp cpu_thermal soc_thermal thinkpad acpitz; do for h in /sys/class/hwmon/*; do read -r hn < "$h/name" 2>/dev/null || continue; [ "$hn" = "$n" ] || continue; read -r t < "$h/temp1_input" 2>/dev/null || continue; [ -n "$t" ] && [ "$t" -gt 0 ] && { echo $((t/1000)); exit 0; }; done; done; for z in /sys/class/thermal/thermal_zone*; do read -r ty < "$z/type" 2>/dev/null || continue; case "$ty" in x86_pkg_temp|*cpu*|*CPU*|*pkg*|*soc*) read -r t < "$z/temp" 2>/dev/null || continue; [ -n "$t" ] && [ "$t" -gt 0 ] && { echo $((t/1000)); exit 0; }; ;; esac; done; read -r t < /sys/class/thermal/thermal_zone0/temp 2>/dev/null && [ -n "$t" ] && [ "$t" -gt 0 ] && echo $((t/1000))']
         stdout: SplitParser {
             onRead: data => { var v = parseFloat(data); if (v > 0) root.cpuTemp = v }
         }
@@ -71,14 +77,27 @@ Item {
         stdout: SplitParser { onRead: data => root.wifiSsid = data.trim() }
     }
 
+    // Cheap, fast-changing stats — /proc + sysfs reads, ~10ms total.
+    function refreshFast() {
+        cpuProc.running     = true
+        ramProc.running     = true
+        tempProc.running    = true
+        wifiSigProc.running = true
+    }
+    // Everything, including the expensive nmcli SSID lookup. Used on wake.
+    function refresh() {
+        refreshFast()
+        wifiSsidProc.running = true
+    }
+
+    // Fast tick: responsive meters, all lightweight reads.
     Timer {
         interval: 5000; running: root.enabled; repeat: true; triggeredOnStart: true
-        onTriggered: {
-            cpuProc.running     = true
-            ramProc.running     = true
-            tempProc.running    = true
-            wifiSigProc.running = true
-            wifiSsidProc.running= true
-        }
+        onTriggered: root.refreshFast()
+    }
+    // Slow tick: SSID rarely changes and nmcli is expensive (~20ms).
+    Timer {
+        interval: 30000; running: root.enabled; repeat: true; triggeredOnStart: true
+        onTriggered: wifiSsidProc.running = true
     }
 }

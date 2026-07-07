@@ -76,7 +76,7 @@ done
 # ══════════════════════════════════════════════════════════════════
 #  PACKAGE / CONFIG SETS
 # ══════════════════════════════════════════════════════════════════
-# Minimal: a working Hyprland + Quickshell desktop, all sensors, SDDM
+# Minimal: a working Hyprland + Quickshell desktop, SDDM
 # (login manager) but with NO custom SDDM theme.
 PAC_MINIMAL=(
   hyprland hypridle hyprlock hyprsunset
@@ -88,8 +88,8 @@ PAC_MINIMAL=(
   kitty rofi thunar tumbler ffmpegthumbnailer gvfs gnome-themes-extra xdg-utils
   fish neovim git
   ttf-jetbrains-mono-nerd papirus-icon-theme
-  brightnessctl keyd htop
-  lm_sensors rfkill upower
+  brightnessctl keyd htop pacman-contrib
+  rfkill upower
   firefox mpv imv
   fastfetch
   unzip wget
@@ -241,8 +241,8 @@ build_sets() {
   esac
 
   # phase count for the progress bar
-  PHASE_TOTAL=7
-  [[ $MULTILIB -eq 1 ]] && PHASE_TOTAL=8
+  PHASE_TOTAL=8
+  [[ $MULTILIB -eq 1 ]] && PHASE_TOTAL=9
 }
 
 # ── show exactly what will happen, then confirm ───────────────────
@@ -260,6 +260,7 @@ summary() {
   printf '%s│%s   • install/ensure yay (AUR helper)\n' "$MAUVE" "$R"
   [[ $MULTILIB -eq 1 ]]   && printf '%s│%s   • enable [multilib] repo (for Steam)\n' "$MAUVE" "$R"
   printf '%s│%s   • enable services: NetworkManager · bluetooth · keyd · sddm\n' "$MAUVE" "$R"
+  printf '%s│%s   • detect CPU · load temp sensor module (k10temp / coretemp)\n' "$MAUVE" "$R"
   printf '%s│%s   • deploy configs (existing ones backed up first)\n' "$MAUVE" "$R"
   printf '%s│%s   • GTK + Bibata cursor + Moonlit terminal icons\n' "$MAUVE" "$R"
   [[ $SDDM_THEME -eq 1 ]] && printf '%s│%s   • Catppuccin Mocha SDDM theme\n' "$MAUVE" "$R"
@@ -375,6 +376,24 @@ ph_services() {
   run sudo systemctl enable --now keyd           || warn "keyd enable failed"
   # enable (not --now) so we don't kill the current TTY session mid-install
   run sudo systemctl enable sddm                 || warn "sddm enable failed"
+  return 0
+}
+
+# Load the kernel temp-sensor module for this CPU now and on every boot, so the
+# bar's sysfs temp readout works on first login. SystemStats.qml auto-picks the
+# right hwmon at runtime; this just guarantees the module is present. Non-AMD/
+# Intel CPUs (ARM SoCs, etc.) fall back to thermal_zone, which needs no module.
+ph_sensors() {
+  local vendor mod=""
+  vendor="$(awk -F: '/^vendor_id/{gsub(/ /,"",$2); print $2; exit}' /proc/cpuinfo)"
+  case "$vendor" in
+    AuthenticAMD) mod="k10temp"  ;;
+    GenuineIntel) mod="coretemp" ;;
+    *) log "CPU vendor '$vendor' has no known hwmon module - using thermal_zone fallback"; return 0 ;;
+  esac
+  run sudo modprobe "$mod" 2>/dev/null || warn "modprobe $mod failed (temp will fall back to thermal_zone)"
+  printf '%s\n' "$mod" | run sudo tee /etc/modules-load.d/moonlit-temp.conf >/dev/null \
+    || warn "could not persist $mod to /etc/modules-load.d"
   return 0
 }
 
@@ -578,6 +597,7 @@ main() {
   phase "Installing packages (pacman)"     ph_pacman     || die "Package installation failed."
   phase "Building AUR packages"            ph_aur        || warn "Some AUR packages failed - check the log."
   phase "Enabling system services"         ph_services
+  phase "Configuring CPU temp sensor"      ph_sensors    || warn "temp sensor setup failed"
   phase "Deploying dotfiles"               ph_deploy     || die "Deploying configs failed."
   phase "Installing themes"                ph_themes
   phase "Post-install setup"               ph_post

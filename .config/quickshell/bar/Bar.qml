@@ -94,14 +94,46 @@ PanelWindow {
         interval: 1800000; running: true; repeat: true; triggeredOnStart: true
         onTriggered: updateProc.running = true
     }
+    // Wake detector: QML timers pause during suspend, so on resume the
+    // wall-clock jumps far more than the tick interval. When it does, the
+    // machine just woke from sleep -> refresh everything immediately instead
+    // of waiting out each widget's own poll interval.
+    Timer {
+        property double last: Date.now()
+        interval: 30000; running: true; repeat: true
+        onTriggered: {
+            var now = Date.now()
+            if (now - last > interval * 3) {
+                battProc.running = true
+                recordingProc.running = true
+                sysStats.refresh()
+                updateRecheck.restart()
+            }
+            last = now
+        }
+    }
+    // Debounce: re-check a few seconds after a pacman transaction settles.
+    Timer {
+        id: updateRecheck
+        interval: 4000; repeat: false
+        onTriggered: updateProc.running = true
+    }
+    // Re-run the check whenever pacman writes to its log (install/upgrade/remove).
+    FileView {
+        path: "/var/log/pacman.log"
+        watchChanges: true
+        onFileChanged: updateRecheck.restart()
+    }
 
     Process {
         id: recordingProc
         command: ["sh", "-c", "pgrep -x 'obs|wf-recorder|gpu-screen-recorder|kooha|simplescreenrecorder' >/dev/null && echo 1 || echo 0"]
         stdout: SplitParser { onRead: d => root.recordingActive = d.trim() === "1" }
     }
+    // Recording is a rarely-toggled background status; 10s keeps pgrep (~26ms)
+    // off the hot path without a noticeable delay on the indicator.
     Timer {
-        interval: 5000; running: true; repeat: true; triggeredOnStart: true
+        interval: 10000; running: true; repeat: true; triggeredOnStart: true
         onTriggered: recordingProc.running = true
     }
 

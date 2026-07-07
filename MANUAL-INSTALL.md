@@ -74,7 +74,8 @@ sudo pacman -S ttf-jetbrains-mono-nerd papirus-icon-theme
 ### 2.9 System Utilities
 
 ```bash
-sudo pacman -S brightnessctl keyd htop
+sudo pacman -S brightnessctl keyd htop pacman-contrib
+# pacman-contrib provides `checkupdates` (bar update count) and `paccache` (cache trim, step 3)
 ```
 
 ### 2.10 Apps & Media
@@ -110,8 +111,10 @@ sudo pacman -S openssh
 ### 2.14 Optional (improves functionality)
 
 ```bash
-# CPU temp in bar
-sudo pacman -S lm_sensors
+# CPU temp in bar — read directly from sysfs, no package needed.
+# The kernel usually auto-loads the sensor module; to guarantee it on boot:
+grep -q AuthenticAMD /proc/cpuinfo && M=k10temp || M=coretemp
+echo "$M" | sudo tee /etc/modules-load.d/moonlit-temp.conf
 
 # Airplane mode toggle in quick settings
 sudo pacman -S rfkill
@@ -138,6 +141,7 @@ sudo pacman -S docker
 ```bash
 sudo systemctl enable --now NetworkManager bluetooth
 sudo systemctl enable --now keyd
+sudo systemctl enable --now paccache.timer   # weekly pacman cache trim (needs pacman-contrib)
 sudo systemctl enable sddm
 ```
 

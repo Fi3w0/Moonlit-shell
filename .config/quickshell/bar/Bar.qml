@@ -34,6 +34,10 @@ PanelWindow {
     readonly property color red:      "#f38ba8"
     readonly property color mauve:    "#cba6f7"
 
+    // Accent — moonlight mauve (fresh aesthetic)
+    readonly property color accent:     mauve
+    readonly property color accentSoft: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.16)
+
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
 
     // ── Native data ──────────────────────────────────────────────────────
@@ -166,32 +170,30 @@ PanelWindow {
         }
     }
 
-    Rectangle {
+    Item {
         anchors.fill: parent
-        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.62)
 
-        Rectangle {
-            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-            height: 1
-            color: Qt.rgba(0,0,0,0.4)
-        }
+        // ── LEFT ISLAND ──────────────────────────────────────────────────
+        Island {
+            anchors { left: parent.left; verticalCenter: parent.verticalCenter; leftMargin: 8 }
+            implicitWidth: leftRow.implicitWidth + 20
 
-        // ── LEFT — anchored, never shifts ────────────────────────────────
-        RowLayout {
-            anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 10 }
-            spacing: 7
+            RowLayout {
+                id: leftRow
+                anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 10 }
+                spacing: 7
 
             // ── LEFT ─────────────────────────────────────────────────────
             // Arch Linux logo — nf-linux-archlinux 
             Item {
-                implicitWidth: 44; implicitHeight: 38
+                implicitWidth: 38; implicitHeight: 30
                 Layout.alignment: Qt.AlignVCenter
 
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: root.activePanel === "launcher" ? root.pink : root.maroon
-                    font { pixelSize: 32; family: root.nfFont }
+                    color: root.activePanel === "launcher" ? root.accent : root.maroon
+                    font { pixelSize: 26; family: root.nfFont }
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
@@ -244,12 +246,62 @@ PanelWindow {
                 }
             }
 
+            }
         }
 
-        // ── RIGHT — anchored right, always tight ─────────────────────────
-        RowLayout {
-            anchors { right: parent.right; top: parent.top; bottom: parent.bottom; rightMargin: 10 }
-            spacing: 7
+        // ── CENTER ISLAND — the moon ─────────────────────────────────────
+        Island {
+            anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+            implicitWidth: moonRow.implicitWidth + 26
+            color: root.activePanel === "cal" ? root.accentSoft
+                 : Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.72)
+            border.color: root.activePanel === "cal"
+                        ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.35)
+                        : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+            Behavior on color { ColorAnimation { duration: 160 } }
+            Behavior on border.color { ColorAnimation { duration: 160 } }
+
+            RowLayout {
+                id: moonRow
+                anchors.centerIn: parent
+                spacing: 8
+
+                Text {
+                    text: ""
+                    color: root.accent
+                    font { pixelSize: 14; family: root.nfFont }
+                    Layout.alignment: Qt.AlignVCenter
+                }
+                Text {
+                    id: clockTxt
+                    color: root.activePanel === "cal" ? root.accent : root.text
+                    font { pixelSize: 13; bold: true; family: root.nfFont }
+                    Layout.alignment: Qt.AlignVCenter
+                    Behavior on color { ColorAnimation { duration: 140 } }
+                    Timer {
+                        interval: 1000; running: true; repeat: true; triggeredOnStart: true
+                        onTriggered: clockTxt.text = Qt.formatDateTime(new Date(), "hh:mm")
+                    }
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.openPanel("cal")
+            }
+        }
+
+        // ── RIGHT ISLAND ─────────────────────────────────────────────────
+        Island {
+            anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 8 }
+            implicitWidth: rightRow.implicitWidth + 20
+
+            RowLayout {
+                id: rightRow
+                anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 10 }
+                spacing: 7
             BarMod {
                 icon: ""; label: "RAM"
                 value: (sysStats.ramUsedMb / 1024).toFixed(1) + "G"
@@ -364,55 +416,28 @@ PanelWindow {
                 onClicked: root.openPanel("qs")
             }
 
-            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
-
-            // Clock
-            Item {
-                implicitHeight: 28
-                implicitWidth: clockTxt.implicitWidth + 20
-                Layout.alignment: Qt.AlignVCenter
-
-                Rectangle {
-                    anchors.fill: parent; radius: 999
-                    color: root.activePanel === "cal"
-                           ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.16)
-                           : (clockHov.containsMouse ? Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.07) : "transparent")
-                    Behavior on color { ColorAnimation { duration: 140 } }
-                }
-
-                Text {
-                    id: clockTxt
-                    anchors.centerIn: parent
-                    color: root.activePanel === "cal" ? root.pink : root.text
-                    font { pixelSize: 13; bold: true; family: root.nfFont }
-                    Behavior on color { ColorAnimation { duration: 140 } }
-                    Timer {
-                        interval: 1000; running: true; repeat: true; triggeredOnStart: true
-                        onTriggered: clockTxt.text = Qt.formatDateTime(new Date(), "hh:mm")
-                    }
-                }
-
-                MouseArea {
-                    id: clockHov
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.openPanel("cal")
-                }
-            }
-
-            // Power — nf-fa-power_off 
+            // Power — nf-fa-power_off
             TrayBtn {
                 icon: ""
                 iconColor: root.maroon
                 barColors: root
                 onClicked: root.openPanel("power")
-                activeHoverColor: Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.16)
+                activeHoverColor: root.accentSoft
+            }
             }
         }
     }
 
     // ── Inline components ────────────────────────────────────────────────
+
+    // Floating pill "island" — the fresh-aesthetic module silhouette
+    component Island: Rectangle {
+        implicitHeight: 34
+        radius: height / 2
+        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.72)
+        border.width: 1
+        border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+    }
 
     component BarMod: Item {
         property string icon:      ""
@@ -430,7 +455,7 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 999
-            color: parent.active ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.16)
+            color: parent.active ? root.accentSoft
                  : modHov.containsMouse ? Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.07)
                  : "transparent"
             Behavior on color { ColorAnimation { duration: 140 } }
@@ -456,7 +481,7 @@ PanelWindow {
             }
             Text {
                 text: parent.parent.value
-                color: parent.parent.active ? root.pink : root.text
+                color: parent.parent.active ? root.accent : root.text
                 font { pixelSize: 11; bold: true; family: root.nfFont }
                 Layout.alignment: Qt.AlignVCenter
             }
@@ -485,7 +510,7 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent; radius: 9
-            color: parent.active ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.16)
+            color: parent.active ? root.accentSoft
                  : btnHov.containsMouse ? parent.activeHoverColor
                  : "transparent"
             Behavior on color { ColorAnimation { duration: 140 } }
@@ -494,7 +519,7 @@ PanelWindow {
         Text {
             anchors.centerIn: parent
             text: parent.icon
-            color: parent.active ? root.pink : parent.iconColor
+            color: parent.active ? root.accent : parent.iconColor
             font { pixelSize: parent.iconSize; family: root.nfFont }
             Behavior on color { ColorAnimation { duration: 140 } }
         }

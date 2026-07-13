@@ -253,12 +253,12 @@ PanelWindow {
         Island {
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             implicitWidth: moonRow.implicitWidth + 26
-            color: root.activePanel === "cal" ? root.accentSoft
-                 : Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.72)
+            // keep the island solid dark so the clock stays readable;
+            // signal "open" with a bright mauve border, not a see-through fill
+            color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.72)
             border.color: root.activePanel === "cal"
-                        ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.35)
+                        ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.65)
                         : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
-            Behavior on color { ColorAnimation { duration: 160 } }
             Behavior on border.color { ColorAnimation { duration: 160 } }
 
             RowLayout {
@@ -274,7 +274,7 @@ PanelWindow {
                 }
                 Text {
                     id: clockTxt
-                    color: root.activePanel === "cal" ? root.accent : root.text
+                    color: root.text
                     font { pixelSize: 13; bold: true; family: root.nfFont }
                     Layout.alignment: Qt.AlignVCenter
                     Behavior on color { ColorAnimation { duration: 140 } }

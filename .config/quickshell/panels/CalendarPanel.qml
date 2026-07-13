@@ -30,7 +30,7 @@ PanelWindow {
     readonly property color  overlay1: "#7f849c"
     readonly property color  subtext0: "#a6adc8"
     readonly property color  text:     "#cdd6f4"
-    readonly property color  pink:     "#f38ba8"
+    readonly property color  accent:     "#cba6f7"
     readonly property color  green:    "#a6e3a1"
     readonly property color  mauve:    "#cba6f7"
 
@@ -71,7 +71,7 @@ PanelWindow {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.08)
+                    color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.08)
                 }
 
                 ColumnLayout {
@@ -95,7 +95,7 @@ PanelWindow {
                     RowLayout {
                         spacing: 6
                         Text { id: dateLabel; color: root.subtext0; font { pixelSize: 13; family: root.nfFont } }
-                        Text { id: yearLabel; color: root.pink;     font { pixelSize: 13; bold: true; family: root.nfFont } }
+                        Text { id: yearLabel; color: root.accent;     font { pixelSize: 13; bold: true; family: root.nfFont } }
                     }
                 }
             }
@@ -148,7 +148,7 @@ PanelWindow {
                                 Rectangle {
                                     anchors.centerIn: parent
                                     width: 28; height: 28; radius: 9
-                                    color: parent.today ? root.pink : "transparent"
+                                    color: parent.today ? root.accent : "transparent"
                                     visible: parent.valid
                                 }
 
@@ -298,16 +298,16 @@ PanelWindow {
                         Rectangle {
                             visible: root.notifCount > 0
                             radius: 999
-                            color: clearHov.containsMouse ? Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.14) : "transparent"
+                            color: clearHov.containsMouse ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.14) : "transparent"
                             border.width: 1
-                            border.color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.22)
+                            border.color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.22)
                             implicitWidth: clearTxt.implicitWidth + 18
                             implicitHeight: 24
                             Text {
                                 id: clearTxt
                                 anchors.centerIn: parent
                                 text: "Clear"
-                                color: root.pink
+                                color: root.accent
                                 font { pixelSize: 11; bold: true; family: root.nfFont }
                             }
                             MouseArea {
@@ -394,13 +394,13 @@ PanelWindow {
 
                                         Rectangle {
                                             width: 32; height: 32; radius: 10
-                                            color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.16)
+                                            color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.16)
                                             Layout.alignment: Qt.AlignTop
 
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: "󰂚"
-                                                color: root.pink
+                                                color: root.accent
                                                 font { pixelSize: 15; family: root.nfFont }
                                             }
                                         }
@@ -447,7 +447,7 @@ PanelWindow {
 
                                         Text {
                                             text: "󰅖"
-                                            color: closeHov.containsMouse ? root.pink : root.overlay0
+                                            color: closeHov.containsMouse ? root.accent : root.overlay0
                                             font { pixelSize: 14; family: root.nfFont }
                                             Layout.alignment: Qt.AlignTop
 

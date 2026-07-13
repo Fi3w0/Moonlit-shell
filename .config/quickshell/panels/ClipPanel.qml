@@ -22,7 +22,7 @@ PanelWindow {
     readonly property color overlay1: "#7f849c"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color pink:     "#f38ba8"
+    readonly property color accent:     "#cba6f7"
     readonly property color green:    "#a6e3a1"
 
     ListModel { id: clipModel }
@@ -80,7 +80,7 @@ PanelWindow {
                 Item { Layout.fillWidth: true }
                 Text {
                     text: "Clear"
-                    color: root.pink
+                    color: root.accent
                     font { pixelSize: 11; family: root.nfFont }
                     MouseArea {
                         anchors.fill: parent

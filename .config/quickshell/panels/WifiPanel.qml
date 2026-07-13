@@ -23,7 +23,7 @@ PanelWindow {
     readonly property color overlay0: "#6c7086"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color pink:     "#f38ba8"
+    readonly property color accent:     "#cba6f7"
     readonly property color crust:    "#11111b"
 
     // ── State ─────────────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ PanelWindow {
 
                 Rectangle {
                     width: 42; height: 24; radius: 999
-                    color: Networking.wifiEnabled ? root.pink : root.surface2
+                    color: Networking.wifiEnabled ? root.accent : root.surface2
                     Behavior on color { ColorAnimation { duration: 160 } }
 
                     Rectangle {
@@ -154,7 +154,7 @@ PanelWindow {
                     Layout.fillWidth: true; height: 42; radius: 12
                     color: root.surface0
                     border.width: passInput.activeFocus ? 1 : 0
-                    border.color: root.pink
+                    border.color: root.accent
 
                     TextInput {
                         id: passInput
@@ -192,9 +192,9 @@ PanelWindow {
 
                     Rectangle {
                         Layout.fillWidth: true; height: 36; radius: 10
-                        color: connHov.containsMouse ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.24) : Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.16)
+                        color: connHov.containsMouse ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.24) : Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.16)
                         Behavior on color { ColorAnimation { duration: 120 } }
-                        Text { anchors.centerIn: parent; text: "Connect"; color: root.pink; font { pixelSize: 12; bold: true; family: root.nfFont } }
+                        Text { anchors.centerIn: parent; text: "Connect"; color: root.accent; font { pixelSize: 12; bold: true; family: root.nfFont } }
                         MouseArea { id: connHov; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                             onClicked: doConnect()
                         }
@@ -244,7 +244,7 @@ PanelWindow {
 
                         Rectangle {
                             anchors.fill: parent; radius: 11
-                            color: model.active ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.10)
+                            color: model.active ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.10)
                                  : rowHov.containsMouse ? root.surface0 : "transparent"
                             Behavior on color { ColorAnimation { duration: 120 } }
                         }
@@ -255,7 +255,7 @@ PanelWindow {
 
                             Text {
                                 text: "󰤨"
-                                color: model.active ? root.pink : root.subtext0
+                                color: model.active ? root.accent : root.subtext0
                                 font { pixelSize: 18; family: root.nfFont }
                             }
 
@@ -270,8 +270,8 @@ PanelWindow {
                             Rectangle {
                                 visible: model.active
                                 implicitWidth: badgeTxt.implicitWidth + 14; height: 20; radius: 999
-                                color: Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.18)
-                                Text { id: badgeTxt; anchors.centerIn: parent; text: "connected"; color: root.pink; font { pixelSize: 9; bold: true; family: root.nfFont } }
+                                color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.18)
+                                Text { id: badgeTxt; anchors.centerIn: parent; text: "connected"; color: root.accent; font { pixelSize: 9; bold: true; family: root.nfFont } }
                             }
 
                             Text {
@@ -291,7 +291,7 @@ PanelWindow {
                                         height: [5, 8, 11, 14][index]
                                         anchors.bottom: parent ? parent.bottom : undefined
                                         color: (index + 1) <= Math.ceil(netRow.model.signal / 25)
-                                             ? (netRow.model.active ? root.pink : root.subtext0)
+                                             ? (netRow.model.active ? root.accent : root.subtext0)
                                              : root.surface2
                                     }
                                 }

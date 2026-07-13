@@ -22,7 +22,7 @@ PanelWindow {
     readonly property color overlay0: "#6c7086"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color pink:     "#f38ba8"
+    readonly property color accent:     "#cba6f7"
     readonly property color blue:     "#89b4fa"
     readonly property color green:    "#a6e3a1"
 
@@ -132,7 +132,7 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         text: "󰑐"
-                        color: root.scanning ? root.pink : root.blue
+                        color: root.scanning ? root.accent : root.blue
                         font { pixelSize: 15; family: root.nfFont }
                         RotationAnimation on rotation {
                             running: root.scanning
@@ -156,7 +156,7 @@ PanelWindow {
                 // Power toggle
                 Rectangle {
                     width: 42; height: 24; radius: 999
-                    color: root.btOn ? root.pink : root.surface2
+                    color: root.btOn ? root.accent : root.surface2
                     Behavior on color { ColorAnimation { duration: 160 } }
 
                     Rectangle {
@@ -248,13 +248,13 @@ PanelWindow {
                             Rectangle {
                                 implicitWidth: actTxt.implicitWidth + 18; height: 24; radius: 999
                                 color: devRow.model.connected
-                                       ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.16)
+                                       ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.16)
                                        : Qt.rgba(0x89/255,0xb4/255,0xfa/255,0.14)
 
                                 Text {
                                     id: actTxt; anchors.centerIn: parent
                                     text: devRow.model.connected ? "Disconnect" : "Connect"
-                                    color: devRow.model.connected ? root.pink : root.blue
+                                    color: devRow.model.connected ? root.accent : root.blue
                                     font { pixelSize: 10; bold: true; family: root.nfFont }
                                 }
 

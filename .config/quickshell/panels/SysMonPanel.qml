@@ -23,7 +23,7 @@ PanelWindow {
     readonly property color overlay0: "#6c7086"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color pink:     "#f38ba8"
+    readonly property color accent:     "#cba6f7"
     readonly property color blue:     "#89b4fa"
     readonly property color mauve:    "#cba6f7"
     readonly property color teal:     "#94e2d5"
@@ -129,7 +129,7 @@ PanelWindow {
 
                 Text { text: "SYSTEM MONITOR"; color: root.subtext0; font { pixelSize: 11; bold: true; family: root.nfFont } }
                 Item { Layout.fillWidth: true }
-                Text { text: ""; color: root.pink; font { pixelSize: 18; family: root.nfFont } }
+                Text { text: ""; color: root.accent; font { pixelSize: 18; family: root.nfFont } }
             }
 
             ColumnLayout {
@@ -149,7 +149,7 @@ PanelWindow {
                             Text { text: ""; color: root.subtext0; font { pixelSize: 14; family: root.nfFont } }
                             Text { text: "CPU"; color: root.subtext0; font { pixelSize: 12; family: root.nfFont } }
                             Item { Layout.fillWidth: true }
-                            Text { text: sysStats.cpuPct + "%"; color: root.pink; font { pixelSize: 14; bold: true; family: root.nfFont } }
+                            Text { text: sysStats.cpuPct + "%"; color: root.accent; font { pixelSize: 14; bold: true; family: root.nfFont } }
                             Text { text: sysStats.cpuTemp > 0 ? sysStats.cpuTemp.toFixed(0) + "°C" : ""; color: root.overlay0; font { pixelSize: 11; family: root.nfFont } }
                         }
 
@@ -182,7 +182,7 @@ PanelWindow {
                                     var lx = j * step, ly = height - (d[j] / 100) * height
                                     j === 0 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly)
                                 }
-                                ctx.strokeStyle = "#f38ba8"; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round"
+                                ctx.strokeStyle = "#cba6f7"; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round"
                                 ctx.stroke()
                             }
                         }
@@ -200,7 +200,7 @@ PanelWindow {
                         Repeater {
                             model: [
                                 { label: "RAM",  pct: sysStats.ramTotalMb > 0 ? Math.round(sysStats.ramUsedMb / sysStats.ramTotalMb * 100) : 0,
-                                  val: (sysStats.ramUsedMb/1024).toFixed(1)+"G", color: root.mauve },
+                                  val: (sysStats.ramUsedMb/1024).toFixed(1)+"G", color: root.blue },
                                 { label: "DISK", pct: root.diskPct,
                                   val: root.diskPct + "%", color: root.teal },
                                 { label: "TEMP", pct: Math.min(100, Math.round(sysStats.cpuTemp / 100 * 100)),
@@ -300,7 +300,7 @@ PanelWindow {
                             RowLayout {
                                 anchors { fill: parent; leftMargin: 10; rightMargin: 10 }
                                 Text { text: model.name; color: root.text; font { pixelSize: 12; family: root.nfFont } Layout.fillWidth: true; elide: Text.ElideRight }
-                                Text { text: model.cpu + "%"; color: root.pink; font { pixelSize: 12; bold: true; family: root.nfFont } width: 44; horizontalAlignment: Text.AlignRight }
+                                Text { text: model.cpu + "%"; color: root.accent; font { pixelSize: 12; bold: true; family: root.nfFont } width: 44; horizontalAlignment: Text.AlignRight }
                                 Text { text: model.mem + "%"; color: root.mauve; font { pixelSize: 12; bold: true; family: root.nfFont } width: 44; horizontalAlignment: Text.AlignRight }
                             }
 

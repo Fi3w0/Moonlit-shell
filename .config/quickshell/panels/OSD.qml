@@ -13,7 +13,7 @@ PanelWindow {
     color: "transparent"
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
-    readonly property color  pink:   "#f38ba8"
+    readonly property color  accent:   "#cba6f7"
     readonly property color  yellow: "#f9e2af"
 
     Item {
@@ -36,7 +36,7 @@ PanelWindow {
                     text: root.kind === "volume"
                           ? (root.value === 0 ? "󰖁" : "󰕾")
                           : "󰃞"
-                    color: root.kind === "volume" ? root.pink : root.yellow
+                    color: root.kind === "volume" ? root.accent : root.yellow
                     font { pixelSize: 22; family: root.nfFont }
                 }
 
@@ -49,7 +49,7 @@ PanelWindow {
                     Rectangle {
                         width: parent.width * (root.value / 100)
                         height: 8; radius: 999
-                        color: root.kind === "volume" ? root.pink : root.yellow
+                        color: root.kind === "volume" ? root.accent : root.yellow
                         Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
                     }
                 }

@@ -37,7 +37,7 @@ PanelWindow {
     readonly property color  overlay1: "#7f849c"
     readonly property color  subtext0: "#a6adc8"
     readonly property color  text:     "#cdd6f4"
-    readonly property color  pink:     "#f38ba8"
+    readonly property color  accent:     "#cba6f7"
     readonly property color  green:    "#a6e3a1"
     readonly property color  mauve:    "#cba6f7"
     readonly property color  crust:    "#11111b"
@@ -84,7 +84,7 @@ PanelWindow {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.08)
+                    color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.08)
                 }
 
                 RowLayout {
@@ -93,12 +93,12 @@ PanelWindow {
 
                     Rectangle {
                         width: 42; height: 42; radius: 13
-                        color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.16)
+                        color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.16)
 
                         Text {
                             anchors.centerIn: parent
                             text: ""
-                            color: "#f38ba8"
+                            color: "#cba6f7"
                             font { pixelSize: 38; family: root.nfFont }
                         }
                     }
@@ -120,7 +120,7 @@ PanelWindow {
                     Item {
                         width: 38; height: 38
 
-                        Rectangle { anchors.fill: parent; radius: 12; color: pwrHov.containsMouse ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.16) : "transparent" }
+                        Rectangle { anchors.fill: parent; radius: 12; color: pwrHov.containsMouse ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.16) : "transparent" }
                         Text { anchors.centerIn: parent; text: ""; color: "#eba0ac"; font { pixelSize: 22; family: root.nfFont } }
                         MouseArea { id: pwrHov; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.openPanel("power") }
                     }
@@ -153,7 +153,7 @@ PanelWindow {
 
                         Rectangle {
                             anchors.fill: parent; radius: 16
-                            color: tbn.on ? root.pink : root.surface0
+                            color: tbn.on ? root.accent : root.surface0
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
@@ -279,7 +279,7 @@ PanelWindow {
                             Rectangle { anchors.fill: parent; radius: 99; color: root.surface2 }
                             Rectangle {
                                 width: parent.width * Math.max(0, Math.min(1, Pipewire.defaultAudioSink?.audio?.volume ?? 0))
-                                height: 8; radius: 99; color: root.pink
+                                height: 8; radius: 99; color: root.accent
                                 Behavior on width { NumberAnimation { duration: 100 } }
                             }
                             Rectangle {

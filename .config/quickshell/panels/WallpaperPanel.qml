@@ -39,7 +39,7 @@ PanelWindow {
     readonly property color   text:     "#cdd6f4"
     readonly property color   subtext0: "#a6adc8"
     readonly property color   overlay0: "#6c7086"
-    readonly property color   pink:     "#f38ba8"
+    readonly property color   maroon:   "#eba0ac"
     readonly property color   mauve:    "#cba6f7"
 
     readonly property string homeDir: Quickshell.env("HOME")
@@ -289,7 +289,7 @@ PanelWindow {
                             antialiasing: true
                             border.width: cell.PathView.isCurrentItem ? 3 : 1
                             border.color: cell.PathView.isCurrentItem
-                                          ? (cell.filePath === root.appliedPath ? root.mauve : root.pink)
+                                          ? (cell.filePath === root.appliedPath ? root.mauve : root.maroon)
                                           : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.10)
                             Behavior on border.color { ColorAnimation { duration: 160 } }
                         }

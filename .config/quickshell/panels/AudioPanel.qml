@@ -25,7 +25,7 @@ PanelWindow {
     readonly property color overlay1: "#7f849c"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color pink:     "#f38ba8"
+    readonly property color accent:     "#cba6f7"
     readonly property color teal:     "#94e2d5"
 
     function fmtTime(s) {
@@ -86,7 +86,7 @@ PanelWindow {
 
                 Text { text: "AUDIO"; color: root.subtext0; font { pixelSize: 11; bold: true; family: root.nfFont } }
                 Item { Layout.fillWidth: true }
-                Text { text: "󰘮"; color: root.pink; font { pixelSize: 18; family: root.nfFont } }
+                Text { text: "󰘮"; color: root.accent; font { pixelSize: 18; family: root.nfFont } }
             }
 
             // ── Now Playing ───────────────────────────────────────────────
@@ -157,7 +157,7 @@ PanelWindow {
 
                                     Text {
                                         text: root.appIcon(playerCard.modelData)
-                                        color: root.pink
+                                        color: root.accent
                                         font { pixelSize: 13; family: root.nfFont }
                                     }
 
@@ -209,7 +209,7 @@ PanelWindow {
                                 Rectangle {
                                     width: parent.width * Math.max(0, Math.min(1,
                                             playerCard.modelData.position / Math.max(1, playerCard.modelData.length)))
-                                    height: 6; radius: 99; color: root.pink
+                                    height: 6; radius: 99; color: root.accent
                                 }
                                 Rectangle {
                                     x: parent.width * Math.max(0, Math.min(1,
@@ -277,14 +277,14 @@ PanelWindow {
                             Rectangle {
                                 width: 36; height: 36; radius: 10
                                 color: playHov.containsMouse
-                                       ? Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.22)
-                                       : Qt.rgba(0xf3/255,0x8b/255,0xa8/255,0.12)
+                                       ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.22)
+                                       : Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.12)
                                 opacity: playerCard.modelData.canTogglePlaying ? 1 : 0.3
                                 Behavior on color { ColorAnimation { duration: 100 } }
                                 Text {
                                     anchors.centerIn: parent
                                     text: playerCard.modelData.isPlaying ? "󰏤" : "󰐊"
-                                    color: root.pink
+                                    color: root.accent
                                     font { pixelSize: 17; family: root.nfFont }
                                 }
                                 MouseArea {
@@ -398,7 +398,7 @@ PanelWindow {
                             Rectangle { anchors.fill: parent; radius: 99; color: root.surface2 }
                             Rectangle {
                                 width: parent.width * Math.max(0, Math.min(1, Pipewire.defaultAudioSink?.audio?.volume ?? 0))
-                                height: 8; radius: 99; color: root.pink
+                                height: 8; radius: 99; color: root.accent
                                 Behavior on width { NumberAnimation { duration: 100 } }
                             }
                             Rectangle {

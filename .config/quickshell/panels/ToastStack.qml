@@ -71,13 +71,13 @@ PanelWindow {
 
                     Rectangle {
                         width: 36; height: 36; radius: 11
-                        color: Qt.rgba(0xf3/255, 0x8b/255, 0xa8/255, 0.18)
+                        color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.18)
                         Layout.alignment: Qt.AlignTop
 
                         Text {
                             anchors.centerIn: parent
                             text: "󰂚"
-                            color: "#f38ba8"
+                            color: "#cba6f7"
                             font { pixelSize: 17; family: root.nfFont }
                         }
                     }

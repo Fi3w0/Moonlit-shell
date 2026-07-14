@@ -35,6 +35,7 @@ PanelWindow {
     property string connectSsid:    ""
     property bool   showPassDialog: false
     property string connectStatus:  ""
+    property bool   passHidden:     true
 
     ListModel { id: netModel }
 
@@ -163,21 +164,36 @@ PanelWindow {
 
                     TextInput {
                         id: passInput
-                        anchors { fill: parent; leftMargin: 14; rightMargin: 14; topMargin: 11; bottomMargin: 11 }
+                        anchors { left: parent.left; leftMargin: 14; right: eyeBtn.left; rightMargin: 4; top: parent.top; topMargin: 11; bottom: parent.bottom; bottomMargin: 11 }
                         color: root.text
                         font { pixelSize: 13; family: root.nfFont }
-                        echoMode: TextInput.Password
+                        echoMode: root.passHidden ? TextInput.Password : TextInput.Normal
                         clip: true
                         Keys.onReturnPressed: doConnect()
                         Keys.onEscapePressed: { root.showPassDialog = false; root.connectSsid = "" }
                     }
 
-                    Text {
-                        anchors { left: parent.left; leftMargin: 14; verticalCenter: parent.verticalCenter }
-                        text: "Password"
-                        color: root.overlay0
-                        font { pixelSize: 13; family: root.nfFont }
-                        visible: passInput.text === "" && !passInput.activeFocus
+                    Rectangle {
+                        id: eyeBtn
+                        anchors { right: parent.right; rightMargin: 4; verticalCenter: parent.verticalCenter }
+                        width: 32; height: 32; radius: 8
+                        color: eyeHov.containsMouse ? root.surface1 : "transparent"
+                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: root.passHidden ? "󰛐" : "󰛏"
+                            color: root.subtext0
+                            font { pixelSize: 16; family: root.nfFont }
+                        }
+
+                        MouseArea {
+                            id: eyeHov
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.passHidden = !root.passHidden
+                        }
                     }
                 }
 

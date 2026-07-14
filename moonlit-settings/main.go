@@ -1266,7 +1266,7 @@ func renderCard(cfg *Config) image.Image {
 	// Title bar
 	fillRect(img, 18, 18, 684, 52, cardPalette["surface0"])
 	cardText(img, 38, 32, "MOONLIT SHELL", cardPalette["mauve"], 2)
-	cardText(img, 38, 52, "config v0.1", cardPalette["overlay0"], 1)
+	cardText(img, 38, 52, "config "+version, cardPalette["overlay0"], 1)
 
 	// Accent swatch
 	fillRect(img, 620, 28, 68, 32, image.NewUniform(hexToColor(cfg.Accent)))

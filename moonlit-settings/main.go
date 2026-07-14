@@ -84,6 +84,7 @@ func main() {
 		container.NewTabItem("Bar", barTab(&cfg, w)),
 		container.NewTabItem("Notifications", notifTab(&cfg, w)),
 		container.NewTabItem("Wallpapers", wallpaperTab(&cfg, w)),
+		container.NewTabItem("Power", powerTab(&cfg, w)),
 		container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
 		container.NewTabItem("Keys", keybindTab(&cfg, w)),
 		container.NewTabItem("About", aboutTab(&cfg, w)),
@@ -359,6 +360,79 @@ func wallpaperTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	})
 
 	body := container.NewVBox(dirCard)
+	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
+}
+
+// ── Power tab: CPU governor toggle ───────────────────────────────────────
+func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
+	save := func() {
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+	}
+	applyGov := func(gov string) {
+		// Write to all cpus concurrently
+		cpus, _ := filepath.Glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor")
+		if len(cpus) == 0 {
+			return
+		}
+		for _, p := range cpus {
+			os.WriteFile(p, []byte(gov), 0o222)
+		}
+	}
+
+	labelToKey := map[string]string{
+		"Power save": "powersave", "Balanced (schedutil)": "schedutil",
+		"Performance": "performance", "On-demand": "ondemand", "Conservative": "conservative",
+	}
+	keyToLabel := map[string]string{}
+	for l, k := range labelToKey {
+		keyToLabel[k] = l
+	}
+
+	// Discover available governors
+	avail := []string{}
+	if data, err := os.ReadFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"); err == nil {
+		for _, g := range strings.Fields(string(data)) {
+			if label, ok := keyToLabel[g]; ok {
+				avail = append(avail, label)
+			}
+		}
+	}
+	if len(avail) == 0 {
+		avail = []string{"Power save", "Balanced (schedutil)", "Performance"}
+	}
+
+	sel := widget.NewSelect(avail, func(s string) {
+		gov := labelToKey[s]
+		cfg.PowerProfile = gov
+		save()
+		applyGov(gov)
+	})
+	if label, ok := keyToLabel[cfg.PowerProfile]; ok {
+		sel.SetSelected(label)
+	} else if len(avail) > 0 {
+		sel.SetSelected(avail[0])
+	}
+
+	govCard := widget.NewCard("CPU governor", "Controls CPU frequency scaling behavior", sel)
+	descCard := widget.NewCard("What they do", "", container.NewVBox(
+		hintText("Power save — lowest clock speed, best battery life"),
+		hintText("Balanced — scales up only when needed (default)"),
+		hintText("Performance — locks at max frequency, more heat"),
+	))
+
+	reset := resetButton(func() {
+		d := defaultConfig()
+		cfg.PowerProfile = d.PowerProfile
+		if label, ok := keyToLabel[d.PowerProfile]; ok {
+			sel.SetSelected(label)
+		}
+		save()
+		applyGov(d.PowerProfile)
+	})
+
+	body := container.NewVBox(govCard, descCard, hintText("Changes apply immediately. Dropped on reboot — re-apply from this tab or set a systemd service to persist."))
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 

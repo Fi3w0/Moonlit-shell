@@ -55,6 +55,7 @@ type Config struct {
 	MaxToasts     int                `json:"maxToasts"`     // 1-10
 	ToastPosition string             `json:"toastPosition"` // "auto" | "top-right" | ...
 	WallpaperDir  string             `json:"wallpaperDir"`   // path, default ~/Pictures/Wallpapers
+	PowerProfile  string             `json:"powerProfile"`   // powersave | schedutil | performance
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
 }
@@ -87,6 +88,7 @@ func defaultConfig() Config {
 		MaxToasts:     5,
 		ToastPosition: "auto",
 		WallpaperDir:  "~/Pictures/Wallpapers",
+		PowerProfile:  "schedutil",
 		Hypr: HyprSettings{
 			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
 			GapsIn: 3, GapsOut: 8, BorderSize: 2,

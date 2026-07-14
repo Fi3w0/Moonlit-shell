@@ -29,6 +29,7 @@ type Keybind struct {
 // only when the user hits Apply.
 type Config struct {
 	Accent        string             `json:"accent"`
+	Flavor        string             `json:"flavor"` // mocha | macchiato | frappe | latte
 	BarStyle      string             `json:"barStyle"` // "islands" | "classic"
 	BarOpacity    float64            `json:"barOpacity"`
 	Clock24h      bool               `json:"clock24h"`
@@ -55,6 +56,7 @@ func curatedKeybinds() map[string]Keybind {
 func defaultConfig() Config {
 	return Config{
 		Accent:        "#cba6f7", // moonlight mauve
+		Flavor:        "mocha",
 		BarStyle:      "islands",
 		BarOpacity:    0.72,
 		Clock24h:      true,

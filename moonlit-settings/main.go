@@ -132,11 +132,26 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			container.NewHBox(container.NewCenter(swatchBox), container.NewCenter(hexLabel)),
 			container.NewCenter(pick), nil))
 
+	flavors := []string{"Mocha", "Macchiato", "Frappé", "Latte"}
+	flavorKey := map[string]string{"Mocha": "mocha", "Macchiato": "macchiato", "Frappé": "frappe", "Latte": "latte"}
+	keyFlavor := map[string]string{"mocha": "Mocha", "macchiato": "Macchiato", "frappe": "Frappé", "latte": "Latte"}
+	palette := widget.NewSelect(flavors, func(s string) {
+		cfg.Flavor = flavorKey[s]
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+	})
+	palette.SetSelected(keyFlavor[cfg.Flavor])
+	paletteCard := widget.NewCard("Palette", "Catppuccin flavor — your accent stays on top", palette)
+
 	reset := resetButton(func() {
-		applyAccent(hexToColor(defaultConfig().Accent))
+		d := defaultConfig()
+		cfg.Flavor = d.Flavor
+		palette.SetSelected(keyFlavor[d.Flavor])
+		applyAccent(hexToColor(d.Accent))
 	})
 
-	body := container.NewVBox(accentCard, hintText("Applies instantly — safe, can’t break anything."))
+	body := container.NewVBox(accentCard, paletteCard, hintText("Applies instantly — safe, can’t break anything."))
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 

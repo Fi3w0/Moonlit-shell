@@ -14,7 +14,10 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"image"
 	"image/color"
+	"image/draw"
+	"image/png"
 	"io"
 	"os"
 	"os/exec"
@@ -760,6 +763,24 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	health.Importance = widget.MediumImportance
 	healthCard := widget.NewCard("Diagnostics", "Check that everything is wired up correctly", health)
 
+	screenshot := widget.NewButton("Export as PNG", func() {
+		dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
+			if err != nil || wc == nil {
+				return
+			}
+			defer wc.Close()
+			img := renderCard(cfg)
+			if err := png.Encode(wc, img); err != nil {
+				dialog.ShowError(err, w)
+			} else {
+				dialog.ShowInformation("Exported", "Config card saved as PNG.", w)
+			}
+		}, w).Show()
+	})
+	screenshot.Importance = widget.MediumImportance
+	shareCard := widget.NewCard("Share", "Export a pretty config card to show off your rice",
+		container.NewVBox(screenshot, hintText("Saves a Catppuccin-themed config summary card as PNG.")))
+
 	repo := canvas.NewText("github.com/Fi3w0/Moonlit-shell", hexToColor(cMauve))
 	repo.TextStyle = fyne.TextStyle{Monospace: true}
 	aboutCard := widget.NewCard("About", "", container.NewVBox(
@@ -769,7 +790,7 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		hintText("Made with 🌙"),
 	))
 
-	return container.NewVScroll(container.NewPadded(container.NewVBox(cfgCard, healthCard, aboutCard)))
+	return container.NewVScroll(container.NewPadded(container.NewVBox(cfgCard, healthCard, shareCard, aboutCard)))
 }
 
 // ── shared bits ──────────────────────────────────────────────────────────
@@ -869,4 +890,159 @@ func (g *labeledGrid) Layout(objs []fyne.CanvasObject, size fyne.Size) {
 		}
 		y += rowH + 8
 	}
+}
+
+// ── Config card renderer for PNG export ──────────────────────────────────
+// Renders a Catppuccin Mocha-themed summary card as an 800×500 image.
+
+var cardPalette = map[string]*image.Uniform{
+	"base":     image.NewUniform(hexToColor("#1e1e2e")),
+	"mantle":   image.NewUniform(hexToColor("#181825")),
+	"surface0": image.NewUniform(hexToColor("#313244")),
+	"surface1": image.NewUniform(hexToColor("#45475a")),
+	"mauve":    image.NewUniform(hexToColor("#cba6f7")),
+	"text":     image.NewUniform(hexToColor("#cdd6f4")),
+	"subtext0": image.NewUniform(hexToColor("#a6adc8")),
+	"overlay0": image.NewUniform(hexToColor("#6c7086")),
+	"green":    image.NewUniform(hexToColor("#a6e3a1")),
+	"maroon":   image.NewUniform(hexToColor("#eba0ac")),
+}
+
+func fillRect(img *image.RGBA, x, y, w, h int, c *image.Uniform) {
+	draw.Draw(img, image.Rect(x, y, x+w, y+h), c, image.Point{}, draw.Src)
+}
+
+func cardText(img *image.RGBA, x, y int, s string, c *image.Uniform, size int) {
+	// Simple 6×9 block font — renders ASCII letters/digits/symbols as small
+	// pixel blocks. Lowercase = uppercase, missing glyphs render as blank.
+	for i, ch := range s {
+		drawGlyph(img, x+i*(size+1), y, ch, c, size)
+	}
+}
+
+// drawGlyph renders a single character at (x,y) using a 5×8 pixel font
+// scaled up to the requested size. The glyph data is a 5-byte bitmap where
+// each byte = one row (top to bottom), each bit = on/off (msb = left).
+var glyphs = map[rune][]byte{
+	'A': {0x7E, 0x11, 0x11, 0x11, 0x7E, 0x00, 0x00, 0x00},
+	'B': {0x7F, 0x49, 0x49, 0x49, 0x36, 0x00, 0x00, 0x00},
+	'C': {0x3E, 0x41, 0x41, 0x41, 0x22, 0x00, 0x00, 0x00},
+	'D': {0x7F, 0x41, 0x41, 0x41, 0x3E, 0x00, 0x00, 0x00},
+	'E': {0x7F, 0x49, 0x49, 0x49, 0x41, 0x00, 0x00, 0x00},
+	'F': {0x7F, 0x09, 0x09, 0x09, 0x01, 0x00, 0x00, 0x00},
+	'G': {0x3E, 0x41, 0x49, 0x49, 0x7A, 0x00, 0x00, 0x00},
+	'H': {0x7F, 0x08, 0x08, 0x08, 0x7F, 0x00, 0x00, 0x00},
+	'I': {0x41, 0x41, 0x7F, 0x41, 0x41, 0x00, 0x00, 0x00},
+	'J': {0x20, 0x40, 0x41, 0x3F, 0x01, 0x00, 0x00, 0x00},
+	'K': {0x7F, 0x08, 0x14, 0x22, 0x41, 0x00, 0x00, 0x00},
+	'L': {0x7F, 0x40, 0x40, 0x40, 0x40, 0x00, 0x00, 0x00},
+	'M': {0x7F, 0x02, 0x0C, 0x02, 0x7F, 0x00, 0x00, 0x00},
+	'N': {0x7F, 0x04, 0x08, 0x10, 0x7F, 0x00, 0x00, 0x00},
+	'O': {0x3E, 0x41, 0x41, 0x41, 0x3E, 0x00, 0x00, 0x00},
+	'P': {0x7F, 0x09, 0x09, 0x09, 0x06, 0x00, 0x00, 0x00},
+	'Q': {0x3E, 0x41, 0x51, 0x21, 0x5E, 0x00, 0x00, 0x00},
+	'R': {0x7F, 0x09, 0x19, 0x29, 0x46, 0x00, 0x00, 0x00},
+	'S': {0x26, 0x49, 0x49, 0x49, 0x32, 0x00, 0x00, 0x00},
+	'T': {0x01, 0x01, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00},
+	'U': {0x3F, 0x40, 0x40, 0x40, 0x3F, 0x00, 0x00, 0x00},
+	'V': {0x1F, 0x20, 0x40, 0x20, 0x1F, 0x00, 0x00, 0x00},
+	'W': {0x3F, 0x40, 0x38, 0x40, 0x3F, 0x00, 0x00, 0x00},
+	'X': {0x63, 0x14, 0x08, 0x14, 0x63, 0x00, 0x00, 0x00},
+	'Y': {0x07, 0x08, 0x70, 0x08, 0x07, 0x00, 0x00, 0x00},
+	'Z': {0x61, 0x51, 0x49, 0x45, 0x43, 0x00, 0x00, 0x00},
+	'0': {0x3E, 0x51, 0x49, 0x45, 0x3E, 0x00, 0x00, 0x00},
+	'1': {0x42, 0x42, 0x7F, 0x40, 0x40, 0x00, 0x00, 0x00},
+	'2': {0x62, 0x51, 0x49, 0x49, 0x46, 0x00, 0x00, 0x00},
+	'3': {0x22, 0x41, 0x49, 0x49, 0x36, 0x00, 0x00, 0x00},
+	'4': {0x18, 0x14, 0x12, 0x7F, 0x10, 0x00, 0x00, 0x00},
+	'5': {0x27, 0x45, 0x45, 0x45, 0x39, 0x00, 0x00, 0x00},
+	'6': {0x3E, 0x49, 0x49, 0x49, 0x30, 0x00, 0x00, 0x00},
+	'7': {0x01, 0x71, 0x09, 0x05, 0x03, 0x00, 0x00, 0x00},
+	'8': {0x36, 0x49, 0x49, 0x49, 0x36, 0x00, 0x00, 0x00},
+	'9': {0x06, 0x49, 0x49, 0x29, 0x1E, 0x00, 0x00, 0x00},
+	'.': {0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00},
+	',': {0x00, 0x00, 0x40, 0x20, 0x00, 0x00, 0x00, 0x00},
+	':': {0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00},
+	'/': {0x20, 0x10, 0x08, 0x04, 0x02, 0x00, 0x00, 0x00},
+	'#': {0x14, 0x7F, 0x14, 0x7F, 0x14, 0x00, 0x00, 0x00},
+	'~': {0x08, 0x04, 0x08, 0x10, 0x08, 0x00, 0x00, 0x00},
+	' ': {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	'(': {0x1C, 0x22, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00},
+	')': {0x00, 0x00, 0x41, 0x22, 0x1C, 0x00, 0x00, 0x00},
+	'-': {0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0x00, 0x00},
+	'%': {0x43, 0x24, 0x18, 0x24, 0x43, 0x00, 0x00, 0x00},
+	'x': {0x22, 0x14, 0x08, 0x14, 0x22, 0x00, 0x00, 0x00},
+}
+
+func drawGlyph(img *image.RGBA, x, y int, ch rune, c *image.Uniform, scale int) {
+	g, ok := glyphs[ch]
+	if !ok {
+		if ch >= 'a' && ch <= 'z' {
+			g = glyphs[ch-32] // lowercase → uppercase
+		} else {
+			return // unknown glyph
+		}
+	}
+	for row := 0; row < 8; row++ {
+		b := g[row]
+		for col := 0; col < 5; col++ {
+			if (b>>(4-col))&1 != 0 {
+				fillRect(img, x+col*scale, y+row*scale, scale, scale, c)
+			}
+		}
+	}
+}
+
+func renderCard(cfg *Config) image.Image {
+	img := image.NewRGBA(image.Rect(0, 0, 720, 400))
+	draw.Draw(img, img.Bounds(), cardPalette["base"], image.Point{}, draw.Src)
+
+	// Corner radius effect: just draw a slightly smaller mantel rect
+	fillRect(img, 18, 18, 684, 364, cardPalette["mantle"])
+
+	// Title bar
+	fillRect(img, 18, 18, 684, 52, cardPalette["surface0"])
+	cardText(img, 38, 32, "MOONLIT SHELL", cardPalette["mauve"], 2)
+	cardText(img, 38, 52, "config v0.1", cardPalette["overlay0"], 1)
+
+	// Accent swatch
+	fillRect(img, 620, 28, 68, 32, image.NewUniform(hexToColor(cfg.Accent)))
+
+	// Body rows
+	row := func(y int, label, value string) {
+		cardText(img, 38, y, label, cardPalette["overlay0"], 1)
+		cardText(img, 220, y, value, cardPalette["text"], 1)
+	}
+
+	row(88, "Accent", cfg.Accent)
+	row(106, "Flavor", cfg.Flavor)
+	row(124, "Bar style", cfg.BarStyle+"  ·  "+cfg.BarPosition)
+	row(142, "Bar opacity", fmt.Sprintf("%.0f%%", cfg.BarOpacity*100))
+	row(160, "Clock", map[bool]string{true: "24h", false: "12h"}[cfg.Clock24h])
+	row(178, "Rounding", fmt.Sprintf("%dpx", cfg.Hypr.Rounding))
+	row(196, "Opacity", fmt.Sprintf("active %.0f%%  ·  inactive %.0f%%", cfg.Hypr.ActiveOpacity*100, cfg.Hypr.InactiveOpacity*100))
+	row(214, "Gaps", fmt.Sprintf("in %d  ·  out %d", cfg.Hypr.GapsIn, cfg.Hypr.GapsOut))
+	row(232, "Border", fmt.Sprintf("%dpx", cfg.Hypr.BorderSize))
+	row(250, "Blur", map[bool]string{true: "on (" + fmt.Sprintf("%d", cfg.Hypr.BlurSize) + ")", false: "off"}[cfg.Hypr.BlurEnabled])
+	row(268, "Animations", map[bool]string{true: "on", false: "off"}[cfg.Hypr.AnimEnabled])
+	row(286, "Toast duration", fmt.Sprintf("%.1fs", float64(cfg.ToastDuration)/1000))
+	row(304, "Max toasts", fmt.Sprintf("%d", cfg.MaxToasts))
+	row(322, "Power profile", cfg.PowerProfile)
+
+	// Keybinds section
+	cardText(img, 38, 354, "KEYBINDS", cardPalette["subtext0"], 1)
+	keys := []string{"terminal", "launcher", "close", "fullscreen"}
+	x := 38
+	for _, id := range keys {
+		if kb, ok := cfg.Keybinds[id]; ok {
+			txt := kb.Label + "  " + kb.Combo
+			cardText(img, x, 372, txt, cardPalette["text"], 1)
+			x += len(txt)*7 + 30
+		}
+	}
+
+	// Footer
+	cardText(img, 38, 388, "github.com/Fi3w0/Moonlit-shell", cardPalette["overlay0"], 1)
+
+	return img
 }

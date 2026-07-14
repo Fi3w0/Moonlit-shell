@@ -100,7 +100,7 @@ AUR_MINIMAL=( quickshell awww cliphist )
 CFG_MINIMAL=( hypr quickshell kitty rofi fish gtk-3.0 gtk-4.0 Thunar fastfetch keyd xdg-desktop-portal )
 
 # Dev: minimal + developer tooling
-PAC_DEV=( code ranger w3m python-pillow atool 7zip unrar zip openssh docker )
+PAC_DEV=( code go ranger w3m python-pillow atool 7zip unrar zip openssh docker )
 AUR_DEV=( dgop )
 CFG_DEV=( nvim ranger dgop )
 
@@ -243,8 +243,8 @@ build_sets() {
   esac
 
   # phase count for the progress bar
-  PHASE_TOTAL=8
-  [[ $MULTILIB -eq 1 ]] && PHASE_TOTAL=9
+  PHASE_TOTAL=9
+  [[ $MULTILIB -eq 1 ]] && PHASE_TOTAL=10
 }
 
 # ── show exactly what will happen, then confirm ───────────────────
@@ -269,6 +269,7 @@ summary() {
   [[ -n "${MON_CONF:-}" ]] && printf '%s│%s   • write detected monitors.conf\n' "$MAUVE" "$R"
   printf '%s│%s   • copy wallpapers → ~/Pictures/Wallpapers\n' "$MAUVE" "$R"
   [[ $NVIM_SYNC -eq 1 ]]  && printf '%s│%s   • sync Neovim plugins (lazy.nvim)\n' "$MAUVE" "$R"
+  printf '%s│%s   • build & install Moonlit Settings GUI\n' "$MAUVE" "$R"
   printf '%s│%s   • fix hardcoded paths · seed wallpaper cache · chmod lock script\n' "$MAUVE" "$R"
   printf '%s│%s\n' "$MAUVE" "$R"
   printf '%s│%s %sUI:%s %s    %slog:%s %s\n' "$MAUVE" "$R" "$DIM" "$R" \
@@ -489,6 +490,34 @@ ph_post() {
   return 0
 }
 
+# Build & install the Moonlit Settings GUI (dev/full tiers only; needs Go).
+ph_settings_app() {
+  command -v go >/dev/null || { log "Go not found — skipping settings app build"; return 0; }
+  local sd="$REPO/moonlit-settings"
+  [[ -f "$sd/main.go" ]] || { log "moonlit-settings source not found"; return 0; }
+
+  run mkdir -p "$HOME/.local/bin"
+  ( cd "$sd" && run go build -o moonlit-settings . ) || { warn "settings app build failed (check Go version)"; return 0; }
+  run cp "$sd/moonlit-settings" "$HOME/.local/bin/moonlit-settings"
+
+  # icon (sized for hicolor)
+  local sz d
+  for sz in 48x48 64x64 128x128 256x256; do
+    d="$HOME/.local/share/icons/hicolor/$sz/apps"
+    run mkdir -p "$d"
+    run ffmpeg -y -i "$sd/icon.png" -vf "scale=${sz%x*}:${sz#*x}" "$d/moonlit-settings.png" -loglevel error
+  done
+
+  # .desktop entry
+  run mkdir -p "$HOME/.local/share/applications"
+  run cp .local/share/applications/moonlit-settings.desktop "$HOME/.local/share/applications/"
+  run update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+  run gtk-update-icon-cache "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+
+  ok "Moonlit Settings app installed (Super+, to open)"
+  return 0
+}
+
 # ── final niceties (interactive, outside the phase animations) ────
 maybe_chsh() {
   command -v fish >/dev/null || return 0
@@ -510,8 +539,8 @@ farewell() {
   printf ' %sNext:%s\n' "$B$LAV" "$R"
   printf '   • reboot, then log in from the %sSDDM%s screen\n' "$MAUVE" "$R"
   printf '   • or start now from a TTY:  %sHyprland%s\n' "$SKY" "$R"
-  printf '   • keys: %sSUPER+Space%s rofi · %sSUPER+B%s wallpapers · %sSUPER+Q%s kitty\n' \
-    "$MAUVE" "$R" "$MAUVE" "$R" "$MAUVE" "$R"
+  printf '   • keys: %sSUPER+Space%s rofi · %sSUPER+,%s settings · %sSUPER+B%s wallpapers · %sSUPER+Q%s kitty\n' \
+    "$MAUVE" "$R" "$MAUVE" "$R" "$MAUVE" "$R" "$MAUVE" "$R"
   printf '   • if something looks off, see %sMANUAL-INSTALL.md%s\n\n' "$DIM" "$R"
 }
 
@@ -608,6 +637,7 @@ main() {
   phase "Deploying dotfiles"               ph_deploy     || die "Deploying configs failed."
   phase "Installing themes"                ph_themes
   phase "Post-install setup"               ph_post
+  phase "Building Moonlit Settings app"     ph_settings_app || warn "settings app build failed"
 
   maybe_chsh
   farewell

@@ -203,6 +203,23 @@ sudo keyd reload
 ## 6. Post-Install
 
 ```bash
+# Build & install Moonlit Settings GUI (needs Go)
+sudo pacman -S --needed go
+( cd moonlit-settings && go build -o moonlit-settings . && cp moonlit-settings ~/.local/bin/ )
+
+# Icon (resize from the bundled icon.png)
+mkdir -p ~/.local/share/icons/hicolor/{48x48,64x64,128x128,256x256}/apps
+for sz in 48x48 64x64 128x128 256x256; do
+  w="${sz%x*}"; ffmpeg -y -i moonlit-settings/icon.png -vf "scale=$w:$w" \
+    ~/.local/share/icons/hicolor/$sz/apps/moonlit-settings.png -loglevel error
+done
+
+# .desktop entry (appears in rofi)
+mkdir -p ~/.local/share/applications
+cp .local/share/applications/moonlit-settings.desktop ~/.local/share/applications/
+update-desktop-database ~/.local/share/applications 2>/dev/null
+gtk-update-icon-cache ~/.local/share/icons/hicolor 2>/dev/null
+
 # Set wallpaper for the first time (avoids hyprlock failing on a missing cache)
 awww img ~/Pictures/Wallpapers/wallpaper4.jpg -t none
 echo ~/Pictures/Wallpapers/wallpaper4.jpg > ~/.cache/wallpaper-current
@@ -233,7 +250,7 @@ systemctl reboot
 | SDDM | Catppuccin login screen with your wallpaper |
 | Hyprland | Gradient borders, frosted blur, workspace animations |
 | Quickshell | Top bar with workspaces, stats, tray, clock |
-| Keybinds | `SUPER+Space` (rofi), `SUPER+B` (wallpaper picker), `SUPER+Q` (kitty) |
+| Keybinds | `SUPER+Space` (rofi), `SUPER+,` (settings), `SUPER+B` (wallpaper picker), `SUPER+Q` (kitty) |
 | Panels | Click clock → calendar, settings gear → quick settings, power → power menu |
 | Hyprlock | `SUPER+Ctrl+L` or idle - wallpaper with frosted glass |
 | Rofi | Catppuccin themed app launcher + quicklinks (`>`) + file search (`!`) |

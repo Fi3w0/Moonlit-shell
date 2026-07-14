@@ -244,47 +244,82 @@ func barTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 
 // ── Hyprland tab: hard changes behind Apply + reset ──────────────────────
 func hyprTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
-	roundVal := widget.NewLabel("")
-	round := widget.NewSlider(0, 20)
-	round.Step = 1
-	inact := widget.NewSlider(0.5, 1.0)
-	inact.Step = 0.01
-	act := widget.NewSlider(0.5, 1.0)
-	act.Step = 0.01
-	inVal := widget.NewLabel("")
-	actVal := widget.NewLabel("")
+	h := &cfg.Hypr
+	var syncs []func()
+
+	// intRow: a labelled integer slider that writes back to a field.
+	intRow := func(label string, min, max float64, suffix string, get func() int, set func(int)) (fyne.CanvasObject, fyne.CanvasObject) {
+		val := widget.NewLabel("")
+		s := widget.NewSlider(min, max)
+		s.Step = 1
+		s.OnChanged = func(v float64) { set(int(v)); val.SetText(fmt.Sprintf("%d%s", int(v), suffix)) }
+		syncs = append(syncs, func() { s.SetValue(float64(get())); val.SetText(fmt.Sprintf("%d%s", get(), suffix)) })
+		return widget.NewLabel(label), sliderRow(s, val)
+	}
+	pctRow := func(label string, get func() float64, set func(float64)) (fyne.CanvasObject, fyne.CanvasObject) {
+		val := widget.NewLabel("")
+		s := widget.NewSlider(0.5, 1.0)
+		s.Step = 0.01
+		s.OnChanged = func(v float64) { set(v); val.SetText(fmt.Sprintf("%.0f%%", v*100)) }
+		syncs = append(syncs, func() { s.SetValue(get()); val.SetText(fmt.Sprintf("%.0f%%", get()*100)) })
+		return widget.NewLabel(label), sliderRow(s, val)
+	}
+	check := func(label string, get func() bool, set func(bool)) *widget.Check {
+		c := widget.NewCheck(label, func(b bool) { set(b) })
+		syncs = append(syncs, func() { c.SetChecked(get()) })
+		return c
+	}
+
+	giL, giC := intRow("Gaps inner", 0, 30, "", func() int { return h.GapsIn }, func(v int) { h.GapsIn = v })
+	goL, goC := intRow("Gaps outer", 0, 40, "", func() int { return h.GapsOut }, func(v int) { h.GapsOut = v })
+	bsL, bsC := intRow("Border size", 0, 6, " px", func() int { return h.BorderSize }, func(v int) { h.BorderSize = v })
+	rL, rC := intRow("Rounding", 0, 20, " px", func() int { return h.Rounding }, func(v int) { h.Rounding = v })
+	aL, aC := pctRow("Active opacity", func() float64 { return h.ActiveOpacity }, func(v float64) { h.ActiveOpacity = v })
+	iL, iC := pctRow("Inactive opacity", func() float64 { return h.InactiveOpacity }, func(v float64) { h.InactiveOpacity = v })
+	blL, blC := intRow("Blur size", 0, 12, "", func() int { return h.BlurSize }, func(v int) { h.BlurSize = v })
+
+	blurEn := check("Blur", func() bool { return h.BlurEnabled }, func(b bool) { h.BlurEnabled = b })
+	shadowEn := check("Window shadows", func() bool { return h.ShadowEnabled }, func(b bool) { h.ShadowEnabled = b })
+	animEn := check("Animations", func() bool { return h.AnimEnabled }, func(b bool) { h.AnimEnabled = b })
+	borderOv := check("Custom border colors (replaces the gradient)", func() bool { return h.BorderOverride }, func(b bool) { h.BorderOverride = b })
+
+	baSw := canvas.NewRectangle(hexToColor(h.BorderActive))
+	baSw.SetMinSize(fyne.NewSize(26, 26))
+	baSw.CornerRadius = 6
+	biSw := canvas.NewRectangle(hexToColor(h.BorderInactive))
+	biSw.SetMinSize(fyne.NewSize(26, 26))
+	biSw.CornerRadius = 6
+	syncs = append(syncs, func() {
+		baSw.FillColor = hexToColor(h.BorderActive)
+		baSw.Refresh()
+		biSw.FillColor = hexToColor(h.BorderInactive)
+		biSw.Refresh()
+	})
+	baBtn := widget.NewButton("Active…", func() {
+		dialog.NewColorPicker("Active border", "", func(c color.Color) { h.BorderActive = colorToHex(c); baSw.FillColor = c; baSw.Refresh() }, w).Show()
+	})
+	biBtn := widget.NewButton("Inactive…", func() {
+		dialog.NewColorPicker("Inactive border", "", func(c color.Color) { h.BorderInactive = colorToHex(c); biSw.FillColor = c; biSw.Refresh() }, w).Show()
+	})
 
 	sync := func() {
-		round.Value = float64(cfg.Hypr.Rounding)
-		round.Refresh()
-		roundVal.SetText(fmt.Sprintf("%d px", cfg.Hypr.Rounding))
-		act.Value = cfg.Hypr.ActiveOpacity
-		act.Refresh()
-		actVal.SetText(fmt.Sprintf("%.0f%%", cfg.Hypr.ActiveOpacity*100))
-		inact.Value = cfg.Hypr.InactiveOpacity
-		inact.Refresh()
-		inVal.SetText(fmt.Sprintf("%.0f%%", cfg.Hypr.InactiveOpacity*100))
-	}
-	round.OnChanged = func(v float64) {
-		cfg.Hypr.Rounding = int(v)
-		roundVal.SetText(fmt.Sprintf("%d px", int(v)))
-	}
-	act.OnChanged = func(v float64) {
-		cfg.Hypr.ActiveOpacity = v
-		actVal.SetText(fmt.Sprintf("%.0f%%", v*100))
-	}
-	inact.OnChanged = func(v float64) {
-		cfg.Hypr.InactiveOpacity = v
-		inVal.SetText(fmt.Sprintf("%.0f%%", v*100))
+		for _, f := range syncs {
+			f()
+		}
 	}
 	sync()
 
-	form := container.New(&labeledGrid{},
-		widget.NewLabel("Edge rounding"), sliderRow(round, roundVal),
-		widget.NewLabel("Active opacity"), sliderRow(act, actVal),
-		widget.NewLabel("Inactive opacity"), sliderRow(inact, inVal),
-	)
-	decoCard := widget.NewCard("Window decoration", "0 = sharp corners · opacity pairs with the global blur", form)
+	layoutCard := widget.NewCard("Layout", "", container.New(&labeledGrid{}, giL, giC, goL, goC, bsL, bsC, rL, rC))
+	decoCard := widget.NewCard("Opacity", "pairs with the global blur", container.New(&labeledGrid{}, aL, aC, iL, iC))
+	fxCard := widget.NewCard("Effects", "", container.NewVBox(
+		blurEn,
+		container.New(&labeledGrid{}, blL, blC),
+		shadowEn, animEn,
+	))
+	borderCard := widget.NewCard("Border colors", "off keeps the base gradient", container.NewVBox(
+		borderOv,
+		container.NewHBox(container.NewCenter(baSw), baBtn, container.NewCenter(biSw), biBtn),
+	))
 
 	apply := widget.NewButton("Apply", func() {
 		if err := saveApply(cfg, w); err == nil {
@@ -298,8 +333,8 @@ func hyprTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		saveApply(cfg, w)
 	})
 
-	body := container.NewVBox(warnBanner(), decoCard)
-	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewPadded(body))
+	body := container.NewVBox(warnBanner(), layoutCard, decoCard, fxCard, borderCard)
+	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewVScroll(body))
 }
 
 // ── Keybinds tab: hard changes behind Apply + reset ──────────────────────

@@ -12,6 +12,16 @@ type HyprSettings struct {
 	Rounding        int     `json:"rounding"`        // 0 = sharp edges … 20 = very round
 	ActiveOpacity   float64 `json:"activeOpacity"`   // 0.5 … 1.0
 	InactiveOpacity float64 `json:"inactiveOpacity"` // 0.5 … 1.0
+	GapsIn          int     `json:"gapsIn"`          // 0 … 30
+	GapsOut         int     `json:"gapsOut"`         // 0 … 40
+	BorderSize      int     `json:"borderSize"`      // 0 … 6
+	BorderOverride  bool    `json:"borderOverride"`  // off = keep the base gradient border
+	BorderActive    string  `json:"borderActive"`    // hex, used only when BorderOverride
+	BorderInactive  string  `json:"borderInactive"`  // hex, used only when BorderOverride
+	BlurEnabled     bool    `json:"blurEnabled"`
+	BlurSize        int     `json:"blurSize"` // 0 … 12
+	ShadowEnabled   bool    `json:"shadowEnabled"`
+	AnimEnabled     bool    `json:"animEnabled"`
 }
 
 // Keybind is one rebindable action. Combo is "MODS, KEY" (Hyprland syntax);
@@ -66,7 +76,12 @@ func defaultConfig() Config {
 		ShowTemp:      true,
 		ShowBattery:   true,
 		ShowRecording: true,
-		Hypr:          HyprSettings{Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92},
+		Hypr: HyprSettings{
+			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
+			GapsIn: 3, GapsOut: 8, BorderSize: 2,
+			BorderOverride: false, BorderActive: "#cba6f7", BorderInactive: "#45475a",
+			BlurEnabled: true, BlurSize: 4, ShadowEnabled: true, AnimEnabled: true,
+		},
 		Keybinds:      curatedKeybinds(),
 	}
 }

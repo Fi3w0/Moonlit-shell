@@ -25,11 +25,27 @@ func renderHyprConf(c Config) string {
 	b.WriteString("# Sourced last from hyprland.conf, so these values win.\n")
 	b.WriteString("# ─────────────────────────────────────────────────────────────\n\n")
 
-	b.WriteString("decoration {\n")
-	fmt.Fprintf(&b, "    rounding = %d\n", c.Hypr.Rounding)
-	fmt.Fprintf(&b, "    active_opacity = %.2f\n", c.Hypr.ActiveOpacity)
-	fmt.Fprintf(&b, "    inactive_opacity = %.2f\n", c.Hypr.InactiveOpacity)
+	h := c.Hypr
+
+	b.WriteString("general {\n")
+	fmt.Fprintf(&b, "    gaps_in = %d\n", h.GapsIn)
+	fmt.Fprintf(&b, "    gaps_out = %d\n", h.GapsOut)
+	fmt.Fprintf(&b, "    border_size = %d\n", h.BorderSize)
+	if h.BorderOverride {
+		fmt.Fprintf(&b, "    col.active_border = rgb(%s)\n", strings.TrimPrefix(h.BorderActive, "#"))
+		fmt.Fprintf(&b, "    col.inactive_border = rgb(%s)\n", strings.TrimPrefix(h.BorderInactive, "#"))
+	}
 	b.WriteString("}\n\n")
+
+	b.WriteString("decoration {\n")
+	fmt.Fprintf(&b, "    rounding = %d\n", h.Rounding)
+	fmt.Fprintf(&b, "    active_opacity = %.2f\n", h.ActiveOpacity)
+	fmt.Fprintf(&b, "    inactive_opacity = %.2f\n", h.InactiveOpacity)
+	fmt.Fprintf(&b, "    blur {\n        enabled = %t\n        size = %d\n    }\n", h.BlurEnabled, h.BlurSize)
+	fmt.Fprintf(&b, "    shadow {\n        enabled = %t\n    }\n", h.ShadowEnabled)
+	b.WriteString("}\n\n")
+
+	fmt.Fprintf(&b, "animations {\n    enabled = %t\n}\n\n", h.AnimEnabled)
 
 	if len(c.Keybinds) > 0 {
 		b.WriteString("# Keybind overrides (unbind default, then rebind)\n")

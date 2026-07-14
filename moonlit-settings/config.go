@@ -28,10 +28,16 @@ type Keybind struct {
 // live; `hyprland` and `keybinds` are rendered into ~/.config/hypr/moonlit.conf
 // only when the user hits Apply.
 type Config struct {
-	Accent   string             `json:"accent"`
-	BarStyle string             `json:"barStyle"` // "islands" | "classic"
-	Hypr     HyprSettings       `json:"hyprland"`
-	Keybinds map[string]Keybind `json:"keybinds"`
+	Accent        string             `json:"accent"`
+	BarStyle      string             `json:"barStyle"` // "islands" | "classic"
+	BarOpacity    float64            `json:"barOpacity"`
+	Clock24h      bool               `json:"clock24h"`
+	ShowUpdates   bool               `json:"showUpdates"`
+	ShowTemp      bool               `json:"showTemp"`
+	ShowBattery   bool               `json:"showBattery"`
+	ShowRecording bool               `json:"showRecording"`
+	Hypr          HyprSettings       `json:"hyprland"`
+	Keybinds      map[string]Keybind `json:"keybinds"`
 }
 
 // curatedKeybinds is the safe, fixed set the app is willing to rebind. The
@@ -48,10 +54,16 @@ func curatedKeybinds() map[string]Keybind {
 
 func defaultConfig() Config {
 	return Config{
-		Accent:   "#cba6f7", // moonlight mauve
-		BarStyle: "islands",
-		Hypr:     HyprSettings{Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92},
-		Keybinds: curatedKeybinds(),
+		Accent:        "#cba6f7", // moonlight mauve
+		BarStyle:      "islands",
+		BarOpacity:    0.72,
+		Clock24h:      true,
+		ShowUpdates:   true,
+		ShowTemp:      true,
+		ShowBattery:   true,
+		ShowRecording: true,
+		Hypr:          HyprSettings{Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92},
+		Keybinds:      curatedKeybinds(),
 	}
 }
 

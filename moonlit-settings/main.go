@@ -67,6 +67,7 @@ func main() {
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Theme", themeTab(&cfg, w)),
+		container.NewTabItem("Bar", barTab(&cfg, w)),
 		container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
 		container.NewTabItem("Keys", keybindTab(&cfg, w)),
 	)
@@ -131,34 +132,85 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			container.NewHBox(container.NewCenter(swatchBox), container.NewCenter(hexLabel)),
 			container.NewCenter(pick), nil))
 
-	barChoice := widget.NewRadioGroup([]string{"Islands (floating)", "Classic (topbar)"}, func(s string) {
+	reset := resetButton(func() {
+		applyAccent(hexToColor(defaultConfig().Accent))
+	})
+
+	body := container.NewVBox(accentCard, hintText("Applies instantly — safe, can’t break anything."))
+	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
+}
+
+// ── Bar tab: layout, look, and per-widget visibility (all live) ──────────
+func barTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
+	save := func() {
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+	}
+
+	style := widget.NewRadioGroup([]string{"Islands (floating)", "Classic (topbar)"}, func(s string) {
 		if s == "Classic (topbar)" {
 			cfg.BarStyle = "classic"
 		} else {
 			cfg.BarStyle = "islands"
 		}
-		if err := saveConfig(*cfg); err != nil {
-			dialog.ShowError(err, w)
-		}
+		save()
 	})
-	setBar := func() {
-		if cfg.BarStyle == "classic" {
-			barChoice.SetSelected("Classic (topbar)")
-		} else {
-			barChoice.SetSelected("Islands (floating)")
-		}
+	style.Horizontal = true
+
+	opVal := widget.NewLabel("")
+	op := widget.NewSlider(0.4, 1.0)
+	op.Step = 0.02
+	op.OnChanged = func(v float64) {
+		cfg.BarOpacity = v
+		opVal.SetText(fmt.Sprintf("%.0f%%", v*100))
+		save()
 	}
-	setBar()
-	barCard := widget.NewCard("Top bar", "Floating pills or the classic solid bar", barChoice)
+
+	clock := widget.NewCheck("24-hour clock", func(b bool) { cfg.Clock24h = b; save() })
+	upd := widget.NewCheck("Update count", func(b bool) { cfg.ShowUpdates = b; save() })
+	tmp := widget.NewCheck("Temperature warning", func(b bool) { cfg.ShowTemp = b; save() })
+	bat := widget.NewCheck("Battery", func(b bool) { cfg.ShowBattery = b; save() })
+	rec := widget.NewCheck("Recording indicator", func(b bool) { cfg.ShowRecording = b; save() })
+
+	sync := func() {
+		if cfg.BarStyle == "classic" {
+			style.SetSelected("Classic (topbar)")
+		} else {
+			style.SetSelected("Islands (floating)")
+		}
+		op.SetValue(cfg.BarOpacity)
+		opVal.SetText(fmt.Sprintf("%.0f%%", cfg.BarOpacity*100))
+		clock.SetChecked(cfg.Clock24h)
+		upd.SetChecked(cfg.ShowUpdates)
+		tmp.SetChecked(cfg.ShowTemp)
+		bat.SetChecked(cfg.ShowBattery)
+		rec.SetChecked(cfg.ShowRecording)
+	}
+	sync()
+
+	lookCard := widget.NewCard("Layout & look", "", container.NewVBox(
+		style,
+		container.New(&labeledGrid{}, widget.NewLabel("Background opacity"), sliderRow(op, opVal)),
+		clock,
+	))
+	widgetsCard := widget.NewCard("Widgets", "Show or hide bar items",
+		container.NewVBox(upd, tmp, bat, rec))
 
 	reset := resetButton(func() {
 		d := defaultConfig()
 		cfg.BarStyle = d.BarStyle
-		setBar()
-		applyAccent(hexToColor(d.Accent))
+		cfg.BarOpacity = d.BarOpacity
+		cfg.Clock24h = d.Clock24h
+		cfg.ShowUpdates = d.ShowUpdates
+		cfg.ShowTemp = d.ShowTemp
+		cfg.ShowBattery = d.ShowBattery
+		cfg.ShowRecording = d.ShowRecording
+		sync()
+		save()
 	})
 
-	body := container.NewVBox(accentCard, barCard, hintText("Changes here apply instantly and can’t break anything."))
+	body := container.NewVBox(lookCard, widgetsCard, hintText("Bar changes apply instantly."))
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 

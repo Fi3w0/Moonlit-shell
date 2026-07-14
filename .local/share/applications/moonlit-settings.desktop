@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Moonlit Settings
+GenericName=Desktop Settings
+Comment=Customize your Moonlit Shell desktop
+Exec=moonlit-settings
+Terminal=false
+Icon=moonlit-settings
+Categories=Settings;DesktopSettings;
+Keywords=moonlit;hyprland;quickshell;theme;rice;
+StartupNotify=false

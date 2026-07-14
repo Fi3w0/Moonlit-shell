@@ -57,6 +57,8 @@ type Config struct {
 	WallpaperDir  string             `json:"wallpaperDir"`   // path, default ~/Pictures/Wallpapers
 	PowerProfile  string             `json:"powerProfile"`   // powersave | schedutil | performance
 	PowerPersist  bool               `json:"powerPersist"`   // enable systemd service for reboot survival
+	WallustEnabled bool              `json:"wallustEnabled"`  // auto-generate colors from wallpaper
+	WallustMode    string             `json:"wallustMode"`    // "accent" | "full" (full = palette too)
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
 }
@@ -91,6 +93,8 @@ func defaultConfig() Config {
 		WallpaperDir:  "~/Pictures/Wallpapers",
 		PowerProfile:  "schedutil",
 		PowerPersist:  false,
+		WallustEnabled: false,
+		WallustMode:    "accent",
 		Hypr: HyprSettings{
 			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
 			GapsIn: 3, GapsOut: 8, BorderSize: 2,

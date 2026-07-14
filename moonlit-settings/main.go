@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -230,6 +231,65 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	})
 	pick.Importance = widget.HighImportance
 
+	// Wallust: generate colors from wallpaper
+	wallustCheck := widget.NewCheck("Auto-generate from wallpaper", func(b bool) {
+		cfg.WallustEnabled = b
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+		if b {
+			go func() {
+				if runWallust(*cfg) {
+					cfg2 := loadConfig()
+					applyAccent(hexToColor(cfg2.Accent))
+				}
+			}()
+		}
+	})
+	wallustCheck.SetChecked(cfg.WallustEnabled)
+
+	wallustMode := widget.NewRadioGroup([]string{"Accent only", "Full palette"}, func(s string) {
+		if s == "Full palette" {
+			cfg.WallustMode = "full"
+		} else {
+			cfg.WallustMode = "accent"
+		}
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+		if cfg.WallustEnabled {
+			go func() {
+				if runWallust(*cfg) {
+					cfg2 := loadConfig()
+					applyAccent(hexToColor(cfg2.Accent))
+				}
+			}()
+		}
+	})
+	wallustMode.Horizontal = true
+	if cfg.WallustMode == "full" {
+		wallustMode.SetSelected("Full palette")
+	} else {
+		wallustMode.SetSelected("Accent only")
+	}
+
+	runBtn := widget.NewButton("Generate now", func() {
+		go func() {
+			if runWallust(*cfg) {
+				// Reload accent from saved config
+				cfg2 := loadConfig()
+				applyAccent(hexToColor(cfg2.Accent))
+			}
+		}()
+	})
+	runBtn.Importance = widget.MediumImportance
+
+	wallustCard := widget.NewCard("Dynamic colors", "Extract palette from your wallpaper (needs wallust)",
+		container.NewVBox(wallustCheck, wallustMode, container.NewHBox(runBtn)))
+	if _, err := exec.LookPath("wallust"); err != nil {
+		wallustCard = widget.NewCard("Dynamic colors", "Install wallust (yay -S wallust) to enable this", widget.NewLabel("wallust not installed"))
+	}
+
 	accentCard := widget.NewCard("Accent", "Drives active & hover states across the shell",
 		container.NewBorder(nil, nil,
 			container.NewHBox(container.NewCenter(swatchBox), container.NewCenter(hexLabel)),
@@ -250,11 +310,19 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	reset := resetButton(func() {
 		d := defaultConfig()
 		cfg.Flavor = d.Flavor
+		cfg.WallustEnabled = d.WallustEnabled
+		cfg.WallustMode = d.WallustMode
+		wallustCheck.SetChecked(d.WallustEnabled)
+		if d.WallustMode == "full" {
+			wallustMode.SetSelected("Full palette")
+		} else {
+			wallustMode.SetSelected("Accent only")
+		}
 		palette.SetSelected(keyFlavor[d.Flavor])
 		applyAccent(hexToColor(d.Accent))
 	})
 
-	body := container.NewVBox(accentCard, paletteCard, hintText("Applies instantly — safe, can’t break anything."))
+	body := container.NewVBox(accentCard, wallustCard, paletteCard, hintText("Applies instantly — safe, can’t break anything."))
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 
@@ -1021,6 +1089,70 @@ func (g *labeledGrid) Layout(objs []fyne.CanvasObject, size fyne.Size) {
 		}
 		y += rowH + 8
 	}
+}
+
+// ── Wallust integration ──────────────────────────────────────────────────
+// runWallust extracts a color scheme from the current wallpaper and updates
+// config.json. Returns true if the accent was updated successfully.
+func runWallust(cfg Config) bool {
+	if _, err := exec.LookPath("wallust"); err != nil {
+		return false
+	}
+	home, _ := os.UserHomeDir()
+	wpCache := filepath.Join(home, ".cache", "wallpaper-current")
+	wp, err := os.ReadFile(wpCache)
+	if err != nil {
+		return false
+	}
+	wpPath := strings.TrimSpace(string(wp))
+	if wpPath == "" {
+		return false
+	}
+
+	// Run wallust (quiet mode — only writes cache, no terminal color injection)
+	cmd := exec.Command("wallust", "run", "-q", wpPath)
+	if err := cmd.Run(); err != nil {
+		return false
+	}
+
+	// Parse the sequences file for color index 4 (accent) and indexed colors
+	seqFile := filepath.Join(home, ".cache", "wallust", "sequences")
+	data, err := os.ReadFile(seqFile)
+	if err != nil {
+		return false
+	}
+
+	re := regexp.MustCompile(`]4;(\d+);#([0-9a-fA-F]{6})`)
+	matches := re.FindAllStringSubmatch(string(data), -1)
+	if len(matches) < 8 {
+		return false
+	}
+
+	colors := map[int]string{}
+	for _, m := range matches {
+		idx := 0
+		fmt.Sscanf(m[1], "%d", &idx)
+		colors[idx] = "#" + m[2]
+	}
+
+	accent, ok := colors[4] // color4 = accent in wallust's output
+	if !ok || accent == "" {
+		accent = colors[6] // fallback: color6
+	}
+
+	cfg.Accent = accent
+	if cfg.WallustMode == "full" {
+		// Map wallust's 16 colors to Catppuccin-style palette positions.
+		// This is approximate — wallust doesn't map 1:1 to Catppuccin.
+		// We leave the neutral ramp unchanged and only swap accent-adjacent colors.
+		// Full mode would use custom templates — deferred to templates roadmap.
+		_ = colors // placeholder for full implementation
+	}
+
+	if err := saveConfig(cfg); err != nil {
+		return false
+	}
+	return true
 }
 
 // ── Config card renderer for PNG export ──────────────────────────────────

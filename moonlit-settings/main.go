@@ -6,6 +6,8 @@
 //   • Hard  (Hyprland rounding/opacity, keybinds) → rendered into
 //     ~/.config/hypr/moonlit.conf and applied with `hyprctl reload` behind an
 //     Apply button, with an at-your-own-risk note.
+//
+// Every screen has a Reset to defaults, so nothing is a one-way door.
 package main
 
 import (
@@ -18,7 +20,16 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+)
+
+// Catppuccin Mocha, used for the few hand-drawn bits (swatch, wordmark).
+const (
+	cMauve    = "#cba6f7"
+	cText     = "#cdd6f4"
+	cOverlay  = "#6c7086"
+	cSurface1 = "#45475a"
 )
 
 func hexToColor(hex string) color.Color {
@@ -57,31 +68,53 @@ func main() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Theme", themeTab(&cfg, w)),
 		container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
-		container.NewTabItem("Keybinds", keybindTab(&cfg, w)),
+		container.NewTabItem("Keys", keybindTab(&cfg, w)),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
-	header := container.NewVBox(
-		widget.NewLabelWithStyle("🌙  Moonlit Shell", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
-	)
-
-	w.SetContent(container.NewBorder(header, nil, nil, nil, tabs))
-	w.Resize(fyne.NewSize(460, 420))
+	w.SetContent(container.NewBorder(header(), nil, nil, nil, tabs))
+	w.Resize(fyne.NewSize(480, 560))
 	w.ShowAndRun()
 }
 
-// ── Theme tab: live changes (accent, bar style) ──────────────────────────
+// ── Signature header: mauve "Moonlit" wordmark + moon ────────────────────
+func header() fyne.CanvasObject {
+	moon := canvas.NewText("🌙", nil)
+	moon.TextSize = 24
+
+	word := canvas.NewText("Moonlit", hexToColor(cMauve))
+	word.TextStyle = fyne.TextStyle{Bold: true}
+	word.TextSize = 21
+
+	tag := canvas.NewText("shell settings", hexToColor(cOverlay))
+	tag.TextSize = 11
+
+	title := container.NewHBox(
+		container.NewCenter(moon),
+		container.NewCenter(container.NewVBox(word, tag)),
+	)
+	return container.NewVBox(
+		container.NewPadded(title),
+		widget.NewSeparator(),
+	)
+}
+
+// ── Theme tab: live changes + reset ──────────────────────────────────────
 func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
-	swatch := canvas.NewRectangle(hexToColor(cfg.Accent))
-	swatch.SetMinSize(fyne.NewSize(44, 44))
-	swatch.CornerRadius = 10
-	hexLabel := widget.NewLabel(cfg.Accent)
+	swatch := canvas.NewCircle(hexToColor(cfg.Accent))
+	swatch.StrokeColor = hexToColor(cSurface1)
+	swatch.StrokeWidth = 1
+	swatchBox := container.NewGridWrap(fyne.NewSize(44, 44), swatch)
+	hexLabel := canvas.NewText(cfg.Accent, hexToColor(cText))
+	hexLabel.TextStyle = fyne.TextStyle{Monospace: true}
+	hexLabel.TextSize = 15
 
 	applyAccent := func(c color.Color) {
 		cfg.Accent = colorToHex(c)
 		swatch.FillColor = c
 		swatch.Refresh()
-		hexLabel.SetText(cfg.Accent)
+		hexLabel.Text = cfg.Accent
+		hexLabel.Refresh()
 		if err := saveConfig(*cfg); err != nil {
 			dialog.ShowError(err, w)
 		}
@@ -92,13 +125,12 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		p.Show()
 	})
 	pick.Importance = widget.HighImportance
-	reset := widget.NewButton("Reset", func() { applyAccent(hexToColor(defaultConfig().Accent)) })
 
-	accentRow := container.NewBorder(nil, nil,
-		container.NewHBox(container.NewCenter(swatch), hexLabel),
-		container.NewHBox(reset, pick), nil)
+	accentCard := widget.NewCard("Accent", "Drives active & hover states across the shell",
+		container.NewBorder(nil, nil,
+			container.NewHBox(container.NewCenter(swatchBox), container.NewCenter(hexLabel)),
+			container.NewCenter(pick), nil))
 
-	// Bar style — live. Shell swaps the bar layout on change.
 	barChoice := widget.NewRadioGroup([]string{"Islands (floating)", "Classic (topbar)"}, func(s string) {
 		if s == "Classic (topbar)" {
 			cfg.BarStyle = "classic"
@@ -109,85 +141,91 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			dialog.ShowError(err, w)
 		}
 	})
-	barChoice.Horizontal = true
-	if cfg.BarStyle == "classic" {
-		barChoice.SetSelected("Classic (topbar)")
-	} else {
-		barChoice.SetSelected("Islands (floating)")
+	setBar := func() {
+		if cfg.BarStyle == "classic" {
+			barChoice.SetSelected("Classic (topbar)")
+		} else {
+			barChoice.SetSelected("Islands (floating)")
+		}
 	}
+	setBar()
+	barCard := widget.NewCard("Top bar", "Floating pills or the classic solid bar", barChoice)
 
-	return container.NewVBox(
-		sectionLabel("Accent"),
-		accentRow,
-		widget.NewSeparator(),
-		sectionLabel("Top bar style"),
-		barChoice,
-		hint("Applies instantly — safe, can't break anything."),
-	)
+	reset := resetButton(func() {
+		d := defaultConfig()
+		cfg.BarStyle = d.BarStyle
+		setBar()
+		applyAccent(hexToColor(d.Accent))
+	})
+
+	body := container.NewVBox(accentCard, barCard, hintText("Changes here apply instantly and can’t break anything."))
+	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 
-// ── Hyprland tab: hard changes behind Apply ──────────────────────────────
+// ── Hyprland tab: hard changes behind Apply + reset ──────────────────────
 func hyprTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
-	roundVal := widget.NewLabel(fmt.Sprintf("%d px", cfg.Hypr.Rounding))
+	roundVal := widget.NewLabel("")
 	round := widget.NewSlider(0, 20)
 	round.Step = 1
-	round.Value = float64(cfg.Hypr.Rounding)
+	inact := widget.NewSlider(0.5, 1.0)
+	inact.Step = 0.01
+	act := widget.NewSlider(0.5, 1.0)
+	act.Step = 0.01
+	inVal := widget.NewLabel("")
+	actVal := widget.NewLabel("")
+
+	sync := func() {
+		round.Value = float64(cfg.Hypr.Rounding)
+		round.Refresh()
+		roundVal.SetText(fmt.Sprintf("%d px", cfg.Hypr.Rounding))
+		act.Value = cfg.Hypr.ActiveOpacity
+		act.Refresh()
+		actVal.SetText(fmt.Sprintf("%.0f%%", cfg.Hypr.ActiveOpacity*100))
+		inact.Value = cfg.Hypr.InactiveOpacity
+		inact.Refresh()
+		inVal.SetText(fmt.Sprintf("%.0f%%", cfg.Hypr.InactiveOpacity*100))
+	}
 	round.OnChanged = func(v float64) {
 		cfg.Hypr.Rounding = int(v)
 		roundVal.SetText(fmt.Sprintf("%d px", int(v)))
 	}
-
-	actVal := widget.NewLabel(fmt.Sprintf("%.0f%%", cfg.Hypr.ActiveOpacity*100))
-	act := widget.NewSlider(0.5, 1.0)
-	act.Step = 0.01
-	act.Value = cfg.Hypr.ActiveOpacity
 	act.OnChanged = func(v float64) {
 		cfg.Hypr.ActiveOpacity = v
 		actVal.SetText(fmt.Sprintf("%.0f%%", v*100))
 	}
-
-	inVal := widget.NewLabel(fmt.Sprintf("%.0f%%", cfg.Hypr.InactiveOpacity*100))
-	inact := widget.NewSlider(0.5, 1.0)
-	inact.Step = 0.01
-	inact.Value = cfg.Hypr.InactiveOpacity
 	inact.OnChanged = func(v float64) {
 		cfg.Hypr.InactiveOpacity = v
 		inVal.SetText(fmt.Sprintf("%.0f%%", v*100))
 	}
+	sync()
 
-	apply := widget.NewButton("Apply  (hyprctl reload)", func() {
-		if err := saveConfig(*cfg); err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		if err := applyHypr(*cfg); err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		dialog.ShowInformation("Applied", "Hyprland reloaded with your changes.", w)
-	})
-	apply.Importance = widget.HighImportance
-
-	form := container.New(newLabeledGrid(),
+	form := container.New(&labeledGrid{},
 		widget.NewLabel("Edge rounding"), sliderRow(round, roundVal),
 		widget.NewLabel("Active opacity"), sliderRow(act, actVal),
 		widget.NewLabel("Inactive opacity"), sliderRow(inact, inVal),
 	)
+	decoCard := widget.NewCard("Window decoration", "0 = sharp corners · opacity pairs with the global blur", form)
 
-	return container.NewVBox(
-		warnBanner(),
-		sectionLabel("Window decoration"),
-		form,
-		hint("Rounding: 0 = sharp corners, higher = rounder. Opacity pairs with the global blur for frosted glass."),
-		widget.NewSeparator(),
-		container.NewHBox(apply),
-	)
+	apply := widget.NewButton("Apply", func() {
+		if err := saveApply(cfg, w); err == nil {
+			dialog.ShowInformation("Applied", "Hyprland reloaded with your changes.", w)
+		}
+	})
+	apply.Importance = widget.HighImportance
+	reset := resetButton(func() {
+		cfg.Hypr = defaultConfig().Hypr
+		sync()
+		saveApply(cfg, w)
+	})
+
+	body := container.NewVBox(warnBanner(), decoCard)
+	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewPadded(body))
 }
 
-// ── Keybind tab: hard changes behind Apply ───────────────────────────────
+// ── Keybinds tab: hard changes behind Apply + reset ──────────────────────
 func keybindTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
-	rows := []fyne.CanvasObject{}
 	entries := map[string]*widget.Entry{}
+	rows := []fyne.CanvasObject{}
 	for _, id := range keybindOrder {
 		kb := cfg.Keybinds[id]
 		e := widget.NewEntry()
@@ -196,52 +234,76 @@ func keybindTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		entries[id] = e
 		rows = append(rows, widget.NewLabel(kb.Label), e)
 	}
-	form := container.New(newLabeledGrid(), rows...)
+	form := container.New(&labeledGrid{}, rows...)
+	card := widget.NewCard("Shortcuts", "Format:  MODS, KEY   —   e.g.  SUPER, Q", form)
 
-	apply := widget.NewButton("Apply  (hyprctl reload)", func() {
+	commit := func() {
 		for _, id := range keybindOrder {
 			kb := cfg.Keybinds[id]
-			combo := entries[id].Text
-			if combo == "" {
-				combo = kb.Default
+			if entries[id].Text != "" {
+				kb.Combo = entries[id].Text
+			} else {
+				kb.Combo = kb.Default
 			}
-			kb.Combo = combo
 			cfg.Keybinds[id] = kb
 		}
-		if err := saveConfig(*cfg); err != nil {
-			dialog.ShowError(err, w)
-			return
+	}
+	apply := widget.NewButton("Apply", func() {
+		commit()
+		if err := saveApply(cfg, w); err == nil {
+			dialog.ShowInformation("Applied", "Keybinds reloaded.", w)
 		}
-		if err := applyHypr(*cfg); err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		dialog.ShowInformation("Applied", "Keybinds reloaded.", w)
 	})
 	apply.Importance = widget.HighImportance
-
-	reset := widget.NewButton("Reset to defaults", func() {
+	reset := resetButton(func() {
 		for _, id := range keybindOrder {
-			entries[id].SetText(cfg.Keybinds[id].Default)
+			kb := cfg.Keybinds[id]
+			kb.Combo = kb.Default
+			cfg.Keybinds[id] = kb
+			entries[id].SetText(kb.Default)
 		}
+		saveApply(cfg, w)
 	})
 
-	return container.NewVBox(
-		warnBanner(),
-		sectionLabel("Rebind actions"),
-		hint("Format: MODS, KEY  —  e.g.  SUPER, Q   or   SUPER SHIFT, Return"),
-		form,
-		widget.NewSeparator(),
-		container.NewHBox(apply, reset),
-	)
+	body := container.NewVBox(warnBanner(), card)
+	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewPadded(body))
 }
 
-// ── little shared bits ───────────────────────────────────────────────────
-func sectionLabel(s string) fyne.CanvasObject {
-	return widget.NewLabelWithStyle(s, fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+// ── shared bits ──────────────────────────────────────────────────────────
+
+// saveApply writes config.json then renders + reloads Hyprland. Shows any
+// error and returns it so callers can skip their success toast.
+func saveApply(cfg *Config, w fyne.Window) error {
+	if err := saveConfig(*cfg); err != nil {
+		dialog.ShowError(err, w)
+		return err
+	}
+	if err := applyHypr(*cfg); err != nil {
+		dialog.ShowError(err, w)
+		return err
+	}
+	return nil
 }
 
-func hint(s string) fyne.CanvasObject {
+func resetButton(fn func()) *widget.Button {
+	b := widget.NewButtonWithIcon("Reset to defaults", nil, fn)
+	b.Importance = widget.LowImportance
+	return b
+}
+
+// footer: just a reset, left-aligned at the bottom.
+func footer(reset *widget.Button) fyne.CanvasObject {
+	return container.NewVBox(widget.NewSeparator(),
+		container.NewHBox(reset, layout.NewSpacer()))
+}
+
+// footerApply: reset on the left, prominent Apply on the right.
+func footerApply(reset, apply *widget.Button) fyne.CanvasObject {
+	return container.NewVBox(widget.NewSeparator(),
+		container.NewBorder(nil, nil, reset, apply, nil))
+}
+
+func hintText(s string) fyne.CanvasObject {
 	l := widget.NewLabel(s)
 	l.Wrapping = fyne.TextWrapWord
 	l.Importance = widget.LowImportance
@@ -249,21 +311,17 @@ func hint(s string) fyne.CanvasObject {
 }
 
 func warnBanner() fyne.CanvasObject {
-	l := widget.NewLabel("⚠  Advanced — these change Hyprland and take a reload. Safe defaults, but use at your own risk.")
+	l := widget.NewLabel("⚠  Advanced — these change Hyprland and need a reload. Safe defaults, but use at your own risk.")
 	l.Wrapping = fyne.TextWrapWord
 	l.Importance = widget.WarningImportance
-	return l
+	return container.NewPadded(l)
 }
 
 func sliderRow(s *widget.Slider, val *widget.Label) fyne.CanvasObject {
 	return container.NewBorder(nil, nil, nil, val, s)
 }
 
-// newLabeledGrid: two columns, left auto (labels), right stretches (controls).
-func newLabeledGrid() fyne.Layout {
-	return &labeledGrid{}
-}
-
+// labeledGrid: two columns — labels size to content, controls stretch.
 type labeledGrid struct{}
 
 func (g *labeledGrid) MinSize(objs []fyne.CanvasObject) fyne.Size {
@@ -279,7 +337,7 @@ func (g *labeledGrid) MinSize(objs []fyne.CanvasObject) fyne.Size {
 				rh = ch
 			}
 		}
-		h += rh + 6
+		h += rh + 8
 	}
 	return fyne.NewSize(labelW+220, h)
 }
@@ -291,7 +349,7 @@ func (g *labeledGrid) Layout(objs []fyne.CanvasObject, size fyne.Size) {
 			labelW = lw
 		}
 	}
-	gap := float32(10)
+	gap := float32(12)
 	y := float32(0)
 	for i := 0; i < len(objs); i += 2 {
 		rowH := objs[i].MinSize().Height
@@ -300,12 +358,12 @@ func (g *labeledGrid) Layout(objs []fyne.CanvasObject, size fyne.Size) {
 				rowH = ch
 			}
 		}
-		objs[i].Move(fyne.NewPos(0, y))
-		objs[i].Resize(fyne.NewSize(labelW, rowH))
+		objs[i].Move(fyne.NewPos(0, y+((rowH-objs[i].MinSize().Height)/2)))
+		objs[i].Resize(objs[i].MinSize())
 		if i+1 < len(objs) {
 			objs[i+1].Move(fyne.NewPos(labelW+gap, y))
 			objs[i+1].Resize(fyne.NewSize(size.Width-labelW-gap, rowH))
 		}
-		y += rowH + 6
+		y += rowH + 8
 	}
 }

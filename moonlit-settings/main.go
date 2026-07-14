@@ -14,6 +14,8 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+	"sort"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -337,34 +339,135 @@ func hyprTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewVScroll(body))
 }
 
-// ── Keybinds tab: hard changes behind Apply + reset ──────────────────────
-func keybindTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
-	entries := map[string]*widget.Entry{}
-	rows := []fyne.CanvasObject{}
-	for _, id := range keybindOrder {
-		kb := cfg.Keybinds[id]
-		e := widget.NewEntry()
-		e.SetText(kb.Combo)
-		e.SetPlaceHolder(kb.Default)
-		entries[id] = e
-		rows = append(rows, widget.NewLabel(kb.Label), e)
+// normCombo canonicalises "SUPER SHIFT, Q" → "SHIFT+SUPER|Q" for comparison.
+func normCombo(combo string) string {
+	parts := strings.SplitN(combo, ",", 2)
+	key := ""
+	if len(parts) == 2 {
+		key = strings.ToUpper(strings.TrimSpace(parts[1]))
 	}
-	form := container.New(&labeledGrid{}, rows...)
-	card := widget.NewCard("Shortcuts", "Format:  MODS, KEY   —   e.g.  SUPER, Q", form)
+	var mods []string
+	for _, t := range strings.Fields(parts[0]) {
+		u := strings.ToUpper(t)
+		if u == "CONTROL" {
+			u = "CTRL"
+		}
+		mods = append(mods, u)
+	}
+	sort.Strings(mods)
+	return strings.Join(mods, "+") + "|" + key
+}
 
-	commit := func() {
+var modNames = []string{"SUPER", "SHIFT", "CTRL", "ALT"}
+var modLabel = map[string]string{"SUPER": "Super", "SHIFT": "Shift", "CTRL": "Ctrl", "ALT": "Alt"}
+
+func parseCombo(combo string) (map[string]bool, string) {
+	m := map[string]bool{}
+	key := ""
+	parts := strings.SplitN(combo, ",", 2)
+	if len(parts) == 2 {
+		key = strings.TrimSpace(parts[1])
+	}
+	for _, t := range strings.Fields(parts[0]) {
+		u := strings.ToUpper(t)
+		if u == "CONTROL" {
+			u = "CTRL"
+		}
+		m[u] = true
+	}
+	return m, key
+}
+
+// ── Keybinds tab: modifier chips + key + live conflict detection ─────────
+func keybindTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
+	// system shortcuts NOT in the editable set — warn if a bind collides
+	reserved := map[string]string{
+		normCombo("SUPER, Tab"): "cycle windows", normCombo("SUPER, B"): "wallpaper",
+		normCombo("SUPER SHIFT, B"): "random wallpaper", normCombo("ALT, S"): "screenshot",
+		normCombo("ALT, D"): "full screenshot", normCombo("SUPER, 1"): "workspace 1",
+		normCombo("SUPER, 2"): "workspace 2", normCombo("SUPER, 3"): "workspace 3",
+		normCombo("SUPER, 4"): "workspace 4",
+	}
+
+	checks := map[string]map[string]*widget.Check{}
+	keys := map[string]*widget.Entry{}
+	warn := widget.NewLabel("")
+	warn.Importance = widget.WarningImportance
+	warn.Wrapping = fyne.TextWrapWord
+	ready := false
+
+	refresh := func() {
+		if !ready {
+			return
+		}
+		byNorm := map[string][]string{}
 		for _, id := range keybindOrder {
-			kb := cfg.Keybinds[id]
-			if entries[id].Text != "" {
-				kb.Combo = entries[id].Text
-			} else {
-				kb.Combo = kb.Default
+			var mods []string
+			for _, mn := range modNames {
+				if checks[id][mn].Checked {
+					mods = append(mods, mn)
+				}
 			}
+			key := strings.TrimSpace(keys[id].Text)
+			kb := cfg.Keybinds[id]
+			kb.Combo = strings.Join(mods, " ") + ", " + key
 			cfg.Keybinds[id] = kb
+			if key != "" {
+				n := normCombo(kb.Combo)
+				byNorm[n] = append(byNorm[n], kb.Label)
+			}
+		}
+		var msgs []string
+		for n, labels := range byNorm {
+			if len(labels) > 1 {
+				msgs = append(msgs, strings.Join(labels, " & ")+" share a shortcut")
+			} else if sys, ok := reserved[n]; ok {
+				msgs = append(msgs, labels[0]+" clashes with “"+sys+"”")
+			}
+		}
+		sort.Strings(msgs)
+		if len(msgs) > 0 {
+			warn.SetText("⚠  " + strings.Join(msgs, " · "))
+		} else {
+			warn.SetText("")
 		}
 	}
+
+	rowsUI := []fyne.CanvasObject{}
+	for _, id := range keybindOrder {
+		kb := cfg.Keybinds[id]
+		m, key := parseCombo(kb.Combo)
+
+		keyEntry := widget.NewEntry()
+		keyEntry.SetText(key)
+		keyEntry.SetPlaceHolder("key")
+		keyEntry.OnChanged = func(string) { refresh() }
+		keys[id] = keyEntry
+
+		checks[id] = map[string]*widget.Check{}
+		modRow := []fyne.CanvasObject{}
+		for _, mn := range modNames {
+			c := widget.NewCheck(modLabel[mn], func(bool) { refresh() })
+			c.SetChecked(m[mn])
+			checks[id][mn] = c
+			modRow = append(modRow, c)
+		}
+
+		rowsUI = append(rowsUI,
+			container.NewBorder(nil, nil,
+				widget.NewLabelWithStyle(kb.Label, fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+				container.NewGridWrap(fyne.NewSize(90, 34), keyEntry)),
+			container.NewHBox(modRow...),
+			widget.NewSeparator(),
+		)
+	}
+	ready = true
+	refresh()
+
+	card := widget.NewCard("Shortcuts", "Modifiers + a key — no Hyprland syntax to remember", container.NewVBox(rowsUI...))
+
 	apply := widget.NewButton("Apply", func() {
-		commit()
+		refresh()
 		if err := saveApply(cfg, w); err == nil {
 			dialog.ShowInformation("Applied", "Keybinds reloaded.", w)
 		}
@@ -372,16 +475,18 @@ func keybindTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	apply.Importance = widget.HighImportance
 	reset := resetButton(func() {
 		for _, id := range keybindOrder {
-			kb := cfg.Keybinds[id]
-			kb.Combo = kb.Default
-			cfg.Keybinds[id] = kb
-			entries[id].SetText(kb.Default)
+			m, key := parseCombo(cfg.Keybinds[id].Default)
+			for _, mn := range modNames {
+				checks[id][mn].SetChecked(m[mn])
+			}
+			keys[id].SetText(key)
 		}
+		refresh()
 		saveApply(cfg, w)
 	})
 
-	body := container.NewVBox(warnBanner(), card)
-	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewPadded(body))
+	body := container.NewVBox(warnBanner(), warn, card)
+	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewVScroll(body))
 }
 
 // ── shared bits ──────────────────────────────────────────────────────────

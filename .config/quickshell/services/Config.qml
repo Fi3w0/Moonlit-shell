@@ -16,6 +16,13 @@ Singleton {
     readonly property color accent: adapter.accent
     // Top bar layout: "islands" (floating pills) or "classic" (solid topbar).
     readonly property string barStyle: adapter.barStyle
+    // Bar look + per-widget visibility.
+    readonly property real   barOpacity:    adapter.barOpacity
+    readonly property bool   clock24h:       adapter.clock24h
+    readonly property bool   showUpdates:    adapter.showUpdates
+    readonly property bool   showTemp:       adapter.showTemp
+    readonly property bool   showBattery:    adapter.showBattery
+    readonly property bool   showRecording:  adapter.showRecording
 
     FileView {
         id: cfg
@@ -27,6 +34,12 @@ Singleton {
             id: adapter
             property string accent: "#cba6f7"
             property string barStyle: "islands"
+            property real   barOpacity: 0.72
+            property bool   clock24h: true
+            property bool   showUpdates: true
+            property bool   showTemp: true
+            property bool   showBattery: true
+            property bool   showRecording: true
         }
     }
 }

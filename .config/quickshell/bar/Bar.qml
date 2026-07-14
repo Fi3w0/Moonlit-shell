@@ -263,7 +263,7 @@ PanelWindow {
             implicitWidth: moonRow.implicitWidth + 26
             // keep the island solid dark so the clock stays readable;
             // signal "open" with a bright mauve border, not a see-through fill
-            color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.72)
+            color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, Config.barOpacity)
             border.color: root.activePanel === "cal"
                         ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.65)
                         : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
@@ -288,7 +288,7 @@ PanelWindow {
                     Behavior on color { ColorAnimation { duration: 140 } }
                     Timer {
                         interval: 1000; running: true; repeat: true; triggeredOnStart: true
-                        onTriggered: clockTxt.text = Qt.formatDateTime(new Date(), "hh:mm")
+                        onTriggered: clockTxt.text = Qt.formatDateTime(new Date(), Config.clock24h ? "hh:mm" : "h:mm AP")
                     }
                 }
             }
@@ -331,7 +331,7 @@ PanelWindow {
                 value: Math.round(sysStats.cpuTemp) + "C"
                 iconSize: 15
                 iconColor: root.peach
-                visible: sysStats.cpuTemp >= 75
+                visible: Config.showTemp && sysStats.cpuTemp >= 75
                 active: true
                 barColors: root
                 onClicked: root.openPanel("sysmon")
@@ -341,6 +341,7 @@ PanelWindow {
                 icon: root.battCharging ? "󰂄" : (root.battPct > 20 ? "󰁹" : "󰁺")
                 label: ""
                 value: root.battPct + "%"
+                visible: Config.showBattery
                 iconSize: 14
                 iconColor: root.battCharging ? root.green
                          : root.battPct <= 20 ? root.red : root.subtext0
@@ -362,7 +363,7 @@ PanelWindow {
                 value: root.updateCount.toString()
                 iconSize: 24
                 iconColor: root.mauve
-                visible: root.updateCount > 0
+                visible: Config.showUpdates && root.updateCount > 0
                 barColors: root
                 onClicked: root.showToast(
                     "Moonlit",
@@ -379,7 +380,7 @@ PanelWindow {
                 icon: "󰕧"
                 iconSize: 19
                 iconColor: root.recordingActive ? root.red : root.overlay0
-                visible: root.recordingActive
+                visible: Config.showRecording && root.recordingActive
                 active: true
                 barColors: root
                 onClicked: root.showToast("Moonlit", "Recording active", "A screen recording app is currently running")
@@ -444,7 +445,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.62)
+        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, Config.barOpacity)
 
         Rectangle {
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
@@ -547,7 +548,7 @@ PanelWindow {
                 value: Math.round(sysStats.cpuTemp) + "C"
                 iconSize: 15
                 iconColor: root.peach
-                visible: sysStats.cpuTemp >= 75
+                visible: Config.showTemp && sysStats.cpuTemp >= 75
                 active: true
                 barColors: root
                 onClicked: root.openPanel("sysmon")
@@ -557,6 +558,7 @@ PanelWindow {
                 icon: root.battCharging ? "󰂄" : (root.battPct > 20 ? "󰁹" : "󰁺")
                 label: ""
                 value: root.battPct + "%"
+                visible: Config.showBattery
                 iconSize: 14
                 iconColor: root.battCharging ? root.green
                          : root.battPct <= 20 ? root.red : root.subtext0
@@ -578,7 +580,7 @@ PanelWindow {
                 value: root.updateCount.toString()
                 iconSize: 24
                 iconColor: root.mauve
-                visible: root.updateCount > 0
+                visible: Config.showUpdates && root.updateCount > 0
                 barColors: root
                 onClicked: root.showToast(
                     "Moonlit",
@@ -595,7 +597,7 @@ PanelWindow {
                 icon: "󰕧"
                 iconSize: 19
                 iconColor: root.recordingActive ? root.red : root.overlay0
-                visible: root.recordingActive
+                visible: Config.showRecording && root.recordingActive
                 active: true
                 barColors: root
                 onClicked: root.showToast("Moonlit", "Recording active", "A screen recording app is currently running")
@@ -664,7 +666,7 @@ PanelWindow {
                     Behavior on color { ColorAnimation { duration: 140 } }
                     Timer {
                         interval: 1000; running: true; repeat: true; triggeredOnStart: true
-                        onTriggered: clockTxt.text = Qt.formatDateTime(new Date(), "hh:mm")
+                        onTriggered: clockTxt.text = Qt.formatDateTime(new Date(), Config.clock24h ? "hh:mm" : "h:mm AP")
                     }
                 }
 
@@ -696,7 +698,7 @@ PanelWindow {
     component Island: Rectangle {
         implicitHeight: 34
         radius: height / 2
-        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.72)
+        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, Config.barOpacity)
         border.width: 1
         border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
     }

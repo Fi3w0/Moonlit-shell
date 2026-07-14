@@ -14,6 +14,8 @@ Singleton {
 
     // Moonlight mauve accent — drives active/hover states across the shell.
     readonly property color accent: adapter.accent
+    // Top bar layout: "islands" (floating pills) or "classic" (solid topbar).
+    readonly property string barStyle: adapter.barStyle
 
     FileView {
         id: cfg
@@ -24,6 +26,7 @@ Singleton {
         adapter: JsonAdapter {
             id: adapter
             property string accent: "#cba6f7"
+            property string barStyle: "islands"
         }
     }
 }

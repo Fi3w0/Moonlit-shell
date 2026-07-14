@@ -171,8 +171,15 @@ PanelWindow {
         }
     }
 
-    Item {
+    Loader {
         anchors.fill: parent
+        sourceComponent: Config.barStyle === "classic" ? classicLayout : islandsLayout
+    }
+
+    Component {
+        id: islandsLayout
+        Item {
+            anchors.fill: parent
 
         // ── LEFT ISLAND ──────────────────────────────────────────────────
         Island {
@@ -426,6 +433,260 @@ PanelWindow {
                 activeHoverColor: root.accentSoft
             }
             }
+        }
+    }
+    }
+
+    Component {
+        id: classicLayout
+        Item {
+            anchors.fill: parent
+
+    Rectangle {
+        anchors.fill: parent
+        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.62)
+
+        Rectangle {
+            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+            height: 1
+            color: Qt.rgba(0,0,0,0.4)
+        }
+
+        // ── LEFT — anchored, never shifts ────────────────────────────────
+        RowLayout {
+            anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 10 }
+            spacing: 7
+
+            // ── LEFT ─────────────────────────────────────────────────────
+            // Arch Linux logo — nf-linux-archlinux 
+            Item {
+                implicitWidth: 44; implicitHeight: 38
+                Layout.alignment: Qt.AlignVCenter
+
+                Text {
+                    anchors.centerIn: parent
+                    text: ""
+                    color: root.activePanel === "launcher" ? root.accent : root.maroon
+                    font { pixelSize: 32; family: root.nfFont }
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: rofiProc.running = true
+                }
+            }
+
+            Workspaces {
+                Layout.alignment: Qt.AlignVCenter
+                barColors: root
+            }
+
+            // Window title
+            Item {
+                implicitHeight: 28
+                implicitWidth: Math.min(titleRow.implicitWidth + 26, 280)
+                Layout.alignment: Qt.AlignVCenter
+                visible: Hyprland.activeToplevel !== null
+
+                Rectangle { anchors.fill: parent; radius: 999; color: Qt.rgba(0x11/255,0x11/255,0x1b/255,0.5) }
+
+                RowLayout {
+                    id: titleRow
+                    anchors { verticalCenter: parent.verticalCenter; left: parent.left; right: parent.right; leftMargin: 13; rightMargin: 13 }
+                    spacing: 8
+                    Text {
+                        text: {
+                            var t = Hyprland.activeToplevel?.title ?? ""
+                            if (t.toLowerCase().includes("firefox")) return ""
+                            if (t.toLowerCase().includes("discord")) return "󱏮"
+                            if (t.toLowerCase().includes("code"))    return "󰅴"
+                            if (t.toLowerCase().includes("spotify")) return ""
+                            return ""
+                        }
+                        color: root.overlay2
+                        font { pixelSize: 14; family: root.nfFont }
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                    Text {
+                        text: Hyprland.activeToplevel?.title ?? "Desktop"
+                        color: root.text
+                        font { pixelSize: 12; bold: true; family: root.nfFont }
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                }
+            }
+
+        }
+
+        // ── RIGHT — anchored right, always tight ─────────────────────────
+        RowLayout {
+            anchors { right: parent.right; top: parent.top; bottom: parent.bottom; rightMargin: 10 }
+            spacing: 7
+            BarMod {
+                icon: ""; label: "RAM"
+                value: (sysStats.ramUsedMb / 1024).toFixed(1) + "G"
+                active: root.activePanel === "sysmon"
+                barColors: root
+                onClicked: root.openPanel("sysmon")
+            }
+
+            BarMod {
+                icon: ""; label: "CPU"
+                value: sysStats.cpuPct + "%"
+                active: root.activePanel === "sysmon"
+                barColors: root
+                onClicked: root.openPanel("sysmon")
+            }
+
+            BarMod {
+                icon: "󰔏"; label: ""
+                value: Math.round(sysStats.cpuTemp) + "C"
+                iconSize: 15
+                iconColor: root.peach
+                visible: sysStats.cpuTemp >= 75
+                active: true
+                barColors: root
+                onClicked: root.openPanel("sysmon")
+            }
+
+            BarMod {
+                icon: root.battCharging ? "󰂄" : (root.battPct > 20 ? "󰁹" : "󰁺")
+                label: ""
+                value: root.battPct + "%"
+                iconSize: 14
+                iconColor: root.battCharging ? root.green
+                         : root.battPct <= 20 ? root.red : root.subtext0
+                active: root.activePanel === "sysmon"
+                barColors: root
+                onClicked: root.openPanel("sysmon")
+            }
+
+            BarMod {
+                icon: "󰤨"; label: ""
+                value: sysStats.wifiSsid !== "" ? sysStats.wifiSsid : (sysStats.wifiSignal + "%")
+                active: root.activePanel === "net"
+                barColors: root
+                onClicked: root.openPanel("net")
+            }
+
+            BarMod {
+                icon: "󰑓"; label: ""
+                value: root.updateCount.toString()
+                iconSize: 24
+                iconColor: root.mauve
+                visible: root.updateCount > 0
+                barColors: root
+                onClicked: root.showToast(
+                    "Moonlit",
+                    "Updates available",
+                    root.aurHelper !== ""
+                        ? root.pacmanUpdateCount + " pacman and " + root.aurUpdateCount + " AUR updates are waiting when you have time <3"
+                        : root.pacmanUpdateCount + " pacman updates are waiting when you have time <3"
+                )
+            }
+
+            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+
+            TrayBtn {
+                icon: "󰕧"
+                iconSize: 19
+                iconColor: root.recordingActive ? root.red : root.overlay0
+                visible: root.recordingActive
+                active: true
+                barColors: root
+                onClicked: root.showToast("Moonlit", "Recording active", "A screen recording app is currently running")
+            }
+
+            // Bluetooth
+            TrayBtn {
+                icon: "󰂯"
+                iconSize: 17
+                iconColor: root.btPowered ? root.mauve : root.overlay0
+                active: root.activePanel === "bt"
+                barColors: root
+                onClicked: root.openPanel("bt")
+            }
+
+            // Volume — nf-md-volume_high
+            TrayBtn {
+                icon: (root.volMuted || root.volPct === 0) ? "󰖁" : "󰕾"
+                active: root.activePanel === "audio"
+                barColors: root
+                onClicked: root.openPanel("audio")
+            }
+
+            // Clipboard — nf-md-content_copy
+            TrayBtn {
+                icon: ""
+                iconSize: 28
+                active: root.activePanel === "clip"
+                barColors: root
+                onClicked: root.openPanel("clip")
+            }
+
+            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+
+            Tray { barColors: root; Layout.alignment: Qt.AlignVCenter }
+
+            // Settings — ⚙ gear (U+2699)
+            TrayBtn {
+                icon: ""
+                active: root.activePanel === "qs"
+                barColors: root
+                onClicked: root.openPanel("qs")
+            }
+
+            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+
+            // Clock
+            Item {
+                implicitHeight: 28
+                implicitWidth: clockTxt.implicitWidth + 20
+                Layout.alignment: Qt.AlignVCenter
+
+                Rectangle {
+                    anchors.fill: parent; radius: 999
+                    color: root.activePanel === "cal"
+                           ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16)
+                           : (clockHov.containsMouse ? Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.07) : "transparent")
+                    Behavior on color { ColorAnimation { duration: 140 } }
+                }
+
+                Text {
+                    id: clockTxt
+                    anchors.centerIn: parent
+                    color: root.activePanel === "cal" ? root.accent : root.text
+                    font { pixelSize: 13; bold: true; family: root.nfFont }
+                    Behavior on color { ColorAnimation { duration: 140 } }
+                    Timer {
+                        interval: 1000; running: true; repeat: true; triggeredOnStart: true
+                        onTriggered: clockTxt.text = Qt.formatDateTime(new Date(), "hh:mm")
+                    }
+                }
+
+                MouseArea {
+                    id: clockHov
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.openPanel("cal")
+                }
+            }
+
+            // Power — nf-fa-power_off 
+            TrayBtn {
+                icon: ""
+                iconColor: root.maroon
+                barColors: root
+                onClicked: root.openPanel("power")
+                activeHoverColor: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16)
+            }
+        }
+    }
         }
     }
 

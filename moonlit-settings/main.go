@@ -59,7 +59,7 @@ func colorToHex(c color.Color) string {
 	return fmt.Sprintf("#%02x%02x%02x", nc.R, nc.G, nc.B)
 }
 
-const version = "v0.1"
+const version = "v0.2.0-beta"
 
 var keybindOrder = []string{"terminal", "launcher", "close", "fullscreen", "float"}
 

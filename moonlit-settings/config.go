@@ -56,6 +56,7 @@ type Config struct {
 	ToastPosition string             `json:"toastPosition"` // "auto" | "top-right" | ...
 	WallpaperDir  string             `json:"wallpaperDir"`   // path, default ~/Pictures/Wallpapers
 	PowerProfile  string             `json:"powerProfile"`   // powersave | schedutil | performance
+	PowerPersist  bool               `json:"powerPersist"`   // enable systemd service for reboot survival
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
 }
@@ -89,6 +90,7 @@ func defaultConfig() Config {
 		ToastPosition: "auto",
 		WallpaperDir:  "~/Pictures/Wallpapers",
 		PowerProfile:  "schedutil",
+		PowerPersist:  false,
 		Hypr: HyprSettings{
 			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
 			GapsIn: 3, GapsOut: 8, BorderSize: 2,

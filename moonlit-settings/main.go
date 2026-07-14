@@ -456,13 +456,10 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		}
 	}
 	applyGov := func(gov string) {
-		// Try cpupower via pkexec (standard Linux CPU scaling tool).
 		if _, err := exec.LookPath("cpupower"); err == nil {
-			cmd := exec.Command("pkexec", "cpupower", "frequency-set", "-g", gov)
-			cmd.Start()
+			exec.Command("pkexec", "cpupower", "frequency-set", "-g", gov).Start()
 			return
 		}
-		// Fallback: direct sysfs write via pkexec (needs root).
 		cmd := exec.Command("pkexec", "sh", "-c",
 			fmt.Sprintf("echo %s | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null", gov))
 		cmd.Start()
@@ -477,7 +474,6 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		keyToLabel[k] = l
 	}
 
-	// Discover available governors
 	avail := []string{}
 	if data, err := os.ReadFile("/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors"); err == nil {
 		for _, g := range strings.Fields(string(data)) {
@@ -495,14 +491,30 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		cfg.PowerProfile = gov
 		save()
 		applyGov(gov)
+		if cfg.PowerPersist {
+			syncPowerService(gov, true)
+		}
 	})
-	if label, ok := keyToLabel[cfg.PowerProfile]; ok {
-		sel.SetSelected(label)
-	} else if len(avail) > 0 {
-		sel.SetSelected(avail[0])
+
+	persistCheck := widget.NewCheck("Persist after reboot", func(b bool) {
+		cfg.PowerPersist = b
+		save()
+		syncPowerService(cfg.PowerProfile, b)
+	})
+
+	sync := func() {
+		if label, ok := keyToLabel[cfg.PowerProfile]; ok {
+			sel.SetSelected(label)
+		} else if len(avail) > 0 {
+			sel.SetSelected(avail[0])
+		}
+		persistCheck.SetChecked(cfg.PowerPersist)
 	}
+	sync()
 
 	govCard := widget.NewCard("CPU governor", "Controls CPU frequency scaling behavior", sel)
+	persistCard := widget.NewCard("Survive reboot", "Restore the governor after every boot via a systemd user service",
+		persistCheck)
 	descCard := widget.NewCard("What they do", "", container.NewVBox(
 		hintText("Power save — lowest clock speed, best battery life"),
 		hintText("Balanced — scales up only when needed (default)"),
@@ -512,18 +524,53 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	reset := resetButton(func() {
 		d := defaultConfig()
 		cfg.PowerProfile = d.PowerProfile
-		if label, ok := keyToLabel[d.PowerProfile]; ok {
-			sel.SetSelected(label)
-		}
+		cfg.PowerPersist = d.PowerPersist
+		sync()
 		save()
 		applyGov(d.PowerProfile)
+		syncPowerService(d.PowerProfile, d.PowerPersist)
 	})
 
-	body := container.NewVBox(govCard, descCard, hintText("Changes apply immediately. Dropped on reboot — re-apply from this tab or set a systemd service to persist."))
+	body := container.NewVBox(govCard, persistCard, descCard)
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 
-// ── Hyprland tab: hard changes behind Apply + reset ──────────────────────
+// syncPowerService enables/disables the systemd user service that restores
+// the CPU governor on boot. The service runs a small inline script that
+// reads config.json and writes the governor via pkexec.
+func syncPowerService(gov string, enable bool) {
+	home, _ := os.UserHomeDir()
+	svcDir := filepath.Join(home, ".config", "systemd", "user")
+	os.MkdirAll(svcDir, 0o755)
+	svcPath := filepath.Join(svcDir, "moonlit-power.service")
+
+	if enable {
+		cp := filepath.Join(home, ".config", "moonlit", "config.json")
+		script := "#!/bin/sh\n" +
+			`GOV=$(python3 -c "import json;print(json.load(open('` + cp + `')).get('powerProfile','schedutil'))" 2>/dev/null)` + "\n" +
+			`[ -z "$GOV" ] && GOV=schedutil` + "\n" +
+			`if command -v cpupower >/dev/null; then` + "\n" +
+			`  cpupower frequency-set -g "$GOV"` + "\n" +
+			`else` + "\n" +
+			`  echo "$GOV" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null` + "\n" +
+			`fi`
+		unit := "[Unit]\nDescription=Moonlit Shell power profile\n\n" +
+			"[Service]\nType=oneshot\nExecStart=/bin/sh -c '" +
+			strings.ReplaceAll(script, "'", `'"'"'`) + "'\n" +
+			"RemainAfterExit=yes\n\n" +
+			"[Install]\nWantedBy=default.target\n"
+		os.WriteFile(svcPath, []byte(unit), 0o644)
+		exec.Command("systemctl", "--user", "daemon-reload").Run()
+		exec.Command("systemctl", "--user", "enable", "moonlit-power.service").Run()
+		exec.Command("systemctl", "--user", "start", "moonlit-power.service").Run()
+	} else {
+		exec.Command("systemctl", "--user", "stop", "moonlit-power.service").Run()
+		exec.Command("systemctl", "--user", "disable", "moonlit-power.service").Run()
+		os.Remove(svcPath)
+		exec.Command("systemctl", "--user", "daemon-reload").Run()
+	}
+}
+
 func hyprTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	h := &cfg.Hypr
 	var syncs []func()

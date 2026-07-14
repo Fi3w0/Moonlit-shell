@@ -5,6 +5,7 @@ import Quickshell.Services.Pipewire
 import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -34,9 +35,9 @@ PanelWindow {
     readonly property color red:      "#f38ba8"
     readonly property color mauve:    "#cba6f7"
 
-    // Accent — moonlight mauve (fresh aesthetic)
-    readonly property color accent:     mauve
-    readonly property color accentSoft: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.16)
+    // Accent — moonlight mauve, live from Config (moonlit-settings app)
+    readonly property color accent:     Config.accent
+    readonly property color accentSoft: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.16)
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
 
@@ -257,7 +258,7 @@ PanelWindow {
             // signal "open" with a bright mauve border, not a see-through fill
             color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.72)
             border.color: root.activePanel === "cal"
-                        ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.65)
+                        ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.65)
                         : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
             Behavior on border.color { ColorAnimation { duration: 160 } }
 

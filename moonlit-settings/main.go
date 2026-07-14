@@ -83,6 +83,7 @@ func main() {
 		container.NewTabItem("Theme", themeTab(&cfg, w)),
 		container.NewTabItem("Bar", barTab(&cfg, w)),
 		container.NewTabItem("Notifications", notifTab(&cfg, w)),
+		container.NewTabItem("Wallpapers", wallpaperTab(&cfg, w)),
 		container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
 		container.NewTabItem("Keys", keybindTab(&cfg, w)),
 		container.NewTabItem("About", aboutTab(&cfg, w)),
@@ -90,7 +91,7 @@ func main() {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	w.SetContent(container.NewBorder(header(), nil, nil, nil, tabs))
-	w.Resize(fyne.NewSize(480, 560))
+	w.Resize(fyne.NewSize(500, 600))
 	w.ShowAndRun()
 }
 
@@ -318,6 +319,46 @@ func notifTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	})
 
 	body := container.NewVBox(durCard, maxCard, posCard, hintText("Notifications changes apply instantly."))
+	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
+}
+
+// ── Wallpapers tab: directory path + slideshow interval ──────────────────
+func wallpaperTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
+	save := func() {
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+	}
+
+	dirEntry := widget.NewEntry()
+	dirEntry.SetText(cfg.WallpaperDir)
+	dirEntry.SetPlaceHolder("~/Pictures/Wallpapers")
+	dirEntry.OnChanged = func(s string) {
+		cfg.WallpaperDir = s
+		save()
+	}
+
+	dirCard := widget.NewCard("Wallpaper directory", "Where your wallpaper images live", container.NewVBox(
+		dirEntry,
+		widget.NewButton("Browse…", func() {
+			dialog.NewFolderOpen(func(lu fyne.ListableURI, err error) {
+				if err != nil || lu == nil {
+					return
+				}
+				dirEntry.SetText(lu.Path())
+			}, w).Show()
+		}),
+		hintText("Use ~ for your home directory (e.g. ~/Pictures/Wallpapers). Changes apply when you reopen the wallpaper panel."),
+	))
+
+	reset := resetButton(func() {
+		d := defaultConfig()
+		cfg.WallpaperDir = d.WallpaperDir
+		dirEntry.SetText(d.WallpaperDir)
+		save()
+	})
+
+	body := container.NewVBox(dirCard)
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 

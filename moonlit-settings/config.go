@@ -54,6 +54,7 @@ type Config struct {
 	ToastDuration int                `json:"toastDuration"` // ms, 1000-10000
 	MaxToasts     int                `json:"maxToasts"`     // 1-10
 	ToastPosition string             `json:"toastPosition"` // "auto" | "top-right" | ...
+	WallpaperDir  string             `json:"wallpaperDir"`   // path, default ~/Pictures/Wallpapers
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
 }
@@ -85,6 +86,7 @@ func defaultConfig() Config {
 		ToastDuration: 4200,
 		MaxToasts:     5,
 		ToastPosition: "auto",
+		WallpaperDir:  "~/Pictures/Wallpapers",
 		Hypr: HyprSettings{
 			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
 			GapsIn: 3, GapsOut: 8, BorderSize: 2,

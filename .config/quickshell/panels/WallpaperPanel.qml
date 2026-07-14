@@ -44,7 +44,7 @@ PanelWindow {
     readonly property color   mauve:    Config.accent
 
     readonly property string homeDir: Quickshell.env("HOME")
-    readonly property string wallDir: homeDir + "/Pictures/Wallpapers"
+    readonly property string wallDir: Config.resolvedWallpaperDir
 
     // ── Apply a wallpaper via awww (animated grow transition; handles gifs) ──
     // Apply via awww and record the pick (path passed as $1 to dodge quoting issues)

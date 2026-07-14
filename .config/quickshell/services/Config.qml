@@ -28,6 +28,14 @@ Singleton {
     readonly property int    toastDuration:  adapter.toastDuration
     readonly property int    maxToasts:      adapter.maxToasts
     readonly property string toastPosition:  adapter.toastPosition
+    readonly property string wallpaperDir:   adapter.wallpaperDir
+
+    function resolvePath(p) {
+        if (p === undefined || p === "") return ""
+        if (p[0] === "~") return Quickshell.env("HOME") + p.substring(1)
+        return p
+    }
+    readonly property string resolvedWallpaperDir: resolvePath(wallpaperDir)
 
     // ── Palette (Catppuccin flavor) ──────────────────────────────────────
     // flavor picks the neutral ramp (base…text); accent stays separate on top.
@@ -75,6 +83,7 @@ Singleton {
             property int    toastDuration: 4200
             property int    maxToasts: 5
             property string toastPosition: "auto"
+            property string wallpaperDir: "~/Pictures/Wallpapers"
         }
     }
 }

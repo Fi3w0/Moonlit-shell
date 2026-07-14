@@ -7,9 +7,14 @@ PanelWindow {
     id: root
     required property var relay
 
-    anchors.top: true
-    anchors.left: Config.barPosition === "left"
-    anchors.right: Config.barPosition !== "left"
+    readonly property string effectivePosition: Config.toastPosition === "auto"
+        ? (Config.barPosition === "left" ? "top-left" : (Config.barPosition === "right" ? "top-right" : "top-right"))
+        : Config.toastPosition
+
+    anchors.top: effectivePosition.startsWith("top")
+    anchors.bottom: effectivePosition.startsWith("bottom")
+    anchors.left: effectivePosition.endsWith("left")
+    anchors.right: effectivePosition.endsWith("right")
     margins.top: Config.barPosition === "top" ? 50 : 10
     margins.left: Config.barPosition === "left" ? 52 : 0
     margins.right: Config.barPosition === "right" ? 52 : 0
@@ -27,13 +32,20 @@ PanelWindow {
             toastModel.setProperty(i, "closing", true)
     }
 
+    function capToasts() {
+        while (toastModel.count > Config.maxToasts) {
+            toastModel.setProperty(0, "closing", true)
+        }
+    }
+
     Connections {
         target: root.relay
         function onNotify(app, title, body) {
             var id = Date.now()
             toastModel.append({ tid: id, app: app, title: title, body: body, closing: false })
+            capToasts()
             Qt.createQmlObject(
-                'import QtQuick; Timer { interval: 4200; running: true; onTriggered: { for(var i=0;i<toastModel.count;i++){if(toastModel.get(i).tid===' + id + '){toastModel.setProperty(i,"closing",true);break;}} destroy() } }',
+                'import QtQuick; Timer { interval: ' + Config.toastDuration + '; running: true; onTriggered: { for(var i=0;i<toastModel.count;i++){if(toastModel.get(i).tid===' + id + '){toastModel.setProperty(i,"closing",true);break;}} destroy() } }',
                 root)
         }
     }

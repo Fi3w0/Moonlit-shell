@@ -82,6 +82,7 @@ func main() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Theme", themeTab(&cfg, w)),
 		container.NewTabItem("Bar", barTab(&cfg, w)),
+		container.NewTabItem("Notifications", notifTab(&cfg, w)),
 		container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
 		container.NewTabItem("Keys", keybindTab(&cfg, w)),
 		container.NewTabItem("About", aboutTab(&cfg, w)),
@@ -254,6 +255,69 @@ func barTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	})
 
 	body := container.NewVBox(lookCard, widgetsCard, hintText("Bar changes apply instantly."))
+	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
+}
+
+// ── Notifications tab: toast duration, max visible, position ────────────
+func notifTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
+	save := func() {
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+	}
+
+	durVal := widget.NewLabel("")
+	dur := widget.NewSlider(1000, 10000)
+	dur.Step = 200
+	dur.OnChanged = func(v float64) {
+		cfg.ToastDuration = int(v)
+		durVal.SetText(fmt.Sprintf("%.1fs", v/1000))
+		save()
+	}
+
+	maxVal := widget.NewLabel("")
+	maxS := widget.NewSlider(1, 10)
+	maxS.Step = 1
+	maxS.OnChanged = func(v float64) {
+		cfg.MaxToasts = int(v)
+		maxVal.SetText(fmt.Sprintf("%d", int(v)))
+		save()
+	}
+
+	posOpts := []string{"Auto (follows bar)", "Top-right", "Top-left", "Bottom-right", "Bottom-left"}
+	posKeys := map[string]string{"Auto (follows bar)": "auto", "Top-right": "top-right", "Top-left": "top-left", "Bottom-right": "bottom-right", "Bottom-left": "bottom-left"}
+	var toastPosKey = map[string]string{"auto": "Auto (follows bar)", "top-right": "Top-right", "top-left": "Top-left", "bottom-right": "Bottom-right", "bottom-left": "Bottom-left"}
+
+	pos := widget.NewSelect(posOpts, func(s string) {
+		cfg.ToastPosition = posKeys[s]
+		save()
+	})
+
+	sync := func() {
+		dur.SetValue(float64(cfg.ToastDuration))
+		durVal.SetText(fmt.Sprintf("%.1fs", float64(cfg.ToastDuration)/1000))
+		maxS.SetValue(float64(cfg.MaxToasts))
+		maxVal.SetText(fmt.Sprintf("%d", cfg.MaxToasts))
+		pos.SetSelected(toastPosKey[cfg.ToastPosition])
+	}
+	sync()
+
+	durCard := widget.NewCard("Duration", "How long each notification stays on screen", container.New(&labeledGrid{},
+		widget.NewLabel("Toast timeout"), sliderRow(dur, durVal)))
+	maxCard := widget.NewCard("Max visible", "Cap how many toasts appear at once (oldest dismissed first)", container.New(&labeledGrid{},
+		widget.NewLabel("Max toasts"), sliderRow(maxS, maxVal)))
+	posCard := widget.NewCard("Position", "Which corner the notification stack anchors to", pos)
+
+	reset := resetButton(func() {
+		d := defaultConfig()
+		cfg.ToastDuration = d.ToastDuration
+		cfg.MaxToasts = d.MaxToasts
+		cfg.ToastPosition = d.ToastPosition
+		sync()
+		save()
+	})
+
+	body := container.NewVBox(durCard, maxCard, posCard, hintText("Notifications changes apply instantly."))
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 

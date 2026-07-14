@@ -51,6 +51,9 @@ type Config struct {
 	ShowTemp      bool               `json:"showTemp"`
 	ShowBattery   bool               `json:"showBattery"`
 	ShowRecording bool               `json:"showRecording"`
+	ToastDuration int                `json:"toastDuration"` // ms, 1000-10000
+	MaxToasts     int                `json:"maxToasts"`     // 1-10
+	ToastPosition string             `json:"toastPosition"` // "auto" | "top-right" | ...
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
 }
@@ -79,6 +82,9 @@ func defaultConfig() Config {
 		ShowTemp:      true,
 		ShowBattery:   true,
 		ShowRecording: true,
+		ToastDuration: 4200,
+		MaxToasts:     5,
+		ToastPosition: "auto",
 		Hypr: HyprSettings{
 			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
 			GapsIn: 3, GapsOut: 8, BorderSize: 2,

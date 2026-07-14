@@ -18,12 +18,12 @@ PanelWindow {
     color: "transparent"
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
-    readonly property color surface0: "#313244"
-    readonly property color surface1: "#45475a"
-    readonly property color surface2: "#585b70"
-    readonly property color overlay0: "#6c7086"
-    readonly property color subtext0: "#a6adc8"
-    readonly property color text:     "#cdd6f4"
+    readonly property color surface0: Config.surface0
+    readonly property color surface1: Config.surface1
+    readonly property color surface2: Config.surface2
+    readonly property color overlay0: Config.overlay0
+    readonly property color subtext0: Config.subtext0
+    readonly property color text:     Config.text
     readonly property color accent:     Config.accent
     readonly property color blue:     "#89b4fa"
     readonly property color mauve:    "#cba6f7"
@@ -108,9 +108,9 @@ PanelWindow {
         width: parent.width
         implicitHeight: smCol.implicitHeight + 10
         radius: 22
-        color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.70)
+        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.70)
         border.width: 1
-        border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+        border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
         clip: true
 
         Rectangle { anchors.top: parent.top; anchors.right: parent.right; width: 22; height: 22; color: parent.color }

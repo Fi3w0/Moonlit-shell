@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Widgets
 import QtQuick
+import "../services"
 
 // A catppuccin-styled popup that renders a tray item's DBus menu.
 // Submenus drill down in-place (with a Back row) — no recursive instantiation.
@@ -29,9 +30,9 @@ PopupWindow {
         anchors.fill: parent
         implicitHeight: col.implicitHeight + 12
         radius: 14
-        color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.97)
+        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.97)
         border.width: 1
-        border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.10)
+        border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.10)
 
         Column {
             id: col
@@ -73,7 +74,7 @@ PopupWindow {
                         visible: entryItem.modelData.isSeparator
                         anchors.centerIn: parent
                         width: parent.width - 14; height: 1
-                        color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.10)
+                        color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.10)
                     }
 
                     Rectangle {

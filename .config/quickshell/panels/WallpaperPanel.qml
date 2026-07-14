@@ -37,9 +37,9 @@ PanelWindow {
     }
 
     readonly property string nfFont:  "JetBrainsMono Nerd Font Mono"
-    readonly property color   text:     "#cdd6f4"
-    readonly property color   subtext0: "#a6adc8"
-    readonly property color   overlay0: "#6c7086"
+    readonly property color   text:     Config.text
+    readonly property color   subtext0: Config.subtext0
+    readonly property color   overlay0: Config.overlay0
     readonly property color   maroon:   "#eba0ac"
     readonly property color   mauve:    Config.accent
 
@@ -87,7 +87,7 @@ PanelWindow {
     // ── Background scrim (click outside the card to dismiss) ────────────────
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0x11/255, 0x11/255, 0x1b/255, 0.45)
+        color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.45)
         NumberAnimation on opacity { from: 0; to: 1; duration: 160; running: true; easing.type: Easing.OutCubic }
         MouseArea { anchors.fill: parent; onClicked: root.close() }
     }
@@ -100,9 +100,9 @@ PanelWindow {
         width: Math.min(parent.width - 96, 1320)
         height: 380
         radius: 26
-        color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.70)
+        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.70)
         border.width: 1
-        border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+        border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
 
         // swallow clicks so they don't fall through to the scrim
         MouseArea { anchors.fill: parent }
@@ -255,7 +255,7 @@ PanelWindow {
                         readonly property int rad: 16
 
                         // rounded dark backing (shows through any letterboxing)
-                        Rectangle { anchors.fill: parent; radius: frame.rad; color: "#181825" }
+                        Rectangle { anchors.fill: parent; radius: frame.rad; color: Config.mantle }
 
                         // wallpaper masked to rounded corners
                         Image {
@@ -291,7 +291,7 @@ PanelWindow {
                             border.width: cell.PathView.isCurrentItem ? 3 : 1
                             border.color: cell.PathView.isCurrentItem
                                           ? (cell.filePath === root.appliedPath ? root.mauve : root.maroon)
-                                          : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.10)
+                                          : Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.10)
                             Behavior on border.color { ColorAnimation { duration: 160 } }
                         }
 
@@ -300,7 +300,7 @@ PanelWindow {
                             visible: cell.filePath === root.appliedPath
                             anchors { top: parent.top; right: parent.right; margins: 8 }
                             width: 26; height: 26; radius: 13
-                            color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.85)
+                            color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.85)
                             Text {
                                 anchors.centerIn: parent; text: "󰄬"
                                 color: root.mauve; font { pixelSize: 14; family: root.nfFont }

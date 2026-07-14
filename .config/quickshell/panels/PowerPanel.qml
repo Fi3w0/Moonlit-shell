@@ -3,6 +3,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -27,7 +28,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0x11/255, 0x11/255, 0x1b/255, 0.7)
+        color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.7)
 
         NumberAnimation on opacity { from: 0; to: 1; duration: 180; running: true; easing.type: Easing.OutCubic }
 
@@ -55,9 +56,9 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         radius: 22
-                        color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.96)
+                        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.96)
                         border.width: 1
-                        border.color: pwBtn.hov ? pwBtn.modelData.color : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+                        border.color: pwBtn.hov ? pwBtn.modelData.color : Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
                         y: pwBtn.hov ? -6 : 0
                         Behavior on y { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
                         Behavior on border.color { ColorAnimation { duration: 140 } }
@@ -65,7 +66,7 @@ PanelWindow {
                         Rectangle {
                             anchors.horizontalCenter: parent.horizontalCenter
                             y: 24; width: 58; height: 58; radius: 18
-                            color: Qt.rgba(0x11/255, 0x11/255, 0x1b/255, 0.4)
+                            color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.4)
                             Text {
                                 anchors.centerIn: parent
                                 text: pwBtn.modelData.icon
@@ -77,20 +78,20 @@ PanelWindow {
                         Text {
                             anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 20 }
                             text: pwBtn.modelData.label
-                            color: "#cdd6f4"
+                            color: Config.text
                             font { pixelSize: 13; bold: true; family: root.nfFont }
                         }
 
                         Rectangle {
                             anchors { top: parent.top; right: parent.right; margins: 10 }
                             width: 20; height: 18; radius: 6
-                            color: "#313244"
+                            color: Config.surface0
                             border.width: 1
-                            border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.07)
+                            border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.07)
                             Text {
                                 anchors.centerIn: parent
                                 text: pwBtn.modelData.key
-                                color: "#a6adc8"
+                                color: Config.subtext0
                                 font { pixelSize: 10; family: root.nfFont }
                             }
                         }

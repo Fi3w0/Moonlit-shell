@@ -1,6 +1,7 @@
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 // Horizontal dot workspaces — pill for active, dot for occupied/empty
 Item {
@@ -26,7 +27,7 @@ Item {
         implicitWidth: wsRow.implicitWidth + 18
         height: 28
         radius: 999
-        color: Qt.rgba(0x11/255, 0x11/255, 0x1b/255, 0.5)
+        color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.5)
 
         Row {
             id: wsRow

@@ -29,19 +29,19 @@ PanelWindow {
     color: "transparent"
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
-    readonly property color  base:     "#1e1e2e"
-    readonly property color  mantle:   "#181825"
-    readonly property color  surface0: "#313244"
-    readonly property color  surface1: "#45475a"
-    readonly property color  surface2: "#585b70"
-    readonly property color  overlay0: "#6c7086"
-    readonly property color  overlay1: "#7f849c"
-    readonly property color  subtext0: "#a6adc8"
-    readonly property color  text:     "#cdd6f4"
+    readonly property color  base:     Config.base
+    readonly property color  mantle:   Config.mantle
+    readonly property color  surface0: Config.surface0
+    readonly property color  surface1: Config.surface1
+    readonly property color  surface2: Config.surface2
+    readonly property color  overlay0: Config.overlay0
+    readonly property color  overlay1: Config.overlay1
+    readonly property color  subtext0: Config.subtext0
+    readonly property color  text:     Config.text
     readonly property color  accent:     Config.accent
     readonly property color  green:    "#a6e3a1"
     readonly property color  mauve:    "#cba6f7"
-    readonly property color  crust:    "#11111b"
+    readonly property color  crust:    Config.crust
 
     // Native data
     PwObjectTracker { objects: Pipewire.defaultAudioSink ? [Pipewire.defaultAudioSink] : [] }
@@ -64,9 +64,9 @@ PanelWindow {
         width: parent.width
         implicitHeight: qsCol.implicitHeight + 10
         radius: 22
-        color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.70)
+        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.70)
         border.width: 1
-        border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+        border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
         clip: true
 
         Rectangle { anchors.top: parent.top; anchors.right: parent.right; width: 22; height: 22; color: parent.color }
@@ -164,8 +164,8 @@ PanelWindow {
 
                             Rectangle {
                                 width: 38; height: 38; radius: 12
-                                color: tbn.on ? Qt.rgba(0x11/255,0x11/255,0x1b/255,0.16)
-                                             : Qt.rgba(0x11/255,0x11/255,0x1b/255,0.28)
+                                color: tbn.on ? Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b,0.16)
+                                             : Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b,0.28)
 
                                 Text {
                                     anchors.centerIn: parent
@@ -187,7 +187,7 @@ PanelWindow {
                                 }
                                 Text {
                                     text: tbn.sub
-                                    color: tbn.on ? Qt.rgba(0x11/255,0x11/255,0x1b/255,0.7) : root.overlay1
+                                    color: tbn.on ? Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b,0.7) : root.overlay1
                                     font { pixelSize: 10; family: root.nfFont }
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true

@@ -24,9 +24,9 @@ PanelWindow {
         Rectangle {
             anchors.fill: parent
             radius: 999
-            color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, 0.94)
+            color: Qt.rgba(Config.mantle.r, Config.mantle.g, Config.mantle.b, 0.94)
             border.width: 1
-            border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+            border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
 
             Row {
                 anchors { fill: parent; leftMargin: 20; rightMargin: 20 }
@@ -45,7 +45,7 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - 22 - 14 - 40; height: 8
                     radius: 999
-                    color: "#585b70"
+                    color: Config.surface2
 
                     Rectangle {
                         width: parent.width * (root.value / 100)
@@ -58,7 +58,7 @@ PanelWindow {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.value
-                    color: "#cdd6f4"
+                    color: Config.text
                     font { pixelSize: 14; bold: true; family: root.nfFont }
                     width: 34; horizontalAlignment: Text.AlignRight
                 }

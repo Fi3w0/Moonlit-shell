@@ -4,6 +4,7 @@ import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 // System tray icons (StatusNotifierItem). Populates when apps that use a tray
 // are running (Discord, Steam, nm-applet, …). Click an icon → the app's menu
@@ -42,7 +43,7 @@ RowLayout {
                 anchors.fill: parent
                 radius: 8
                 color: (hov.containsMouse || trayMenu.visible)
-                       ? Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.07) : "transparent"
+                       ? Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.07) : "transparent"
                 Behavior on color { ColorAnimation { duration: 140 } }
             }
 

@@ -16,17 +16,17 @@ PanelWindow {
     signal showToast(string app, string title, string body)
 
     // ── Colors ───────────────────────────────────────────────────────────
-    readonly property color crust:    "#11111b"
-    readonly property color mantle:   "#181825"
-    readonly property color base:     "#1e1e2e"
-    readonly property color surface0: "#313244"
-    readonly property color surface1: "#45475a"
-    readonly property color surface2: "#585b70"
-    readonly property color overlay0: "#6c7086"
-    readonly property color overlay2: "#9399b2"
-    readonly property color subtext0: "#a6adc8"
-    readonly property color subtext1: "#bac2de"
-    readonly property color text:     "#cdd6f4"
+    readonly property color crust:    Config.crust
+    readonly property color mantle:   Config.mantle
+    readonly property color base:     Config.base
+    readonly property color surface0: Config.surface0
+    readonly property color surface1: Config.surface1
+    readonly property color surface2: Config.surface2
+    readonly property color overlay0: Config.overlay0
+    readonly property color overlay2: Config.overlay2
+    readonly property color subtext0: Config.subtext0
+    readonly property color subtext1: Config.subtext1
+    readonly property color text:     Config.text
     readonly property color pink:     "#f38ba8"
     readonly property color maroon:   "#eba0ac"
     readonly property color green:    "#a6e3a1"
@@ -224,7 +224,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignVCenter
                 visible: Hyprland.activeToplevel !== null
 
-                Rectangle { anchors.fill: parent; radius: 999; color: Qt.rgba(0x11/255,0x11/255,0x1b/255,0.5) }
+                Rectangle { anchors.fill: parent; radius: 999; color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b,0.5) }
 
                 RowLayout {
                     id: titleRow
@@ -263,10 +263,10 @@ PanelWindow {
             implicitWidth: moonRow.implicitWidth + 26
             // keep the island solid dark so the clock stays readable;
             // signal "open" with a bright mauve border, not a see-through fill
-            color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, Config.barOpacity)
+            color: Qt.rgba(Config.mantle.r, Config.mantle.g, Config.mantle.b, Config.barOpacity)
             border.color: root.activePanel === "cal"
                         ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.65)
-                        : Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+                        : Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
             Behavior on border.color { ColorAnimation { duration: 160 } }
 
             RowLayout {
@@ -374,7 +374,7 @@ PanelWindow {
                 )
             }
 
-            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+            Rectangle { width: 1; height: 18; color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.12); Layout.alignment: Qt.AlignVCenter }
 
             TrayBtn {
                 icon: "󰕧"
@@ -413,7 +413,7 @@ PanelWindow {
                 onClicked: root.openPanel("clip")
             }
 
-            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+            Rectangle { width: 1; height: 18; color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.12); Layout.alignment: Qt.AlignVCenter }
 
             Tray { barColors: root; Layout.alignment: Qt.AlignVCenter }
 
@@ -445,7 +445,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, Config.barOpacity)
+        color: Qt.rgba(Config.mantle.r, Config.mantle.g, Config.mantle.b, Config.barOpacity)
 
         Rectangle {
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
@@ -491,7 +491,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignVCenter
                 visible: Hyprland.activeToplevel !== null
 
-                Rectangle { anchors.fill: parent; radius: 999; color: Qt.rgba(0x11/255,0x11/255,0x1b/255,0.5) }
+                Rectangle { anchors.fill: parent; radius: 999; color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b,0.5) }
 
                 RowLayout {
                     id: titleRow
@@ -591,7 +591,7 @@ PanelWindow {
                 )
             }
 
-            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+            Rectangle { width: 1; height: 18; color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.12); Layout.alignment: Qt.AlignVCenter }
 
             TrayBtn {
                 icon: "󰕧"
@@ -630,7 +630,7 @@ PanelWindow {
                 onClicked: root.openPanel("clip")
             }
 
-            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+            Rectangle { width: 1; height: 18; color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.12); Layout.alignment: Qt.AlignVCenter }
 
             Tray { barColors: root; Layout.alignment: Qt.AlignVCenter }
 
@@ -642,7 +642,7 @@ PanelWindow {
                 onClicked: root.openPanel("qs")
             }
 
-            Rectangle { width: 1; height: 18; color: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.12); Layout.alignment: Qt.AlignVCenter }
+            Rectangle { width: 1; height: 18; color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.12); Layout.alignment: Qt.AlignVCenter }
 
             // Clock
             Item {
@@ -654,7 +654,7 @@ PanelWindow {
                     anchors.fill: parent; radius: 999
                     color: root.activePanel === "cal"
                            ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16)
-                           : (clockHov.containsMouse ? Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.07) : "transparent")
+                           : (clockHov.containsMouse ? Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.07) : "transparent")
                     Behavior on color { ColorAnimation { duration: 140 } }
                 }
 
@@ -698,9 +698,9 @@ PanelWindow {
     component Island: Rectangle {
         implicitHeight: 34
         radius: height / 2
-        color: Qt.rgba(0x18/255, 0x18/255, 0x25/255, Config.barOpacity)
+        color: Qt.rgba(Config.mantle.r, Config.mantle.g, Config.mantle.b, Config.barOpacity)
         border.width: 1
-        border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+        border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
     }
 
     component BarMod: Item {
@@ -720,7 +720,7 @@ PanelWindow {
         Rectangle {
             anchors.fill: parent; radius: 999
             color: parent.active ? root.accentSoft
-                 : modHov.containsMouse ? Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.07)
+                 : modHov.containsMouse ? Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.07)
                  : "transparent"
             Behavior on color { ColorAnimation { duration: 140 } }
         }
@@ -766,7 +766,7 @@ PanelWindow {
         property bool   active:           false
         property int    iconSize:         24
         property var    barColors
-        property color  activeHoverColor: Qt.rgba(0xcd/255,0xd6/255,0xf4/255,0.07)
+        property color  activeHoverColor: Qt.rgba(Config.text.r, Config.text.g, Config.text.b,0.07)
         signal clicked()
 
         implicitWidth: 32; implicitHeight: 32

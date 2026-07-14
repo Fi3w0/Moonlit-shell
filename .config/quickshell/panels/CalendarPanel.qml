@@ -22,15 +22,15 @@ PanelWindow {
     color: "transparent"
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
-    readonly property color  base:     "#1e1e2e"
-    readonly property color  mantle:   "#181825"
-    readonly property color  surface0: "#313244"
-    readonly property color  surface1: "#45475a"
-    readonly property color  surface2: "#585b70"
-    readonly property color  overlay0: "#6c7086"
-    readonly property color  overlay1: "#7f849c"
-    readonly property color  subtext0: "#a6adc8"
-    readonly property color  text:     "#cdd6f4"
+    readonly property color  base:     Config.base
+    readonly property color  mantle:   Config.mantle
+    readonly property color  surface0: Config.surface0
+    readonly property color  surface1: Config.surface1
+    readonly property color  surface2: Config.surface2
+    readonly property color  overlay0: Config.overlay0
+    readonly property color  overlay1: Config.overlay1
+    readonly property color  subtext0: Config.subtext0
+    readonly property color  text:     Config.text
     readonly property color  accent:     Config.accent
     readonly property color  green:    "#a6e3a1"
     readonly property color  mauve:    Config.accent
@@ -49,9 +49,9 @@ PanelWindow {
         width: parent.width
         implicitHeight: col.implicitHeight + 10
         radius: 22
-        color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.70)
+        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.70)
         border.width: 1
-        border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+        border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
         clip: true
 
         // top-right corner fix
@@ -375,7 +375,7 @@ PanelWindow {
                                     radius: 14
                                     color: root.surface0
                                     border.width: 1
-                                    border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.06)
+                                    border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.06)
                                     opacity: modelData.closing ? 0 : (entered ? 1 : 0)
                                     x: modelData.closing ? width + 28 : 0
                                     clip: true

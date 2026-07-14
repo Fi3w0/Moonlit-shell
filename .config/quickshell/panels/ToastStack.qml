@@ -50,9 +50,9 @@ PanelWindow {
                 Layout.fillWidth: true
                 implicitHeight: toastRow.implicitHeight + 24
                 radius: 16
-                color: Qt.rgba(0x1e/255, 0x1e/255, 0x2e/255, 0.98)
+                color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.98)
                 border.width: 1
-                border.color: Qt.rgba(0xcd/255, 0xd6/255, 0xf4/255, 0.08)
+                border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
                 opacity: model.closing ? 0 : (entered ? 1 : 0)
                 x: model.closing ? width + 28 : 0
 
@@ -88,13 +88,13 @@ PanelWindow {
                         Layout.fillWidth: true
 
                         RowLayout {
-                            Text { text: model.app; color: "#a6adc8"; font { pixelSize: 10; bold: true; family: root.nfFont } }
+                            Text { text: model.app; color: Config.subtext0; font { pixelSize: 10; bold: true; family: root.nfFont } }
                             Item { Layout.fillWidth: true }
-                            Text { text: "now"; color: "#6c7086"; font { pixelSize: 10; family: root.nfFont } }
+                            Text { text: "now"; color: Config.overlay0; font { pixelSize: 10; family: root.nfFont } }
                         }
                         Text {
                             text: model.title
-                            color: "#cdd6f4"
+                            color: Config.text
                             font { pixelSize: 13; bold: true; family: root.nfFont }
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             maximumLineCount: 2
@@ -103,7 +103,7 @@ PanelWindow {
                         }
                         Text {
                             text: model.body
-                            color: "#a6adc8"
+                            color: Config.subtext0
                             font { pixelSize: 12; family: root.nfFont }
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             maximumLineCount: 2
@@ -114,7 +114,7 @@ PanelWindow {
 
                     Text {
                         text: "󰅖"
-                        color: "#6c7086"
+                        color: Config.overlay0
                         font { pixelSize: 14; family: root.nfFont }
                         Layout.alignment: Qt.AlignTop
 

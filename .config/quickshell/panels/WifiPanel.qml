@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
+import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -20,6 +21,7 @@ PanelWindow {
     implicitWidth: 322
     implicitHeight: wifiContent.implicitHeight + 10
     color: "transparent"
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
     readonly property color surface0: Config.surface0

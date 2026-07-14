@@ -173,6 +173,14 @@ func barTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	})
 	style.Horizontal = true
 
+	posDisp := map[string]string{"top": "Top", "left": "Left", "right": "Right"}
+	posKey := map[string]string{"Top": "top", "Left": "left", "Right": "right"}
+	position := widget.NewRadioGroup([]string{"Top", "Left", "Right"}, func(s string) {
+		cfg.BarPosition = posKey[s]
+		save()
+	})
+	position.Horizontal = true
+
 	opVal := widget.NewLabel("")
 	op := widget.NewSlider(0.4, 1.0)
 	op.Step = 0.02
@@ -194,6 +202,7 @@ func barTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		} else {
 			style.SetSelected("Islands (floating)")
 		}
+		position.SetSelected(posDisp[cfg.BarPosition])
 		op.SetValue(cfg.BarOpacity)
 		opVal.SetText(fmt.Sprintf("%.0f%%", cfg.BarOpacity*100))
 		clock.SetChecked(cfg.Clock24h)
@@ -205,8 +214,11 @@ func barTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	sync()
 
 	lookCard := widget.NewCard("Layout & look", "", container.NewVBox(
-		style,
-		container.New(&labeledGrid{}, widget.NewLabel("Background opacity"), sliderRow(op, opVal)),
+		container.New(&labeledGrid{},
+			widget.NewLabel("Edge"), position,
+			widget.NewLabel("Style"), style,
+			widget.NewLabel("Opacity"), sliderRow(op, opVal),
+		),
 		clock,
 	))
 	widgetsCard := widget.NewCard("Widgets", "Show or hide bar items",
@@ -215,6 +227,7 @@ func barTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	reset := resetButton(func() {
 		d := defaultConfig()
 		cfg.BarStyle = d.BarStyle
+		cfg.BarPosition = d.BarPosition
 		cfg.BarOpacity = d.BarOpacity
 		cfg.Clock24h = d.Clock24h
 		cfg.ShowUpdates = d.ShowUpdates

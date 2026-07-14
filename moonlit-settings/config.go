@@ -29,8 +29,9 @@ type Keybind struct {
 // only when the user hits Apply.
 type Config struct {
 	Accent        string             `json:"accent"`
-	Flavor        string             `json:"flavor"` // mocha | macchiato | frappe | latte
-	BarStyle      string             `json:"barStyle"` // "islands" | "classic"
+	Flavor        string             `json:"flavor"`      // mocha | macchiato | frappe | latte
+	BarStyle      string             `json:"barStyle"`    // "islands" | "classic"
+	BarPosition   string             `json:"barPosition"` // "top" | "left" | "right"
 	BarOpacity    float64            `json:"barOpacity"`
 	Clock24h      bool               `json:"clock24h"`
 	ShowUpdates   bool               `json:"showUpdates"`
@@ -58,6 +59,7 @@ func defaultConfig() Config {
 		Accent:        "#cba6f7", // moonlight mauve
 		Flavor:        "mocha",
 		BarStyle:      "islands",
+		BarPosition:   "top",
 		BarOpacity:    0.72,
 		Clock24h:      true,
 		ShowUpdates:   true,

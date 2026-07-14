@@ -82,25 +82,31 @@ func main() {
 
 	cfg := loadConfig()
 
-	w.SetContent(container.NewBorder(header(), nil, nil, nil, func() fyne.CanvasObject {
+	content := func() fyne.CanvasObject {
 		if isFirstRun() {
 			return wizardScreen(&cfg, w)
 		}
-		tabs := container.NewAppTabs(
-			container.NewTabItem("Theme", themeTab(&cfg, w)),
-			container.NewTabItem("Bar", barTab(&cfg, w)),
-			container.NewTabItem("Notifications", notifTab(&cfg, w)),
-			container.NewTabItem("Wallpapers", wallpaperTab(&cfg, w)),
-			container.NewTabItem("Power", powerTab(&cfg, w)),
-			container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
-			container.NewTabItem("Keys", keybindTab(&cfg, w)),
-			container.NewTabItem("About", aboutTab(&cfg, w)),
-		)
-		tabs.SetTabLocation(container.TabLocationTop)
-		return tabs
-	}()))
+		return makeTabs(&cfg, w)
+	}()
+	w.SetContent(container.NewBorder(header(), nil, nil, nil, content))
 	w.Resize(fyne.NewSize(500, 600))
 	w.ShowAndRun()
+}
+
+// makeTabs returns the full tab container shared by main() and the wizard.
+func makeTabs(cfg *Config, w fyne.Window) *container.AppTabs {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Theme", themeTab(cfg, w)),
+		container.NewTabItem("Bar", barTab(cfg, w)),
+		container.NewTabItem("Notifications", notifTab(cfg, w)),
+		container.NewTabItem("Wallpapers", wallpaperTab(cfg, w)),
+		container.NewTabItem("Power", powerTab(cfg, w)),
+		container.NewTabItem("Hyprland", hyprTab(cfg, w)),
+		container.NewTabItem("Keys", keybindTab(cfg, w)),
+		container.NewTabItem("About", aboutTab(cfg, w)),
+	)
+	tabs.SetTabLocation(container.TabLocationTop)
+	return tabs
 }
 
 // ── First-run wizard ─────────────────────────────────────────────────────
@@ -150,18 +156,7 @@ func wizardScreen(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			return
 		}
 		markFirstRunDone()
-		// Re-render with tabs
-		w.SetContent(container.NewBorder(header(), nil, nil, nil,
-			container.NewAppTabs(
-				container.NewTabItem("Theme", themeTab(cfg, w)),
-				container.NewTabItem("Bar", barTab(cfg, w)),
-				container.NewTabItem("Notifications", notifTab(cfg, w)),
-				container.NewTabItem("Wallpapers", wallpaperTab(cfg, w)),
-				container.NewTabItem("Power", powerTab(cfg, w)),
-				container.NewTabItem("Hyprland", hyprTab(cfg, w)),
-				container.NewTabItem("Keys", keybindTab(cfg, w)),
-				container.NewTabItem("About", aboutTab(cfg, w)),
-			)))
+		w.SetContent(container.NewBorder(header(), nil, nil, nil, makeTabs(cfg, w)))
 	})
 	getStarted.Importance = widget.SuccessImportance
 
@@ -461,14 +456,16 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		}
 	}
 	applyGov := func(gov string) {
-		// Write to all cpus concurrently
-		cpus, _ := filepath.Glob("/sys/devices/system/cpu/cpu[0-9]*/cpufreq/scaling_governor")
-		if len(cpus) == 0 {
+		// Try cpupower via pkexec (standard Linux CPU scaling tool).
+		if _, err := exec.LookPath("cpupower"); err == nil {
+			cmd := exec.Command("pkexec", "cpupower", "frequency-set", "-g", gov)
+			cmd.Start()
 			return
 		}
-		for _, p := range cpus {
-			os.WriteFile(p, []byte(gov), 0o222)
-		}
+		// Fallback: direct sysfs write via pkexec (needs root).
+		cmd := exec.Command("pkexec", "sh", "-c",
+			fmt.Sprintf("echo %s | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null", gov))
+		cmd.Start()
 	}
 
 	labelToKey := map[string]string{

@@ -11,6 +11,7 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"image/color"
@@ -27,6 +28,9 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
+
+//go:embed icon.png
+var iconBytes []byte
 
 // Catppuccin Mocha, used for the few hand-drawn bits (swatch, wordmark).
 const (
@@ -66,8 +70,10 @@ func main() {
 	}
 
 	a := app.NewWithID("dev.fiw.moonlit-settings")
+	a.SetIcon(fyne.NewStaticResource("moonlit-settings.png", iconBytes))
 	a.Settings().SetTheme(moonlitTheme{})
 	w := a.NewWindow("Moonlit Settings")
+	w.SetIcon(fyne.NewStaticResource("moonlit-settings.png", iconBytes))
 
 	cfg := loadConfig()
 

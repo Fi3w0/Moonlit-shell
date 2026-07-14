@@ -5,6 +5,7 @@ import Quickshell.Networking
 import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -37,7 +38,7 @@ PanelWindow {
     readonly property color  overlay1: "#7f849c"
     readonly property color  subtext0: "#a6adc8"
     readonly property color  text:     "#cdd6f4"
-    readonly property color  accent:     "#cba6f7"
+    readonly property color  accent:     Config.accent
     readonly property color  green:    "#a6e3a1"
     readonly property color  mauve:    "#cba6f7"
     readonly property color  crust:    "#11111b"
@@ -84,7 +85,7 @@ PanelWindow {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.08)
+                    color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.08)
                 }
 
                 RowLayout {
@@ -93,12 +94,12 @@ PanelWindow {
 
                     Rectangle {
                         width: 42; height: 42; radius: 13
-                        color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.16)
+                        color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.16)
 
                         Text {
                             anchors.centerIn: parent
                             text: ""
-                            color: "#cba6f7"
+                            color: Config.accent
                             font { pixelSize: 38; family: root.nfFont }
                         }
                     }
@@ -120,7 +121,7 @@ PanelWindow {
                     Item {
                         width: 38; height: 38
 
-                        Rectangle { anchors.fill: parent; radius: 12; color: pwrHov.containsMouse ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.16) : "transparent" }
+                        Rectangle { anchors.fill: parent; radius: 12; color: pwrHov.containsMouse ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16) : "transparent" }
                         Text { anchors.centerIn: parent; text: ""; color: "#eba0ac"; font { pixelSize: 22; family: root.nfFont } }
                         MouseArea { id: pwrHov; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.openPanel("power") }
                     }

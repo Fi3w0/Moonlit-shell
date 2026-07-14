@@ -4,6 +4,7 @@ import Quickshell.Networking
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import "../services"
 
 PanelWindow {
     id: root
@@ -23,7 +24,7 @@ PanelWindow {
     readonly property color overlay0: "#6c7086"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color accent:     "#cba6f7"
+    readonly property color accent:     Config.accent
     readonly property color crust:    "#11111b"
 
     // ── State ─────────────────────────────────────────────────────────────
@@ -192,7 +193,7 @@ PanelWindow {
 
                     Rectangle {
                         Layout.fillWidth: true; height: 36; radius: 10
-                        color: connHov.containsMouse ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.24) : Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.16)
+                        color: connHov.containsMouse ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.24) : Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16)
                         Behavior on color { ColorAnimation { duration: 120 } }
                         Text { anchors.centerIn: parent; text: "Connect"; color: root.accent; font { pixelSize: 12; bold: true; family: root.nfFont } }
                         MouseArea { id: connHov; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
@@ -244,7 +245,7 @@ PanelWindow {
 
                         Rectangle {
                             anchors.fill: parent; radius: 11
-                            color: model.active ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.10)
+                            color: model.active ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.10)
                                  : rowHov.containsMouse ? root.surface0 : "transparent"
                             Behavior on color { ColorAnimation { duration: 120 } }
                         }
@@ -270,7 +271,7 @@ PanelWindow {
                             Rectangle {
                                 visible: model.active
                                 implicitWidth: badgeTxt.implicitWidth + 14; height: 20; radius: 999
-                                color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.18)
+                                color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.18)
                                 Text { id: badgeTxt; anchors.centerIn: parent; text: "connected"; color: root.accent; font { pixelSize: 9; bold: true; family: root.nfFont } }
                             }
 

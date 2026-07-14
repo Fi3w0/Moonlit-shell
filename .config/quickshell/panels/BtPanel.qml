@@ -3,6 +3,7 @@ import Quickshell.Io
 import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -22,7 +23,7 @@ PanelWindow {
     readonly property color overlay0: "#6c7086"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color accent:     "#cba6f7"
+    readonly property color accent:     Config.accent
     readonly property color blue:     "#89b4fa"
     readonly property color green:    "#a6e3a1"
 
@@ -248,7 +249,7 @@ PanelWindow {
                             Rectangle {
                                 implicitWidth: actTxt.implicitWidth + 18; height: 24; radius: 999
                                 color: devRow.model.connected
-                                       ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.16)
+                                       ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16)
                                        : Qt.rgba(0x89/255,0xb4/255,0xfa/255,0.14)
 
                                 Text {

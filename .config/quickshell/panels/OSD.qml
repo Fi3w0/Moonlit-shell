@@ -1,5 +1,6 @@
 import Quickshell
 import QtQuick
+import "../services"
 
 PanelWindow {
     id: root
@@ -13,7 +14,7 @@ PanelWindow {
     color: "transparent"
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
-    readonly property color  accent:   "#cba6f7"
+    readonly property color  accent:   Config.accent
     readonly property color  yellow: "#f9e2af"
 
     Item {

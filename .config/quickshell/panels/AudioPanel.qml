@@ -4,6 +4,7 @@ import Quickshell.Services.Pipewire
 import Quickshell.Services.Mpris
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -25,7 +26,7 @@ PanelWindow {
     readonly property color overlay1: "#7f849c"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color accent:     "#cba6f7"
+    readonly property color accent:     Config.accent
     readonly property color teal:     "#94e2d5"
 
     function fmtTime(s) {
@@ -277,8 +278,8 @@ PanelWindow {
                             Rectangle {
                                 width: 36; height: 36; radius: 10
                                 color: playHov.containsMouse
-                                       ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.22)
-                                       : Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255,0.12)
+                                       ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.22)
+                                       : Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.12)
                                 opacity: playerCard.modelData.canTogglePlaying ? 1 : 0.3
                                 Behavior on color { ColorAnimation { duration: 100 } }
                                 Text {

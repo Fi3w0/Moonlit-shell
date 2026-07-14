@@ -4,6 +4,7 @@ import Quickshell.Services.UPower
 import QtQuick
 import QtQuick.Layouts
 import "../bar"
+import "../services"
 
 PanelWindow {
     id: root
@@ -23,7 +24,7 @@ PanelWindow {
     readonly property color overlay0: "#6c7086"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color accent:     "#cba6f7"
+    readonly property color accent:     Config.accent
     readonly property color blue:     "#89b4fa"
     readonly property color mauve:    "#cba6f7"
     readonly property color teal:     "#94e2d5"
@@ -172,9 +173,10 @@ PanelWindow {
                                 }
                                 // Area fill
                                 ctx.lineTo(width, height); ctx.lineTo(0, height); ctx.closePath()
+                                var ar = Math.round(root.accent.r*255), ag = Math.round(root.accent.g*255), ab = Math.round(root.accent.b*255)
                                 var grad = ctx.createLinearGradient(0, 0, 0, height)
-                                grad.addColorStop(0, "rgba(243,139,168,0.35)")
-                                grad.addColorStop(1, "rgba(243,139,168,0)")
+                                grad.addColorStop(0, "rgba("+ar+","+ag+","+ab+",0.35)")
+                                grad.addColorStop(1, "rgba("+ar+","+ag+","+ab+",0)")
                                 ctx.fillStyle = grad; ctx.fill()
                                 // Line
                                 ctx.beginPath()
@@ -182,7 +184,7 @@ PanelWindow {
                                     var lx = j * step, ly = height - (d[j] / 100) * height
                                     j === 0 ? ctx.moveTo(lx, ly) : ctx.lineTo(lx, ly)
                                 }
-                                ctx.strokeStyle = "#cba6f7"; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round"
+                                ctx.strokeStyle = "rgb("+ar+","+ag+","+ab+")"; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round"
                                 ctx.stroke()
                             }
                         }
@@ -301,7 +303,7 @@ PanelWindow {
                                 anchors { fill: parent; leftMargin: 10; rightMargin: 10 }
                                 Text { text: model.name; color: root.text; font { pixelSize: 12; family: root.nfFont } Layout.fillWidth: true; elide: Text.ElideRight }
                                 Text { text: model.cpu + "%"; color: root.accent; font { pixelSize: 12; bold: true; family: root.nfFont } width: 44; horizontalAlignment: Text.AlignRight }
-                                Text { text: model.mem + "%"; color: root.mauve; font { pixelSize: 12; bold: true; family: root.nfFont } width: 44; horizontalAlignment: Text.AlignRight }
+                                Text { text: model.mem + "%"; color: root.blue; font { pixelSize: 12; bold: true; family: root.nfFont } width: 44; horizontalAlignment: Text.AlignRight }
                             }
 
                             MouseArea { id: procHov; anchors.fill: parent; hoverEnabled: true }

@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -22,7 +23,7 @@ PanelWindow {
     readonly property color overlay1: "#7f849c"
     readonly property color subtext0: "#a6adc8"
     readonly property color text:     "#cdd6f4"
-    readonly property color accent:     "#cba6f7"
+    readonly property color accent:     Config.accent
     readonly property color green:    "#a6e3a1"
 
     ListModel { id: clipModel }

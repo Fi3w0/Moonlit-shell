@@ -51,7 +51,7 @@ Item {
                         width:  parent.active ? 26 : 9
                         height: 9
                         radius: 999
-                        color:  parent.active   ? root.barColors.pink
+                        color:  parent.active   ? root.barColors.accent
                               : parent.occupied ? root.barColors.overlay2
                               : root.barColors.surface2
                         opacity: parent.active ? 1 : parent.occupied ? 1 : 0.45

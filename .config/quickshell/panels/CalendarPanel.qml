@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Services.Mpris
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -30,9 +31,9 @@ PanelWindow {
     readonly property color  overlay1: "#7f849c"
     readonly property color  subtext0: "#a6adc8"
     readonly property color  text:     "#cdd6f4"
-    readonly property color  accent:     "#cba6f7"
+    readonly property color  accent:     Config.accent
     readonly property color  green:    "#a6e3a1"
-    readonly property color  mauve:    "#cba6f7"
+    readonly property color  mauve:    Config.accent
 
     // Active MPRIS player
     readonly property var player: {
@@ -71,7 +72,7 @@ PanelWindow {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.08)
+                    color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.08)
                 }
 
                 ColumnLayout {
@@ -283,7 +284,7 @@ PanelWindow {
                         Rectangle {
                             visible: root.notifCount > 0
                             radius: 999
-                            color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.14)
+                            color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.14)
                             implicitWidth: notifCountText.implicitWidth + 14
                             implicitHeight: 20
                             Text {
@@ -298,9 +299,9 @@ PanelWindow {
                         Rectangle {
                             visible: root.notifCount > 0
                             radius: 999
-                            color: clearHov.containsMouse ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.14) : "transparent"
+                            color: clearHov.containsMouse ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.14) : "transparent"
                             border.width: 1
-                            border.color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.22)
+                            border.color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.22)
                             implicitWidth: clearTxt.implicitWidth + 18
                             implicitHeight: 24
                             Text {
@@ -394,7 +395,7 @@ PanelWindow {
 
                                         Rectangle {
                                             width: 32; height: 32; radius: 10
-                                            color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.16)
+                                            color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.16)
                                             Layout.alignment: Qt.AlignTop
 
                                             Text {

@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
 import Qt.labs.folderlistmodel
+import "../services"
 
 // Visual wallpaper picker — a horizontal filmstrip of thumbnails read live
 // from ~/Pictures/Wallpapers (auto-updates when files are added/removed).
@@ -40,7 +41,7 @@ PanelWindow {
     readonly property color   subtext0: "#a6adc8"
     readonly property color   overlay0: "#6c7086"
     readonly property color   maroon:   "#eba0ac"
-    readonly property color   mauve:    "#cba6f7"
+    readonly property color   mauve:    Config.accent
 
     readonly property string homeDir: Quickshell.env("HOME")
     readonly property string wallDir: homeDir + "/Pictures/Wallpapers"
@@ -129,7 +130,7 @@ PanelWindow {
                     font { pixelSize: 18; bold: true; family: root.nfFont }
                 }
                 Rectangle {
-                    radius: 999; color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.16)
+                    radius: 999; color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.16)
                     implicitWidth: cntTxt.implicitWidth + 16; implicitHeight: 22
                     Text {
                         id: cntTxt; anchors.centerIn: parent

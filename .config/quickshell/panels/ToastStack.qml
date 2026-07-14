@@ -1,6 +1,7 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import "../services"
 
 PanelWindow {
     id: root
@@ -71,13 +72,13 @@ PanelWindow {
 
                     Rectangle {
                         width: 36; height: 36; radius: 11
-                        color: Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.18)
+                        color: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.18)
                         Layout.alignment: Qt.AlignTop
 
                         Text {
                             anchors.centerIn: parent
                             text: "󰂚"
-                            color: "#cba6f7"
+                            color: Config.accent
                             font { pixelSize: 17; family: root.nfFont }
                         }
                     }

@@ -9,8 +9,12 @@ PanelWindow {
     id: root
     signal close()
 
-    anchors { top: true; right: true }
-    margins.top: 42
+    anchors.top: true
+    anchors.left: Config.barPosition === "left"
+    anchors.right: Config.barPosition !== "left"
+    margins.top: Config.barPosition === "top" ? 42 : 10
+    margins.left: Config.barPosition === "left" ? 52 : 0
+    margins.right: Config.barPosition === "right" ? 52 : 0
     exclusiveZone: 0
     implicitWidth: 322
     implicitHeight: btContent.implicitHeight + 10

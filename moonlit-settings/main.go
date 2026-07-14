@@ -11,8 +11,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"image/color"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -47,6 +49,8 @@ func colorToHex(c color.Color) string {
 	return fmt.Sprintf("#%02x%02x%02x", nc.R, nc.G, nc.B)
 }
 
+const version = "v0.1"
+
 var keybindOrder = []string{"terminal", "launcher", "close", "fullscreen", "float"}
 
 func main() {
@@ -72,6 +76,7 @@ func main() {
 		container.NewTabItem("Bar", barTab(&cfg, w)),
 		container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
 		container.NewTabItem("Keys", keybindTab(&cfg, w)),
+		container.NewTabItem("About", aboutTab(&cfg, w)),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
@@ -487,6 +492,81 @@ func keybindTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 
 	body := container.NewVBox(warnBanner(), warn, card)
 	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewVScroll(body))
+}
+
+// ── About tab: config import/export/reset + version ─────────────────────
+func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
+	export := widget.NewButton("Export…", func() {
+		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
+			if err != nil || wc == nil {
+				return
+			}
+			defer wc.Close()
+			data, _ := json.MarshalIndent(*cfg, "", "  ")
+			if _, err := wc.Write(append(data, '\n')); err != nil {
+				dialog.ShowError(err, w)
+			}
+		}, w)
+		d.SetFileName("moonlit-config.json")
+		d.Show()
+	})
+	imp := widget.NewButton("Import…", func() {
+		dialog.NewFileOpen(func(rc fyne.URIReadCloser, err error) {
+			if err != nil || rc == nil {
+				return
+			}
+			defer rc.Close()
+			data, e := io.ReadAll(rc)
+			if e != nil {
+				dialog.ShowError(e, w)
+				return
+			}
+			var nc Config
+			if e := json.Unmarshal(data, &nc); e != nil {
+				dialog.ShowError(fmt.Errorf("not a valid config: %v", e), w)
+				return
+			}
+			*cfg = nc
+			if e := saveConfig(*cfg); e != nil {
+				dialog.ShowError(e, w)
+				return
+			}
+			_ = applyHypr(*cfg)
+			dialog.ShowInformation("Imported", "Config imported and applied. Reopen Moonlit Settings to refresh the controls.", w)
+		}, w).Show()
+	})
+	resetAll := widget.NewButton("Reset everything", func() {
+		dialog.ShowConfirm("Reset everything", "Restore all settings to defaults?", func(ok bool) {
+			if !ok {
+				return
+			}
+			*cfg = defaultConfig()
+			if e := saveConfig(*cfg); e != nil {
+				dialog.ShowError(e, w)
+				return
+			}
+			_ = applyHypr(*cfg)
+			dialog.ShowInformation("Reset", "All settings restored. Reopen to refresh the controls.", w)
+		}, w)
+	})
+	resetAll.Importance = widget.LowImportance
+
+	cfgCard := widget.NewCard("Config", "Back up, move, or reset your settings", container.NewVBox(
+		container.NewHBox(export, imp),
+		hintText("Exports ~/.config/moonlit/config.json. Import replaces it and applies."),
+		resetAll,
+	))
+
+	repo := canvas.NewText("github.com/Fi3w0/Moonlit-shell", hexToColor(cMauve))
+	repo.TextStyle = fyne.TextStyle{Monospace: true}
+	aboutCard := widget.NewCard("About", "", container.NewVBox(
+		widget.NewLabelWithStyle("Moonlit Shell  ·  settings "+version, fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+		widget.NewLabel("A hand-crafted Hyprland + Quickshell desktop."),
+		repo,
+		hintText("Made with 🌙"),
+	))
+
+	return container.NewVScroll(container.NewPadded(container.NewVBox(cfgCard, aboutCard)))
 }
 
 // ── shared bits ──────────────────────────────────────────────────────────

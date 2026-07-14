@@ -155,9 +155,16 @@ PanelWindow {
     }
 
     // ── Window setup ─────────────────────────────────────────────────────
-    anchors { top: true; left: true; right: true }
-    exclusiveZone: implicitHeight
+    // barPosition drives the anchoring: top = horizontal strip, left/right =
+    // vertical side bar. Reserve height (top) or width (side) accordingly.
+    readonly property bool vertical: Config.barPosition === "left" || Config.barPosition === "right"
+    anchors.top: true
+    anchors.bottom: Config.barPosition !== "top"
+    anchors.left: Config.barPosition !== "right"
+    anchors.right: Config.barPosition !== "left"
+    exclusiveZone: root.vertical ? implicitWidth : implicitHeight
     implicitHeight: 42
+    implicitWidth: 46
     color: "transparent"
 
     WheelHandler {
@@ -173,7 +180,137 @@ PanelWindow {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: Config.barStyle === "classic" ? classicLayout : islandsLayout
+        sourceComponent: root.vertical ? islandsVLayout
+                       : (Config.barStyle === "classic" ? classicLayout : islandsLayout)
+    }
+
+    // ── Vertical side-bar layout (barPosition left/right) ────────────────
+    // Three stacked pill islands: logo+workspaces (top), moon-clock (center),
+    // stats+controls+power (bottom). Icon-only — values live in the panels.
+    Component {
+        id: islandsVLayout
+        Item {
+            anchors.fill: parent
+
+            // TOP — logo + workspaces
+            Rectangle {
+                anchors { top: parent.top; horizontalCenter: parent.horizontalCenter; topMargin: 8 }
+                width: 34; radius: width / 2
+                implicitHeight: vTopCol.implicitHeight + 14
+                height: implicitHeight
+                color: Qt.rgba(Config.mantle.r, Config.mantle.g, Config.mantle.b, Config.barOpacity)
+                border.width: 1
+                border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
+
+                ColumnLayout {
+                    id: vTopCol
+                    anchors.centerIn: parent
+                    spacing: 6
+                    TrayBtn {
+                        icon: String.fromCodePoint(0xf303)
+                        iconColor: root.activePanel === "launcher" ? root.accent : root.maroon
+                        iconSize: 20; barColors: root
+                        onClicked: rofiProc.running = true
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                    Workspaces { vertical: true; barColors: root; Layout.alignment: Qt.AlignHCenter }
+                }
+            }
+
+            // CENTER — moon-clock (moon over HH over MM)
+            Rectangle {
+                anchors.centerIn: parent
+                width: 34; radius: width / 2
+                implicitHeight: vClockCol.implicitHeight + 16
+                height: implicitHeight
+                color: Qt.rgba(Config.mantle.r, Config.mantle.g, Config.mantle.b, Config.barOpacity)
+                border.width: 1
+                border.color: root.activePanel === "cal"
+                            ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.65)
+                            : Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
+                Behavior on border.color { ColorAnimation { duration: 160 } }
+
+                ColumnLayout {
+                    id: vClockCol
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text {
+                        text: String.fromCodePoint(0xf186)
+                        color: root.accent
+                        font { pixelSize: 13; family: root.nfFont }
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                    Text {
+                        id: vClockH
+                        color: root.text
+                        font { pixelSize: 13; bold: true; family: root.nfFont }
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                    Text {
+                        id: vClockM
+                        color: root.overlay2
+                        font { pixelSize: 13; bold: true; family: root.nfFont }
+                        Layout.alignment: Qt.AlignHCenter
+                        Timer {
+                            interval: 1000; running: true; repeat: true; triggeredOnStart: true
+                            onTriggered: {
+                                var now = new Date()
+                                vClockH.text = Qt.formatDateTime(now, Config.clock24h ? "HH" : "hh")
+                                vClockM.text = Qt.formatDateTime(now, "mm")
+                            }
+                        }
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent; hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.openPanel("cal")
+                }
+            }
+
+            // BOTTOM — stats + controls + power
+            Rectangle {
+                anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter; bottomMargin: 8 }
+                width: 34; radius: width / 2
+                implicitHeight: vBotCol.implicitHeight + 14
+                height: implicitHeight
+                color: Qt.rgba(Config.mantle.r, Config.mantle.g, Config.mantle.b, Config.barOpacity)
+                border.width: 1
+                border.color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
+
+                ColumnLayout {
+                    id: vBotCol
+                    anchors.centerIn: parent
+                    spacing: 3
+
+                    TrayBtn { icon: String.fromCodePoint(0xf4bc); iconSize: 17; active: root.activePanel === "sysmon"; barColors: root; onClicked: root.openPanel("sysmon"); Layout.alignment: Qt.AlignHCenter }
+                    TrayBtn { icon: String.fromCodePoint(0xe266); iconSize: 15; active: root.activePanel === "sysmon"; barColors: root; onClicked: root.openPanel("sysmon"); Layout.alignment: Qt.AlignHCenter }
+                    TrayBtn {
+                        icon: root.battCharging ? String.fromCodePoint(0xf0084) : (root.battPct > 20 ? String.fromCodePoint(0xf0079) : String.fromCodePoint(0xf007a))
+                        iconSize: 15
+                        iconColor: root.battCharging ? root.green : (root.battPct <= 20 ? root.red : root.subtext0)
+                        visible: Config.showBattery
+                        barColors: root; onClicked: root.openPanel("sysmon"); Layout.alignment: Qt.AlignHCenter
+                    }
+                    TrayBtn { icon: String.fromCodePoint(0xf0928); iconSize: 15; active: root.activePanel === "net"; barColors: root; onClicked: root.openPanel("net"); Layout.alignment: Qt.AlignHCenter }
+                    TrayBtn {
+                        icon: String.fromCodePoint(0xf0453); iconSize: 17; iconColor: root.mauve
+                        visible: Config.showUpdates && root.updateCount > 0
+                        barColors: root
+                        onClicked: root.showToast("Moonlit", "Updates available", root.updateCount + " updates are waiting when you have time <3")
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    Rectangle { implicitWidth: 16; implicitHeight: 1; color: Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.12); Layout.alignment: Qt.AlignHCenter }
+
+                    TrayBtn { icon: String.fromCodePoint(0xf00af); iconSize: 16; iconColor: root.btPowered ? root.mauve : root.overlay0; active: root.activePanel === "bt"; barColors: root; onClicked: root.openPanel("bt"); Layout.alignment: Qt.AlignHCenter }
+                    TrayBtn { icon: (root.volMuted || root.volPct === 0) ? String.fromCodePoint(0xf0581) : String.fromCodePoint(0xf057e); iconSize: 18; active: root.activePanel === "audio"; barColors: root; onClicked: root.openPanel("audio"); Layout.alignment: Qt.AlignHCenter }
+                    TrayBtn { icon: String.fromCodePoint(0xf328); iconSize: 20; active: root.activePanel === "clip"; barColors: root; onClicked: root.openPanel("clip"); Layout.alignment: Qt.AlignHCenter }
+                    TrayBtn { icon: String.fromCodePoint(0xf013); active: root.activePanel === "qs"; barColors: root; onClicked: root.openPanel("qs"); Layout.alignment: Qt.AlignHCenter }
+                    TrayBtn { icon: String.fromCodePoint(0xf011); iconColor: root.maroon; barColors: root; onClicked: root.openPanel("power"); Layout.alignment: Qt.AlignHCenter }
+                }
+            }
+        }
     }
 
     Component {

@@ -16,6 +16,8 @@ Singleton {
     readonly property color accent: adapter.accent
     // Top bar layout: "islands" (floating pills) or "classic" (solid topbar).
     readonly property string barStyle: adapter.barStyle
+    // Bar edge: "top" (horizontal) | "left" | "right" (vertical side bar).
+    readonly property string barPosition: adapter.barPosition
     // Bar look + per-widget visibility.
     readonly property real   barOpacity:    adapter.barOpacity
     readonly property bool   clock24h:       adapter.clock24h
@@ -60,6 +62,7 @@ Singleton {
             property string accent: "#cba6f7"
             property string flavor: "mocha"
             property string barStyle: "islands"
+            property string barPosition: "top"
             property real   barOpacity: 0.72
             property bool   clock24h: true
             property bool   showUpdates: true

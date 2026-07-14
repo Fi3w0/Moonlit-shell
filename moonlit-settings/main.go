@@ -17,6 +17,8 @@ import (
 	"image/color"
 	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -500,7 +502,7 @@ func keybindTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	return container.NewBorder(nil, footerApply(reset, apply), nil, nil, container.NewVScroll(body))
 }
 
-// ── About tab: config import/export/reset + version ─────────────────────
+// ── About tab: config import/export/reset + version + health check ────
 func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	export := widget.NewButton("Export…", func() {
 		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
@@ -560,8 +562,24 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	cfgCard := widget.NewCard("Config", "Back up, move, or reset your settings", container.NewVBox(
 		container.NewHBox(export, imp),
 		hintText("Exports ~/.config/moonlit/config.json. Import replaces it and applies."),
+		hintText("Auto-backup: every Apply snapshots config.json to ~/.config/moonlit/backups/ (keeps last 50)."),
 		resetAll,
 	))
+
+	health := widget.NewButton("Run health check", func() {
+		home, _ := os.UserHomeDir()
+		doc := filepath.Join(home, "moonlit-shell", "scripts", "moonlit-doctor")
+		if _, err := os.Stat(doc); os.IsNotExist(err) {
+			exe, _ := os.Executable()
+			doc = filepath.Join(filepath.Dir(exe), "..", "..", "scripts", "moonlit-doctor")
+		}
+		cmd := exec.Command("kitty", "-e", doc)
+		if err := cmd.Start(); err != nil {
+			dialog.ShowError(fmt.Errorf("could not launch health check: %v", err), w)
+		}
+	})
+	health.Importance = widget.MediumImportance
+	healthCard := widget.NewCard("Diagnostics", "Check that everything is wired up correctly", health)
 
 	repo := canvas.NewText("github.com/Fi3w0/Moonlit-shell", hexToColor(cMauve))
 	repo.TextStyle = fyne.TextStyle{Monospace: true}
@@ -572,7 +590,7 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		hintText("Made with 🌙"),
 	))
 
-	return container.NewVScroll(container.NewPadded(container.NewVBox(cfgCard, aboutCard)))
+	return container.NewVScroll(container.NewPadded(container.NewVBox(cfgCard, healthCard, aboutCard)))
 }
 
 // ── shared bits ──────────────────────────────────────────────────────────

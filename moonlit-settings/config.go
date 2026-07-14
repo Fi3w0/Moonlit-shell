@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
+	"time"
 )
 
 // HyprSettings are the "hard" knobs — they need `hyprctl reload` and can, in
@@ -117,6 +120,23 @@ func saveConfig(c Config) error {
 	}
 	data = append(data, '\n')
 	p := configPath()
+
+	// Auto-backup: snapshot the current config.json before overwriting.
+	if existing, err := os.ReadFile(p); err == nil {
+		backupDir := filepath.Join(filepath.Dir(p), "backups")
+		os.MkdirAll(backupDir, 0o755)
+		ts := time.Now().Format("20060102-150405")
+		os.WriteFile(filepath.Join(backupDir, fmt.Sprintf("config-%s.json", ts)), existing, 0o644)
+
+		// Prune: keep only the 50 most recent backups.
+		if entries, e := os.ReadDir(backupDir); e == nil && len(entries) > 50 {
+			sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
+			for i := 0; i < len(entries)-50; i++ {
+				os.Remove(filepath.Join(backupDir, entries[i].Name()))
+			}
+		}
+	}
+
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
 		return err
 	}

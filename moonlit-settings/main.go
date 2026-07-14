@@ -82,21 +82,108 @@ func main() {
 
 	cfg := loadConfig()
 
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Theme", themeTab(&cfg, w)),
-		container.NewTabItem("Bar", barTab(&cfg, w)),
-		container.NewTabItem("Notifications", notifTab(&cfg, w)),
-		container.NewTabItem("Wallpapers", wallpaperTab(&cfg, w)),
-		container.NewTabItem("Power", powerTab(&cfg, w)),
-		container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
-		container.NewTabItem("Keys", keybindTab(&cfg, w)),
-		container.NewTabItem("About", aboutTab(&cfg, w)),
-	)
-	tabs.SetTabLocation(container.TabLocationTop)
-
-	w.SetContent(container.NewBorder(header(), nil, nil, nil, tabs))
+	w.SetContent(container.NewBorder(header(), nil, nil, nil, func() fyne.CanvasObject {
+		if isFirstRun() {
+			return wizardScreen(&cfg, w)
+		}
+		tabs := container.NewAppTabs(
+			container.NewTabItem("Theme", themeTab(&cfg, w)),
+			container.NewTabItem("Bar", barTab(&cfg, w)),
+			container.NewTabItem("Notifications", notifTab(&cfg, w)),
+			container.NewTabItem("Wallpapers", wallpaperTab(&cfg, w)),
+			container.NewTabItem("Power", powerTab(&cfg, w)),
+			container.NewTabItem("Hyprland", hyprTab(&cfg, w)),
+			container.NewTabItem("Keys", keybindTab(&cfg, w)),
+			container.NewTabItem("About", aboutTab(&cfg, w)),
+		)
+		tabs.SetTabLocation(container.TabLocationTop)
+		return tabs
+	}()))
 	w.Resize(fyne.NewSize(500, 600))
 	w.ShowAndRun()
+}
+
+// ── First-run wizard ─────────────────────────────────────────────────────
+func wizardScreen(cfg *Config, w fyne.Window) fyne.CanvasObject {
+	swatch := canvas.NewCircle(hexToColor(cfg.Accent))
+	swatch.StrokeColor = hexToColor(cSurface1)
+	swatch.StrokeWidth = 1
+	swatchBox := container.NewGridWrap(fyne.NewSize(44, 44), swatch)
+	hexLabel := canvas.NewText(cfg.Accent, hexToColor(cText))
+	hexLabel.TextStyle = fyne.TextStyle{Monospace: true}
+	hexLabel.TextSize = 15
+
+	flavors := []string{"Mocha", "Macchiato", "Frappé", "Latte"}
+	flavorKey := map[string]string{"Mocha": "mocha", "Macchiato": "macchiato", "Frappé": "frappe", "Latte": "latte"}
+	palette := widget.NewSelect(flavors, func(s string) { cfg.Flavor = flavorKey[s] })
+
+	style := widget.NewRadioGroup([]string{"Islands (floating pills)", "Classic (solid bar)"}, func(s string) {
+		if s == "Classic (solid bar)" {
+			cfg.BarStyle = "classic"
+		} else {
+			cfg.BarStyle = "islands"
+		}
+	})
+	style.Horizontal = true
+
+	pos := widget.NewRadioGroup([]string{"Top", "Left", "Right"}, func(s string) {
+		cfg.BarPosition = map[string]string{"Top": "top", "Left": "left", "Right": "right"}[s]
+	})
+	pos.Horizontal = true
+
+	pickAccent := widget.NewButton("Pick accent color", func() {
+		p := dialog.NewColorPicker("Accent color", "", func(c color.Color) {
+			cfg.Accent = colorToHex(c)
+			swatch.FillColor = c
+			swatch.Refresh()
+			hexLabel.Text = cfg.Accent
+			hexLabel.Refresh()
+		}, w)
+		p.Advanced = true
+		p.Show()
+	})
+	pickAccent.Importance = widget.HighImportance
+
+	getStarted := widget.NewButton("Get Started", func() {
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
+		markFirstRunDone()
+		// Re-render with tabs
+		w.SetContent(container.NewBorder(header(), nil, nil, nil,
+			container.NewAppTabs(
+				container.NewTabItem("Theme", themeTab(cfg, w)),
+				container.NewTabItem("Bar", barTab(cfg, w)),
+				container.NewTabItem("Notifications", notifTab(cfg, w)),
+				container.NewTabItem("Wallpapers", wallpaperTab(cfg, w)),
+				container.NewTabItem("Power", powerTab(cfg, w)),
+				container.NewTabItem("Hyprland", hyprTab(cfg, w)),
+				container.NewTabItem("Keys", keybindTab(cfg, w)),
+				container.NewTabItem("About", aboutTab(cfg, w)),
+			)))
+	})
+	getStarted.Importance = widget.SuccessImportance
+
+	welcome := widget.NewLabelWithStyle("Welcome to Moonlit Shell", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+	welcomeSub := widget.NewLabel("Set up the basics — everything can be changed later.")
+	welcomeSub.Alignment = fyne.TextAlignCenter
+
+	accentRow := container.NewHBox(container.NewCenter(swatchBox), container.NewCenter(hexLabel), container.NewCenter(pickAccent))
+	paletteRow := widget.NewCard("Palette", "Catppuccin flavor (your accent stays on top)", palette)
+	barRow := widget.NewCard("Bar style", "Floating pill islands or a classic solid bar", container.NewVBox(style, pos))
+
+	return container.NewPadded(container.NewVBox(
+		container.NewCenter(welcome),
+		container.NewCenter(welcomeSub),
+		widget.NewSeparator(),
+		widget.NewCard("Accent", "The signature color across your desktop", accentRow),
+		paletteRow,
+		barRow,
+		widget.NewSeparator(),
+		container.NewCenter(getStarted),
+		hintText("You can change everything later in the settings tabs."),
+	))
 }
 
 // ── Signature header: mauve "Moonlit" wordmark + moon ────────────────────

@@ -104,6 +104,19 @@ func configPath() string {
 	return filepath.Join(home, ".config", "moonlit", "config.json")
 }
 
+func firstRunFlag() string {
+	return filepath.Join(filepath.Dir(configPath()), ".first-run-done")
+}
+
+func isFirstRun() bool {
+	_, err := os.Stat(configPath())
+	return os.IsNotExist(err)
+}
+
+func markFirstRunDone() {
+	os.WriteFile(firstRunFlag(), []byte("1"), 0o644)
+}
+
 // loadConfig merges the saved file over defaults, so new fields always have
 // sane values and the curated keybind metadata (label/dispatcher) is restored.
 func loadConfig() Config {

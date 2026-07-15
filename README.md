@@ -17,7 +17,7 @@
 
 <br>
 
-<img src="assets/screenshots/mainscreen.png" alt="Moonlit Shell" width="850"/>
+<img src="assets/screenshots/hero-desktop.png" alt="Moonlit Shell" width="850"/>
 
 </div>
 
@@ -45,28 +45,33 @@ It is my daily driver on a ThinkPad T14, rebuilt from the ground up after my old
 ## Gallery
 
 <p align="center">
-  <img src="assets/screenshots/rofi+hardware.png" alt="Rofi + Fastfetch" width="850"/>
-  <br><i>Rofi launcher and live hardware system info</i>
+  <img src="assets/screenshots/rofi-sysmon.png" alt="Rofi + System Monitor" width="850"/>
+  <br><i>Rofi launcher and the live system monitor panel</i>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/settings+soundbar.png" alt="Quick Settings + Audio" width="850"/>
-  <br><i>Quick settings panel with volume and brightness sliders</i>
+  <img src="assets/screenshots/quick-settings-osd.png" alt="Quick Settings + OSD" width="850"/>
+  <br><i>Quick settings panel with volume/brightness sliders and the OSD popup</i>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/powermenu.png" alt="Power Menu" width="850"/>
+  <img src="assets/screenshots/power-menu.png" alt="Power Menu" width="850"/>
   <br><i>Power menu with Lock, Logout, Sleep, Reboot, Shutdown</i>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/wallpaperselector.png" alt="Wallpaper Picker" width="850"/>
-  <br><i>Wallpaper carousel with momentum scrolling</i>
+  <img src="assets/screenshots/moonlit-settings.png" alt="Moonlit Settings" width="850"/>
+  <br><i>Moonlit Settings — the standalone Go/Fyne app for theming the whole shell live</i>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/lockscreen.png" alt="Lock Screen" width="850"/>
-  <br><i>Hyprlock with frosted glass blur over the current wallpaper</i>
+  <img src="assets/screenshots/window-overview.png" alt="Window Overview" width="850"/>
+  <br><i>Mission-Control-style window overview (Alt+Tab), live thumbnails included</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/sidebar-left-audio.png" alt="Vertical Side Bar" width="850"/>
+  <br><i>The bar docked to the left edge instead of the top, with the audio panel open</i>
 </p>
 
 ---

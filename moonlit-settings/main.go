@@ -125,7 +125,9 @@ func wizardScreen(cfg *Config, w fyne.Window) fyne.CanvasObject {
 
 	flavors := []string{"Mocha", "Macchiato", "Frappé", "Latte"}
 	flavorKey := map[string]string{"Mocha": "mocha", "Macchiato": "macchiato", "Frappé": "frappe", "Latte": "latte"}
+	keyFlavor := map[string]string{"mocha": "Mocha", "macchiato": "Macchiato", "frappe": "Frappé", "latte": "Latte"}
 	palette := widget.NewSelect(flavors, func(s string) { cfg.Flavor = flavorKey[s] })
+	palette.SetSelected(keyFlavor[cfg.Flavor])
 
 	style := widget.NewRadioGroup([]string{"Islands (floating pills)", "Classic (solid bar)"}, func(s string) {
 		if s == "Classic (solid bar)" {
@@ -135,11 +137,17 @@ func wizardScreen(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		}
 	})
 	style.Horizontal = true
+	if cfg.BarStyle == "classic" {
+		style.SetSelected("Classic (solid bar)")
+	} else {
+		style.SetSelected("Islands (floating pills)")
+	}
 
 	pos := widget.NewRadioGroup([]string{"Top", "Left", "Right"}, func(s string) {
 		cfg.BarPosition = map[string]string{"Top": "top", "Left": "left", "Right": "right"}[s]
 	})
 	pos.Horizontal = true
+	pos.SetSelected(map[string]string{"top": "Top", "left": "Left", "right": "Right"}[cfg.BarPosition])
 
 	pickAccent := widget.NewButton("Pick accent color", func() {
 		p := dialog.NewColorPicker("Accent color", "", func(c color.Color) {

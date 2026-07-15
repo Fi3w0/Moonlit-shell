@@ -15,7 +15,7 @@ PanelWindow {
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
     readonly property color  accent:   Config.accent
-    readonly property color  yellow: "#f9e2af"
+    readonly property color  yellow: Config.yellow
 
     Item {
         anchors.centerIn: parent

@@ -31,7 +31,7 @@ PanelWindow {
     readonly property color subtext0: Config.subtext0
     readonly property color text:     Config.text
     readonly property color accent:     Config.accent
-    readonly property color teal:     "#94e2d5"
+    readonly property color teal:     Config.teal
 
     function fmtTime(s) {
         if (!s || s < 0 || !isFinite(s)) return "0:00"

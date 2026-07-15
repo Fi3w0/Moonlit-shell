@@ -59,7 +59,7 @@ RowLayout {
                     return k === "nm-applet" || k.indexOf("network") !== -1
                 }
                 readonly property string ovr:      isNet ? "󰑩" : ""     // wireless router
-                readonly property color  ovrColor: isNet ? "#94e2d5" : root.barColors.subtext0 // teal
+                readonly property color  ovrColor: isNet ? Config.teal : root.barColors.subtext0 // teal
 
                 IconImage {
                     id: ic

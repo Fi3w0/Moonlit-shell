@@ -28,7 +28,7 @@ PanelWindow {
     readonly property color subtext0: Config.subtext0
     readonly property color text:     Config.text
     readonly property color accent:     Config.accent
-    readonly property color green:    "#a6e3a1"
+    readonly property color green:    Config.green
 
     ListModel { id: clipModel }
     property int copiedIdx: -1

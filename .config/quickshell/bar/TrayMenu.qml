@@ -43,7 +43,7 @@ PopupWindow {
             Rectangle {
                 visible: pop.stack.length > 0
                 width: col.width; height: 30; radius: 8
-                color: backMa.containsMouse ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.18) : "transparent"
+                color: backMa.containsMouse ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.18) : "transparent"
                 Row {
                     anchors.fill: parent; anchors.leftMargin: 10; spacing: 9
                     Text {
@@ -82,7 +82,7 @@ PopupWindow {
                         anchors.fill: parent
                         radius: 8
                         color: ma.containsMouse && entryItem.modelData.enabled
-                               ? Qt.rgba(0xcb/255, 0xa6/255, 0xf7/255, 0.18) : "transparent"
+                               ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.18) : "transparent"
 
                         Row {
                             anchors.fill: parent

@@ -28,8 +28,8 @@ PanelWindow {
     readonly property color subtext0: Config.subtext0
     readonly property color text:     Config.text
     readonly property color accent:     Config.accent
-    readonly property color blue:     "#89b4fa"
-    readonly property color green:    "#a6e3a1"
+    readonly property color blue:     Config.blue
+    readonly property color green:    Config.green
 
     // ── BT state via native Bluetooth service ─────────────────────────────
     readonly property bool btOn: Bluetooth.defaultAdapter?.enabled ?? false
@@ -131,7 +131,7 @@ PanelWindow {
                     visible: root.btOn
                     width: 28; height: 24; radius: 8
                     color: scanHov.containsMouse
-                           ? Qt.rgba(0x89/255,0xb4/255,0xfa/255,0.16) : "transparent"
+                           ? Qt.rgba(Config.blue.r, Config.blue.g, Config.blue.b, 0.16) : "transparent"
                     Behavior on color { ColorAnimation { duration: 120 } }
 
                     Text {
@@ -168,7 +168,7 @@ PanelWindow {
                         x: root.btOn ? 21 : 3
                         anchors.verticalCenter: parent.verticalCenter
                         width: 18; height: 18; radius: 9
-                        color: root.btOn ? "#11111b" : root.text
+                        color: root.btOn ? Config.crust : root.text
                         Behavior on x { NumberAnimation { duration: 160 } }
                     }
 
@@ -213,7 +213,7 @@ PanelWindow {
                         Rectangle {
                             anchors.fill: parent; radius: 11
                             color: devRow.model.connected
-                                   ? Qt.rgba(0x89/255,0xb4/255,0xfa/255,0.10)
+                                   ? Qt.rgba(Config.blue.r, Config.blue.g, Config.blue.b, 0.10)
                                    : devHov.containsMouse ? root.surface0 : "transparent"
                             Behavior on color { ColorAnimation { duration: 120 } }
                         }
@@ -254,7 +254,7 @@ PanelWindow {
                                 implicitWidth: actTxt.implicitWidth + 18; height: 24; radius: 999
                                 color: devRow.model.connected
                                        ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16)
-                                       : Qt.rgba(0x89/255,0xb4/255,0xfa/255,0.14)
+                                       : Qt.rgba(Config.blue.r, Config.blue.g, Config.blue.b, 0.14)
 
                                 Text {
                                     id: actTxt; anchors.centerIn: parent

@@ -40,7 +40,7 @@ PanelWindow {
     readonly property color   text:     Config.text
     readonly property color   subtext0: Config.subtext0
     readonly property color   overlay0: Config.overlay0
-    readonly property color   maroon:   "#eba0ac"
+    readonly property color   maroon:   Config.maroon
     readonly property color   mauve:    Config.accent
 
     readonly property string homeDir: Quickshell.env("HOME")

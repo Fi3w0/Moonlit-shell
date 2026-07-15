@@ -38,11 +38,11 @@ PanelWindow {
 
             Repeater {
                 model: [
-                    { label: "Lock",     icon: "",    color: "#89b4fa", key: "L", cmd: "hyprlock" },
-                    { label: "Logout",   icon: "󰍃",  color: "#cba6f7", key: "E", cmd: "hyprctl dispatch exit" },
-                    { label: "Sleep",    icon: "󰯙",   color: "#94e2d5", key: "S", cmd: "systemctl suspend" },
-                    { label: "Reboot",   icon: "󰔉",  color: "#f9e2af", key: "R", cmd: "systemctl reboot" },
-                    { label: "Shutdown", icon: "",   color: "#f38ba8", key: "P", cmd: "systemctl poweroff" },
+                    { label: "Lock",     icon: "",    color: Config.blue, key: "L", cmd: "hyprlock" },
+                    { label: "Logout",   icon: "󰍃",  color: Config.mauve, key: "E", cmd: "hyprctl dispatch exit" },
+                    { label: "Sleep",    icon: "󰯙",   color: Config.teal, key: "S", cmd: "systemctl suspend" },
+                    { label: "Reboot",   icon: "󰔉",  color: Config.yellow, key: "R", cmd: "systemctl reboot" },
+                    { label: "Shutdown", icon: "",   color: Config.red, key: "P", cmd: "systemctl poweroff" },
                 ]
 
                 delegate: Item {

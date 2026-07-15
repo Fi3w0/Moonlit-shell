@@ -31,13 +31,13 @@ PanelWindow {
     readonly property color subtext0: Config.subtext0
     readonly property color subtext1: Config.subtext1
     readonly property color text:     Config.text
-    readonly property color pink:     "#f38ba8"
-    readonly property color maroon:   "#eba0ac"
-    readonly property color green:    "#a6e3a1"
-    readonly property color yellow:   "#f9e2af"
-    readonly property color peach:    "#fab387"
-    readonly property color red:      "#f38ba8"
-    readonly property color mauve:    "#cba6f7"
+    readonly property color pink:     Config.pink
+    readonly property color maroon:   Config.maroon
+    readonly property color green:    Config.green
+    readonly property color yellow:   Config.yellow
+    readonly property color peach:    Config.peach
+    readonly property color red:      Config.red
+    readonly property color mauve:    Config.mauve
 
     // Accent — moonlight mauve, live from Config (moonlit-settings app)
     readonly property color accent:     Config.accent

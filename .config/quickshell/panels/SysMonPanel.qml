@@ -29,11 +29,11 @@ PanelWindow {
     readonly property color subtext0: Config.subtext0
     readonly property color text:     Config.text
     readonly property color accent:     Config.accent
-    readonly property color blue:     "#89b4fa"
-    readonly property color mauve:    "#cba6f7"
-    readonly property color teal:     "#94e2d5"
-    readonly property color peach:    "#fab387"
-    readonly property color maroon:   "#eba0ac"
+    readonly property color blue:     Config.blue
+    readonly property color mauve:    Config.mauve
+    readonly property color teal:     Config.teal
+    readonly property color peach:    Config.peach
+    readonly property color maroon:   Config.maroon
 
     // Stats
     SystemStats { id: sysStats; enabled: root.visible }
@@ -232,7 +232,7 @@ PanelWindow {
                                         var cx = width/2, cy = height/2, r = 30
                                         // Track
                                         ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2)
-                                        ctx.strokeStyle = "#313244"; ctx.lineWidth = 8; ctx.stroke()
+                                        ctx.strokeStyle = root.surface0; ctx.lineWidth = 8; ctx.stroke()
                                         // Progress
                                         ctx.beginPath()
                                         ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*pct)

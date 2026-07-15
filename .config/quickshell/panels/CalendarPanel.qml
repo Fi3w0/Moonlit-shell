@@ -42,7 +42,7 @@ PanelWindow {
     readonly property color  subtext0: Config.subtext0
     readonly property color  text:     Config.text
     readonly property color  accent:     Config.accent
-    readonly property color  green:    "#a6e3a1"
+    readonly property color  green:    Config.green
     readonly property color  mauve:    Config.accent
 
     // Active MPRIS player
@@ -202,7 +202,7 @@ PanelWindow {
                         // Art placeholder
                         Rectangle {
                             width: 48; height: 48; radius: 12
-                            color: Qt.rgba(0xa6/255, 0xe3/255, 0xa1/255, 0.14)
+                            color: Qt.rgba(Config.green.r, Config.green.g, Config.green.b, 0.14)
                             Layout.alignment: Qt.AlignVCenter
 
                             Text {

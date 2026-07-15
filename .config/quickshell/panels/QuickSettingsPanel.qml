@@ -43,8 +43,8 @@ PanelWindow {
     readonly property color  subtext0: Config.subtext0
     readonly property color  text:     Config.text
     readonly property color  accent:     Config.accent
-    readonly property color  green:    "#a6e3a1"
-    readonly property color  mauve:    "#cba6f7"
+    readonly property color  green:    Config.green
+    readonly property color  mauve:    Config.mauve
     readonly property color  crust:    Config.crust
 
     // Native data
@@ -137,7 +137,7 @@ PanelWindow {
                         width: 38; height: 38
 
                         Rectangle { anchors.fill: parent; radius: 12; color: pwrHov.containsMouse ? Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b,0.16) : "transparent" }
-                        Text { anchors.centerIn: parent; text: ""; color: "#eba0ac"; font { pixelSize: 22; family: root.nfFont } }
+                        Text { anchors.centerIn: parent; text: ""; color: Config.maroon; font { pixelSize: 22; family: root.nfFont } }
                         MouseArea { id: pwrHov; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.openPanel("power") }
                     }
                 }
@@ -379,7 +379,7 @@ PanelWindow {
                             Rectangle { anchors.fill: parent; radius: 99; color: root.surface2 }
                             Rectangle {
                                 width: parent.width * Math.max(0, Math.min(1, brightCard.brightness / 100))
-                                height: 8; radius: 99; color: "#f9e2af"
+                                height: 8; radius: 99; color: Config.yellow
                                 Behavior on width { NumberAnimation { duration: 100 } }
                             }
                             Rectangle {

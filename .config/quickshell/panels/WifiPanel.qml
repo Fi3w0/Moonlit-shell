@@ -132,7 +132,7 @@ PanelWindow {
                         x: Networking.wifiEnabled ? 21 : 3
                         anchors.verticalCenter: parent.verticalCenter
                         width: 18; height: 18; radius: 9
-                        color: Networking.wifiEnabled ? "#11111b" : root.text
+                        color: Networking.wifiEnabled ? Config.crust : root.text
                         Behavior on x { NumberAnimation { duration: 160 } }
                     }
 

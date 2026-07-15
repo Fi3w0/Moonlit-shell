@@ -18,9 +18,7 @@ PanelWindow {
     onVisibleChanged: if (visible) keyHandler.forceActiveFocus()
 
     function run(cmd) {
-        Qt.createQmlObject(
-            'import Quickshell.Io; Process { command: ["sh","-c","' + cmd + '"]; running: true; onRunningChanged: if (!running) destroy() }',
-            root)
+        Quickshell.execDetached(["sh", "-c", cmd])
         root.close()
     }
 

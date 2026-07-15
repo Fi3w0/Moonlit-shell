@@ -42,12 +42,8 @@ PanelWindow {
     Connections {
         target: root.relay
         function onNotify(app, title, body) {
-            var id = Date.now()
-            toastModel.append({ tid: id, app: app, title: title, body: body, closing: false })
+            toastModel.append({ tid: Date.now(), app: app, title: title, body: body, closing: false })
             capToasts()
-            Qt.createQmlObject(
-                'import QtQuick; Timer { interval: ' + Config.toastDuration + '; running: true; onTriggered: { for(var i=0;i<toastModel.count;i++){if(toastModel.get(i).tid===' + id + '){toastModel.setProperty(i,"closing",true);break;}} destroy() } }',
-                root)
         }
     }
 
@@ -76,6 +72,23 @@ PanelWindow {
                 Component.onCompleted: entered = true
                 Behavior on x { NumberAnimation { duration: 220; easing.type: Easing.InCubic } }
                 Behavior on opacity { NumberAnimation { duration: model.closing ? 180 : 260; easing.type: model.closing ? Easing.InCubic : Easing.OutCubic } }
+
+                // Auto-dismiss after the configured lifetime. Declarative +
+                // delegate-scoped, so it's destroyed with the toast (no more
+                // hand-rolled Qt.createQmlObject timers to leak-watch). Matches
+                // by tid, since the row index shifts as toasts come and go.
+                Timer {
+                    interval: Config.toastDuration
+                    running: !model.closing
+                    onTriggered: {
+                        for (var i = 0; i < toastModel.count; i++) {
+                            if (toastModel.get(i).tid === model.tid) {
+                                toastModel.setProperty(i, "closing", true)
+                                break
+                            }
+                        }
+                    }
+                }
                 Timer {
                     interval: 240
                     running: model.closing

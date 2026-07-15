@@ -269,9 +269,7 @@ PanelWindow {
                                     onClicked: {
                                         var addr = devRow.model.address
                                         var cmd = devRow.model.connected ? "disconnect" : "connect"
-                                        Qt.createQmlObject(
-                                            'import Quickshell.Io; Process { command: ["bluetoothctl","' + cmd + '","' + addr + '"]; running: true; onRunningChanged: if (!running) destroy() }',
-                                            root)
+                                        Quickshell.execDetached(["bluetoothctl", cmd, addr])
                                         Qt.callLater(() => { root.devBuffer = []; devProc.running = true })
                                     }
                                 }

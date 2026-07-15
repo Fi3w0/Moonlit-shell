@@ -52,6 +52,17 @@ PanelWindow {
 
     property bool air:   false
 
+    // Airplane state is derived from the real rfkill soft-block status each time
+    // the panel opens, so the toggle can't drift out of sync with reality (it
+    // was previously panel-local, and each monitor has its own copy). Airplane
+    // is "on" only when no radio is left unblocked.
+    Process {
+        id: airProbe
+        command: ["sh", "-c", "rfkill list 2>/dev/null | grep -q 'Soft blocked: no' && echo 0 || echo 1"]
+        stdout: SplitParser { onRead: d => root.air = d.trim() === "1" }
+    }
+    onVisibleChanged: if (visible) airProbe.running = true
+
     readonly property bool btPowered: Bluetooth.defaultAdapter?.enabled ?? false
 
     // Uptime via shell
@@ -256,10 +267,7 @@ PanelWindow {
                         on: root.air
                         onToggled: {
                             root.air = !root.air
-                            Qt.createQmlObject(
-                                'import Quickshell.Io; Process { command: ["sh","-c","' +
-                                (root.air ? "rfkill block all" : "rfkill unblock all") +
-                                '"]; running: true; onRunningChanged: if (!running) destroy() }', root)
+                            Quickshell.execDetached(["rfkill", root.air ? "block" : "unblock", "all"])
                         }
                     }
                 }
@@ -389,9 +397,7 @@ PanelWindow {
                                     brightCard.brightness = pct
                                     root.showOsd("brightness", pct)
                                     if (commit)
-                                        Qt.createQmlObject(
-                                            'import Quickshell.Io; Process { command: ["brightnessctl","s","' + pct + '%"]; running: true; onRunningChanged: if (!running) destroy() }',
-                                            root)
+                                        Quickshell.execDetached(["brightnessctl", "s", pct + "%"])
                                 }
                                 onPressed: mouse => { brightCard.dragging = true; setBright(mouse.x, true) }
                                 onPositionChanged: mouse => { if (pressed) setBright(mouse.x, false) }

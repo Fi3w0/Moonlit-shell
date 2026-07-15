@@ -91,7 +91,7 @@ PanelWindow {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            Qt.createQmlObject('import Quickshell.Io; Process { command: ["sh","-c","cliphist wipe"]; running: true; onRunningChanged: if (!running) destroy() }', root)
+                            Quickshell.execDetached(["cliphist", "wipe"])
                             clipModel.clear()
                         }
                     }
@@ -169,9 +169,7 @@ PanelWindow {
                             onClicked: {
                                 root.copiedIdx = parent.index
                                 var id = parent.model.clipId
-                                Qt.createQmlObject(
-                                    'import Quickshell.Io; Process { command: ["sh","-c","cliphist decode ' + id + ' | wl-copy"]; running: true; onRunningChanged: if (!running) destroy() }',
-                                    root)
+                                Quickshell.execDetached(["sh", "-c", "cliphist decode " + id + " | wl-copy"])
                                 copiedTimer.restart()
                             }
                         }

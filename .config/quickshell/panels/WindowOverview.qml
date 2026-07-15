@@ -51,7 +51,10 @@ PanelWindow {
     // window into view, which is what a task switcher actually needs.
     function activate(toplevel) {
         if (!toplevel) return
-        Hyprland.dispatch("focuswindow address:" + toplevel.address)
+        // HyprlandToplevel.address is the raw hex without Hyprland's own
+        // "0x" prefix (e.g. "557d..." not "0x557d...") — dispatch silently
+        // fails with "No such window found" without it.
+        Hyprland.dispatch("focuswindow address:0x" + toplevel.address)
         root.close()
     }
 

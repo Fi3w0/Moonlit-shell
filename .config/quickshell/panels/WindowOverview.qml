@@ -127,7 +127,10 @@ PanelWindow {
                             anchors.margins: 9
                             anchors.bottomMargin: 32
                             captureSource: cell.modelData.wayland
-                            live: true
+                            // Only stream frames while the overview is actually
+                            // on screen — a hidden overlay shouldn't keep
+                            // screencopying every window in the background.
+                            live: root.visible
                         }
 
                         // Workspace badge

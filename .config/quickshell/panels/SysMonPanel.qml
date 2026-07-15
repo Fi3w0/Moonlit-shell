@@ -78,7 +78,10 @@ PanelWindow {
     property var  _prevNet: []
     Process {
         id: netProc
-        command: ["sh", "-c", "cat /proc/net/dev | awk '/wlp3s0/{print $2, $10}'"]
+        // Track whichever interface actually carries the default route (wifi or
+        // ethernet), falling back to the first wireless device — never a
+        // hardcoded name, so the readout works on any machine, not just this one.
+        command: ["sh", "-c", "IF=$(ip route show default 2>/dev/null | awk '{print $5; exit}'); [ -z \"$IF\" ] && IF=$(ls /sys/class/net 2>/dev/null | grep -E '^wl' | head -1); [ -n \"$IF\" ] && awk -v p=\"$IF:\" '$1==p{print $2, $10}' /proc/net/dev"]
         stdout: SplitParser {
             onRead: data => {
                 var p = data.trim().split(" ").map(Number)

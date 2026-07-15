@@ -14,6 +14,12 @@ PanelWindow {
     required property var removeNotifFunc
     readonly property int notifCount: notifications ? notifications.length : 0
 
+    // Reference date for the mini-calendar. Bumped by the clock tick when the
+    // day actually changes, so the grid rolls over at midnight if the panel is
+    // left open (and refreshes on reopen) instead of being frozen at whatever
+    // day it was first built.
+    property var calDate: new Date()
+
     anchors.top: true
     anchors.left: Config.barPosition === "left"
     anchors.right: Config.barPosition !== "left"
@@ -90,9 +96,14 @@ PanelWindow {
                         Timer {
                             interval: 1000; running: root.visible; repeat: true; triggeredOnStart: true
                             onTriggered: {
-                                bigClock.text = Qt.formatDateTime(new Date(), "hh:mm:ss")
-                                dateLabel.text = Qt.formatDateTime(new Date(), "dddd, MMMM d")
-                                yearLabel.text = Qt.formatDateTime(new Date(), "yyyy")
+                                var now = new Date()
+                                bigClock.text = Qt.formatDateTime(now, "hh:mm:ss")
+                                dateLabel.text = Qt.formatDateTime(now, "dddd, MMMM d")
+                                yearLabel.text = Qt.formatDateTime(now, "yyyy")
+                                if (now.getDate() !== root.calDate.getDate() ||
+                                    now.getMonth() !== root.calDate.getMonth() ||
+                                    now.getFullYear() !== root.calDate.getFullYear())
+                                    root.calDate = now
                             }
                         }
                     }
@@ -133,20 +144,21 @@ PanelWindow {
 
                     // Day cells — computed from current date
                     Grid {
+                        id: dayGrid
                         columns: 7
                         spacing: 0
 
-                        property int  _today:     new Date().getDate()
-                        property int  _totalDays: new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate()
-                        property int  _firstDay:  (new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay() + 6) % 7 // Mon=0
+                        property int  _today:     root.calDate.getDate()
+                        property int  _totalDays: new Date(root.calDate.getFullYear(), root.calDate.getMonth()+1, 0).getDate()
+                        property int  _firstDay:  (new Date(root.calDate.getFullYear(), root.calDate.getMonth(), 1).getDay() + 6) % 7 // Mon=0
 
                         Repeater {
-                            model: parent._firstDay + parent._totalDays
+                            model: dayGrid._firstDay + dayGrid._totalDays
                             delegate: Item {
                                 required property int index
-                                property int day: index - calGrid.children[1]._firstDay + 1
+                                property int day: index - dayGrid._firstDay + 1
                                 property bool valid: day >= 1
-                                property bool today: day === calGrid.children[1]._today
+                                property bool today: day === dayGrid._today
 
                                 width: (372 - 32) / 7; height: 34
 
@@ -336,7 +348,7 @@ PanelWindow {
                             spacing: 8
                             Text {
                                 Layout.alignment: Qt.AlignHCenter
-                                text: "󰂚_OFF"
+                                text: "󰂛"
                                 color: root.overlay0
                                 font { pixelSize: 28; family: root.nfFont }
                                 opacity: 0.6

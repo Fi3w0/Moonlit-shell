@@ -1,0 +1,20 @@
+/* Emoji picker — chains the live moonlit theme, then sizes the grid down.
+ * Static @theme chain (not a script-time \x00theme override) because this
+ * rofi version doesn't reliably layer a dynamic per-invocation override on
+ * top of an already-chained theme — columns silently stops applying. */
+@theme "~/.config/rofi/themes/moonlit-colors.rasi"
+
+window {
+    width: 420px;
+}
+listview {
+    columns: 3;
+    lines: 4;
+}
+element {
+    padding: 6px;
+}
+element-text {
+    font: "JetBrainsMono Nerd Font Mono 16";
+    horizontal-align: 0.5;
+}

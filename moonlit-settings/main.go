@@ -298,6 +298,34 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			container.NewHBox(container.NewCenter(swatchBox), container.NewCenter(hexLabel)),
 			container.NewCenter(pick), nil))
 
+	// Arch logo — a separate knob from Accent, defaults to the original maroon.
+	archSwatch := canvas.NewCircle(hexToColor(cfg.ArchLogoColor))
+	archSwatch.StrokeColor = hexToColor(cSurface1)
+	archSwatch.StrokeWidth = 1
+	archSwatchBox := container.NewGridWrap(fyne.NewSize(44, 44), archSwatch)
+	archHexLabel := canvas.NewText(cfg.ArchLogoColor, hexToColor(cText))
+	archHexLabel.TextStyle = fyne.TextStyle{Monospace: true}
+	archHexLabel.TextSize = 15
+	applyArchLogo := func(c color.Color) {
+		cfg.ArchLogoColor = colorToHex(c)
+		archSwatch.FillColor = c
+		archSwatch.Refresh()
+		archHexLabel.Text = cfg.ArchLogoColor
+		archHexLabel.Refresh()
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+	}
+	archPick := widget.NewButton("Pick…", func() {
+		p := dialog.NewColorPicker("Arch logo color", "Just the bar's Arch logo", applyArchLogo, w)
+		p.Advanced = true
+		p.Show()
+	})
+	archLogoCard := widget.NewCard("Arch logo", "The bar's Arch logo color — independent of the accent",
+		container.NewBorder(nil, nil,
+			container.NewHBox(container.NewCenter(archSwatchBox), container.NewCenter(archHexLabel)),
+			container.NewCenter(archPick), nil))
+
 	flavors := []string{"Mocha", "Macchiato", "Frappé", "Latte"}
 	flavorKey := map[string]string{"Mocha": "mocha", "Macchiato": "macchiato", "Frappé": "frappe", "Latte": "latte"}
 	keyFlavor := map[string]string{"mocha": "Mocha", "macchiato": "Macchiato", "frappe": "Frappé", "latte": "Latte"}
@@ -323,9 +351,10 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		}
 		palette.SetSelected(keyFlavor[d.Flavor])
 		applyAccent(hexToColor(d.Accent))
+		applyArchLogo(hexToColor(d.ArchLogoColor))
 	})
 
-	body := container.NewVBox(accentCard, wallustCard, paletteCard, hintText("Applies instantly — safe, can’t break anything."))
+	body := container.NewVBox(accentCard, archLogoCard, wallustCard, paletteCard, hintText("Applies instantly — safe, can’t break anything."))
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 

@@ -38,6 +38,8 @@ PanelWindow {
     // Accent — moonlight mauve, live from Config (moonlit-settings app)
     readonly property color accent:     Config.accent
     readonly property color accentSoft: Qt.rgba(Config.accent.r, Config.accent.g, Config.accent.b, 0.16)
+    // Arch logo color — independent knob, defaults to the original maroon.
+    readonly property color archLogo:   Config.archLogoColor
 
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
 
@@ -209,7 +211,7 @@ PanelWindow {
                     spacing: 6
                     TrayBtn {
                         icon: String.fromCodePoint(0xf303)
-                        iconColor: root.accent
+                        iconColor: root.archLogo
                         iconSize: 20; barColors: root
                         onClicked: rofiProc.running = true
                         Layout.alignment: Qt.AlignHCenter
@@ -336,7 +338,7 @@ PanelWindow {
                 spacing: 6
                 TrayBtn {
                     icon: String.fromCodePoint(0xf303)
-                    iconColor: root.accent
+                    iconColor: root.archLogo
                     iconSize: 20; barColors: root
                     onClicked: rofiProc.running = true
                     Layout.alignment: Qt.AlignHCenter
@@ -446,7 +448,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: root.accent
+                    color: root.archLogo
                     font { pixelSize: 26; family: root.nfFont }
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
@@ -713,7 +715,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: root.accent
+                    color: root.archLogo
                     font { pixelSize: 32; family: root.nfFont }
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }

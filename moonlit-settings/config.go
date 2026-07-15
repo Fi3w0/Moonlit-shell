@@ -42,6 +42,7 @@ type Keybind struct {
 // only when the user hits Apply.
 type Config struct {
 	Accent        string             `json:"accent"`
+	ArchLogoColor string             `json:"archLogoColor"` // bar's Arch logo — independent of accent
 	Flavor        string             `json:"flavor"`      // mocha | macchiato | frappe | latte
 	BarStyle      string             `json:"barStyle"`    // "islands" | "classic"
 	BarPosition   string             `json:"barPosition"` // "top" | "left" | "right"
@@ -78,6 +79,7 @@ func curatedKeybinds() map[string]Keybind {
 func defaultConfig() Config {
 	return Config{
 		Accent:        "#cba6f7", // moonlight mauve
+		ArchLogoColor: "#eba0ac", // Catppuccin maroon (rose/red)
 		Flavor:        "mocha",
 		BarStyle:      "islands",
 		BarPosition:   "top",

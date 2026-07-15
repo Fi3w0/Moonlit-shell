@@ -14,6 +14,9 @@ Singleton {
 
     // Moonlight mauve accent — drives active/hover states across the shell.
     readonly property color accent: adapter.accent
+    // Arch logo color in the bar — independent of accent, defaults to the
+    // original Catppuccin maroon (rose/red).
+    readonly property color archLogoColor: adapter.archLogoColor
     // Top bar layout: "islands" (floating pills) or "classic" (solid topbar).
     readonly property string barStyle: adapter.barStyle
     // Bar edge: "top" (horizontal) | "left" | "right" (vertical side bar).
@@ -71,6 +74,7 @@ Singleton {
         adapter: JsonAdapter {
             id: adapter
             property string accent: "#cba6f7"
+            property string archLogoColor: "#eba0ac"
             property string flavor: "mocha"
             property string barStyle: "islands"
             property string barPosition: "top"

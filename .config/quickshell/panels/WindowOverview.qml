@@ -36,9 +36,15 @@ PanelWindow {
     readonly property string nfFont: "JetBrainsMono Nerd Font Mono"
     property int selectedIndex: 0
 
+    // Special (scratchpad) workspaces have negative ids and are where a
+    // window goes to be deliberately hidden — showing them here would
+    // defeat the point of hiding them.
+    readonly property var visibleToplevels: Hyprland.toplevels.values.filter(
+        t => !t.workspace || t.workspace.id >= 0)
+
     function indexOfActive() {
-        for (var i = 0; i < Hyprland.toplevels.values.length; i++) {
-            if (Hyprland.toplevels.values[i].activated) return i
+        for (var i = 0; i < root.visibleToplevels.length; i++) {
+            if (root.visibleToplevels[i].activated) return i
         }
         return 0
     }
@@ -72,24 +78,24 @@ PanelWindow {
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
-                text: Hyprland.toplevels.values.length > 0 ? "Windows" : "No windows open"
+                text: root.visibleToplevels.length > 0 ? "Windows" : "No windows open"
                 color: Config.accent
                 font { pixelSize: 17; bold: true; family: root.nfFont }
             }
 
             GridView {
                 id: grid
-                readonly property int columns: Math.max(1, Math.min(4, Hyprland.toplevels.values.length))
+                readonly property int columns: Math.max(1, Math.min(4, root.visibleToplevels.length))
                 Layout.preferredWidth: columns * cellWidth
                 Layout.preferredHeight: Math.min(
-                    Math.ceil(Hyprland.toplevels.values.length / columns) * cellHeight,
+                    Math.ceil(root.visibleToplevels.length / columns) * cellHeight,
                     root.height - 170)
                 Layout.maximumWidth: root.width - 80
 
                 cellWidth: 280
                 cellHeight: 205
                 interactive: false
-                model: Hyprland.toplevels
+                model: root.visibleToplevels
 
                 delegate: Item {
                     id: cell
@@ -203,14 +209,14 @@ PanelWindow {
         Component.onCompleted: forceActiveFocus()
         Keys.onPressed: ev => {
             var cols = grid.columns
-            var count = Hyprland.toplevels.values.length
+            var count = root.visibleToplevels.length
             switch (ev.key) {
                 case Qt.Key_Escape:
                     root.close()
                     break
                 case Qt.Key_Return:
                 case Qt.Key_Enter:
-                    root.activate(Hyprland.toplevels.values[root.selectedIndex])
+                    root.activate(root.visibleToplevels[root.selectedIndex])
                     break
                 case Qt.Key_Right:
                     if (count > 0) root.selectedIndex = (root.selectedIndex + 1) % count

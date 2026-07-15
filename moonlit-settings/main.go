@@ -589,6 +589,9 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		}
 	}
 	applyGov := func(gov string) {
+		if !validGovernors[gov] {
+			return
+		}
 		if _, err := exec.LookPath("cpupower"); err == nil {
 			exec.Command("pkexec", "cpupower", "frequency-set", "-g", gov).Start()
 			return
@@ -596,6 +599,16 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		cmd := exec.Command("pkexec", "sh", "-c",
 			fmt.Sprintf("echo %s | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null", gov))
 		cmd.Start()
+	}
+	// syncPowerService shells out to pkexec synchronously, so run it off the
+	// UI thread — otherwise the whole app freezes until the polkit prompt
+	// is answered.
+	runSyncPower := func(gov string, enable bool) {
+		go func() {
+			if err := syncPowerService(gov, enable); err != nil {
+				dialog.ShowError(fmt.Errorf("persist after reboot: %v", err), w)
+			}
+		}()
 	}
 
 	labelToKey := map[string]string{
@@ -625,14 +638,14 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		save()
 		applyGov(gov)
 		if cfg.PowerPersist {
-			syncPowerService(gov, true)
+			runSyncPower(gov, true)
 		}
 	})
 
 	persistCheck := widget.NewCheck("Persist after reboot", func(b bool) {
 		cfg.PowerPersist = b
 		save()
-		syncPowerService(cfg.PowerProfile, b)
+		runSyncPower(cfg.PowerProfile, b)
 	})
 
 	sync := func() {
@@ -646,7 +659,7 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	sync()
 
 	govCard := widget.NewCard("CPU governor", "Controls CPU frequency scaling behavior", sel)
-	persistCard := widget.NewCard("Survive reboot", "Restore the governor after every boot via a systemd user service",
+	persistCard := widget.NewCard("Survive reboot", "Restore the governor after every boot via a systemd service (needs admin auth once)",
 		persistCheck)
 	descCard := widget.NewCard("What they do", "", container.NewVBox(
 		hintText("Power save — lowest clock speed, best battery life"),
@@ -661,47 +674,11 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		sync()
 		save()
 		applyGov(d.PowerProfile)
-		syncPowerService(d.PowerProfile, d.PowerPersist)
+		runSyncPower(d.PowerProfile, d.PowerPersist)
 	})
 
 	body := container.NewVBox(govCard, persistCard, descCard)
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
-}
-
-// syncPowerService enables/disables the systemd user service that restores
-// the CPU governor on boot. The service runs a small inline script that
-// reads config.json and writes the governor via pkexec.
-func syncPowerService(gov string, enable bool) {
-	home, _ := os.UserHomeDir()
-	svcDir := filepath.Join(home, ".config", "systemd", "user")
-	os.MkdirAll(svcDir, 0o755)
-	svcPath := filepath.Join(svcDir, "moonlit-power.service")
-
-	if enable {
-		cp := filepath.Join(home, ".config", "moonlit", "config.json")
-		script := "#!/bin/sh\n" +
-			`GOV=$(python3 -c "import json;print(json.load(open('` + cp + `')).get('powerProfile','schedutil'))" 2>/dev/null)` + "\n" +
-			`[ -z "$GOV" ] && GOV=schedutil` + "\n" +
-			`if command -v cpupower >/dev/null; then` + "\n" +
-			`  cpupower frequency-set -g "$GOV"` + "\n" +
-			`else` + "\n" +
-			`  echo "$GOV" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null` + "\n" +
-			`fi`
-		unit := "[Unit]\nDescription=Moonlit Shell power profile\n\n" +
-			"[Service]\nType=oneshot\nExecStart=/bin/sh -c '" +
-			strings.ReplaceAll(script, "'", `'"'"'`) + "'\n" +
-			"RemainAfterExit=yes\n\n" +
-			"[Install]\nWantedBy=default.target\n"
-		os.WriteFile(svcPath, []byte(unit), 0o644)
-		exec.Command("systemctl", "--user", "daemon-reload").Run()
-		exec.Command("systemctl", "--user", "enable", "moonlit-power.service").Run()
-		exec.Command("systemctl", "--user", "start", "moonlit-power.service").Run()
-	} else {
-		exec.Command("systemctl", "--user", "stop", "moonlit-power.service").Run()
-		exec.Command("systemctl", "--user", "disable", "moonlit-power.service").Run()
-		os.Remove(svcPath)
-		exec.Command("systemctl", "--user", "daemon-reload").Run()
-	}
 }
 
 func hyprTab(cfg *Config, w fyne.Window) fyne.CanvasObject {

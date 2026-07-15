@@ -213,7 +213,8 @@ ShellRoot {
                 visible: scope.activePanel !== "" &&
                          scope.activePanel !== "power" &&
                          scope.activePanel !== "wallpaper" &&
-                         scope.activePanel !== "launcher"
+                         scope.activePanel !== "launcher" &&
+                         scope.activePanel !== "overview"
                 MouseArea { anchors.fill: parent; onClicked: scope.closeAll() }
             }
 
@@ -298,6 +299,12 @@ ShellRoot {
                 outputName: scope.modelData.name   // apply only to this monitor
                 visible:    scope.activePanel === "wallpaper"
                 onClose:    scope.closeAll()
+            }
+
+            property var overviewPanel: WindowOverview {
+                screen:  scope.modelData
+                visible: scope.activePanel === "overview"
+                onClose: scope.closeAll()
             }
 
             property var osdWin: OSD {

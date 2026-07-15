@@ -209,7 +209,7 @@ PanelWindow {
                     spacing: 6
                     TrayBtn {
                         icon: String.fromCodePoint(0xf303)
-                        iconColor: root.activePanel === "launcher" ? root.accent : root.maroon
+                        iconColor: root.accent
                         iconSize: 20; barColors: root
                         onClicked: rofiProc.running = true
                         Layout.alignment: Qt.AlignHCenter
@@ -336,7 +336,7 @@ PanelWindow {
                 spacing: 6
                 TrayBtn {
                     icon: String.fromCodePoint(0xf303)
-                    iconColor: root.activePanel === "launcher" ? root.accent : root.maroon
+                    iconColor: root.accent
                     iconSize: 20; barColors: root
                     onClicked: rofiProc.running = true
                     Layout.alignment: Qt.AlignHCenter
@@ -446,7 +446,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: root.activePanel === "launcher" ? root.accent : root.maroon
+                    color: root.accent
                     font { pixelSize: 26; family: root.nfFont }
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
@@ -713,7 +713,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: root.activePanel === "launcher" ? root.accent : root.maroon
+                    color: root.accent
                     font { pixelSize: 32; family: root.nfFont }
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }

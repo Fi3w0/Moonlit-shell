@@ -68,7 +68,7 @@ sudo pacman -S fish neovim git
 ### 2.8 Fonts & Icons
 
 ```bash
-sudo pacman -S ttf-jetbrains-mono-nerd papirus-icon-theme
+sudo pacman -S ttf-jetbrains-mono-nerd papirus-icon-theme noto-fonts-emoji
 ```
 
 ### 2.9 System Utilities

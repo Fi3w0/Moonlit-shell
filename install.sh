@@ -125,7 +125,7 @@ PAC_MINIMAL=(
   grim slurp wl-clipboard
   kitty rofi thunar tumbler ffmpegthumbnailer gvfs gnome-themes-extra xdg-utils
   fish neovim git
-  ttf-jetbrains-mono-nerd papirus-icon-theme
+  ttf-jetbrains-mono-nerd papirus-icon-theme noto-fonts-emoji
   brightnessctl keyd htop pacman-contrib
   upower
   firefox mpv imv

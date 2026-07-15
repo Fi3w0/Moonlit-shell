@@ -13,6 +13,11 @@
 #    ./install.sh --progress      progress-bar UI instead of spinner
 #    ./install.sh --full          skip the menu, install the Full tier
 #    ./install.sh --minimal|--dev likewise
+#    ./install.sh --update        already installed? pull newer dotfiles only
+#                                  (no packages, no tier menu). Any file you
+#                                  edited by hand is left alone; the new
+#                                  version is saved next to it as
+#                                  <file>.moonlit-new for you to review/merge.
 #    ./install.sh --help
 #
 #  Display style can also be set with  MOONLIT_STYLE=bar ./install.sh
@@ -50,6 +55,35 @@ warn() { printf '%s %s\n'  "${YELLOW}!${R}" "$*" >&2; log "WARN: $*"; }
 err()  { printf '%s %s\n'  "${RED}✗${R}" "$*" >&2; log "ERROR: $*"; }
 die()  { err "$*"; err "Log: $LOG"; exit 1; }
 
+# ── deployed-file manifest — pacnew-style safe updates ─────────────
+# ph_deploy() never blindly overwrites a live config file. It remembers the
+# checksum of what it deployed last time; if the live file still matches
+# that, it's untouched by the user and safe to update. If it doesn't match
+# (or there's no history at all — e.g. upgrading from a version before this
+# manifest existed), the live file is left alone and the new version is
+# dropped alongside as <file>.moonlit-new, exactly like pacman's .pacnew.
+REPO_VERSION="$(cat "$REPO/VERSION" 2>/dev/null || echo unknown)"
+MANIFEST_DIR="$HOME/.config/moonlit"
+MANIFEST_FILE="$MANIFEST_DIR/deployed-manifest.txt"
+DEPLOYED_VERSION_FILE="$MANIFEST_DIR/deployed-version"
+DEPLOY_REPORT_FILE="$MANIFEST_DIR/last-deploy-report.txt"
+
+sha256_of() { sha256sum "$1" 2>/dev/null | awk '{print $1}'; }
+
+print_deploy_report() {
+  [[ -f "$DEPLOY_REPORT_FILE" ]] || return 0
+  local new updated preserved
+  new="$(grep -m1 '^new=' "$DEPLOY_REPORT_FILE" | cut -d= -f2)"
+  updated="$(grep -m1 '^updated=' "$DEPLOY_REPORT_FILE" | cut -d= -f2)"
+  preserved="$(grep -m1 '^preserved=' "$DEPLOY_REPORT_FILE" | cut -d= -f2)"
+  log "deploy report: new=${new:-0} updated=${updated:-0} preserved=${preserved:-0}"
+  [[ "${preserved:-0}" -gt 0 ]] || return 0
+  printf '\n %s! %s file(s) you customized were left as-is%s — the new version was saved next to each as %s.moonlit-new%s:\n' \
+    "$YELLOW" "$preserved" "$R" "$DIM" "$R"
+  grep '^preserved_file=' "$DEPLOY_REPORT_FILE" | cut -d= -f2- | sed "s|^|     ${GREY}•${R} ~/.config/|"
+  printf '   review with %sdiff ~/.config/<file> ~/.config/<file>.moonlit-new%s and merge whatever you want.\n\n' "$DIM" "$R"
+}
+
 # moon-phase animation frames
 MOON=( "🌑" "🌒" "🌓" "🌔" "🌕" "🌖" "🌗" "🌘" )
 
@@ -61,6 +95,7 @@ trap 'echo; err "Interrupted."; exit 130' INT
 STYLE="${MOONLIT_STYLE:-spin}"
 TIER=""
 ASSUME_YES=0
+UPDATE_MODE=0
 usage() { awk 'NR==1{next} /^[^#]/{exit} {sub(/^# ?/,""); print}' "$0"; }
 for a in "$@"; do
   case "$a" in
@@ -69,6 +104,7 @@ for a in "$@"; do
     --minimal) TIER=minimal ;;
     --dev)     TIER=dev ;;
     --full)    TIER=full ;;
+    --update)  UPDATE_MODE=1 ;;
     -y|--yes)  ASSUME_YES=1 ;;
     -h|--help) usage; exit 0 ;;
     *) warn "unknown option: $a" ;;
@@ -407,7 +443,10 @@ ph_sensors() {
 
 BACKUP=""   # set in main() so both ph_deploy's subshell and farewell see it
 ph_deploy() {
-  mkdir -p "$HOME/.config"
+  mkdir -p "$HOME/.config" "$MANIFEST_DIR"
+
+  # whole-directory backup first, same as always — belt and suspenders on
+  # top of the per-file logic below, in case that logic ever has a bug.
   local c
   for c in "${CFG[@]}"; do
     [[ -d ".config/$c" ]] || { log "skip missing config: $c"; continue; }
@@ -415,15 +454,89 @@ ph_deploy() {
       mkdir -p "$BACKUP"
       run cp -a "$HOME/.config/$c" "$BACKUP/" || warn "backup of $c failed"
     fi
-    mkdir -p "$HOME/.config/$c"
-    run cp -a ".config/$c/." "$HOME/.config/$c/" || return 1
   done
+
+  # load what we deployed last time, if we have history for it
+  declare -A OLD_SUMS=()
+  if [[ -f "$MANIFEST_FILE" ]]; then
+    local sum path
+    while read -r sum path; do
+      [[ -z "$sum" || "$sum" == \#* ]] && continue
+      OLD_SUMS["$path"]="$sum"
+    done < "$MANIFEST_FILE"
+  fi
+
+  declare -A NEW_SUMS=()
+  local preserved=() new_count=0 updated_count=0
+  local f rel dest src_sum dest_sum prev_sum
+  for c in "${CFG[@]}"; do
+    [[ -d ".config/$c" ]] || continue
+    while IFS= read -r -d '' f; do
+      rel="${f#.config/}"
+      dest="$HOME/.config/$rel"
+      src_sum="$(sha256_of "$f")"
+
+      if [[ ! -e "$dest" ]]; then
+        mkdir -p "$(dirname "$dest")"
+        run cp -a "$f" "$dest" || { warn "deploy of $rel failed"; continue; }
+        NEW_SUMS["$rel"]="$src_sum"
+        new_count=$((new_count+1))
+        continue
+      fi
+
+      dest_sum="$(sha256_of "$dest")"
+      if [[ "$dest_sum" == "$src_sum" ]]; then
+        NEW_SUMS["$rel"]="$src_sum"   # already identical, nothing to do
+        continue
+      fi
+
+      prev_sum="${OLD_SUMS[$rel]:-}"
+      if [[ -n "$prev_sum" && "$dest_sum" == "$prev_sum" ]]; then
+        # live file still matches what we last shipped - user never
+        # touched it, safe to bring it forward to the new version.
+        run cp -a "$f" "$dest" || { warn "update of $rel failed"; continue; }
+        NEW_SUMS["$rel"]="$src_sum"
+        updated_count=$((updated_count+1))
+      else
+        # user has edited this file, OR we have no history for it at all
+        # (upgrading from a version before this manifest existed) - either
+        # way, never overwrite it. Drop the new version alongside instead.
+        #
+        # Deliberately NOT recorded in NEW_SUMS: if it were, the next run
+        # would see the live (user-owned) checksum as "what we deployed"
+        # and silently overwrite it the moment it stopped changing — i.e.
+        # exactly the data loss this whole mechanism exists to prevent.
+        # Leaving it untracked means every future run keeps re-checking
+        # and re-offering .moonlit-new until the checksums naturally
+        # agree (the user adopted our version) or forever if they don't.
+        run cp -a "$f" "$dest.moonlit-new" || { warn "writing $rel.moonlit-new failed"; continue; }
+        preserved+=("$rel")
+      fi
+    done < <(find ".config/$c" -type f -print0)
+  done
+
   # keyd reads /etc, not ~/.config
   if [[ -f .config/keyd/default.conf ]]; then
     run sudo install -Dm644 .config/keyd/default.conf /etc/keyd/default.conf || warn "keyd /etc copy failed"
     run sudo keyd reload 2>/dev/null || true
   fi
+
+  {
+    printf '# Moonlit Shell deployed-file manifest — DO NOT EDIT BY HAND\n'
+    local k
+    for k in "${!NEW_SUMS[@]}"; do printf '%s  %s\n' "${NEW_SUMS[$k]}" "$k"; done
+  } > "$MANIFEST_FILE"
+  printf '%s\n' "$REPO_VERSION" > "$DEPLOYED_VERSION_FILE"
+  {
+    printf 'new=%d\n' "$new_count"
+    printf 'updated=%d\n' "$updated_count"
+    printf 'preserved=%d\n' "${#preserved[@]}"
+    local pf
+    for pf in "${preserved[@]}"; do printf 'preserved_file=%s\n' "$pf"; done
+  } > "$DEPLOY_REPORT_FILE"
+
   [[ -n "$BACKUP" && -d "$BACKUP" ]] && log "previous configs backed up to: $BACKUP"
+  log "deploy: $new_count new, $updated_count updated, ${#preserved[@]} preserved (user-edited)"
   return 0
 }
 
@@ -615,7 +728,45 @@ configure_monitors() {
 # ══════════════════════════════════════════════════════════════════
 #  MAIN
 # ══════════════════════════════════════════════════════════════════
+run_update() {
+  banner
+  preflight
+
+  # Update only refreshes config categories already present on disk — it
+  # never silently adds a category (e.g. nvim) a Minimal install never had.
+  CFG=()
+  local d name
+  for d in .config/*/; do
+    name="$(basename "$d")"
+    [[ -d "$HOME/.config/$name" ]] && CFG+=("$name")
+  done
+  [[ ${#CFG[@]} -gt 0 ]] || die "No existing Moonlit config directories found under ~/.config — run a normal install first."
+
+  local prev_version="unknown"
+  [[ -f "$DEPLOYED_VERSION_FILE" ]] && prev_version="$(cat "$DEPLOYED_VERSION_FILE")"
+  info "Updating dotfiles: ${B}$prev_version${R} → ${B}$REPO_VERSION${R} (${#CFG[@]} config categories, packages untouched)"
+  echo
+
+  get_sudo
+  BACKUP="$HOME/.config/moonlit-backup-$(date +%Y%m%d-%H%M%S)"
+  PHASE_TOTAL=2
+  PHASE_NO=0
+
+  phase "Deploying dotfiles"          ph_deploy       || die "Deploying configs failed."
+  print_deploy_report
+  phase "Rebuilding Moonlit Settings" ph_settings_app || warn "settings app rebuild failed"
+
+  printf '\n %s🌕 Update complete%s — now on %s%s%s.\n' "$GREEN" "$R" "$B" "$REPO_VERSION" "$R"
+  [[ -n "$BACKUP" && -d "$BACKUP" ]] && printf '    %sfull pre-update backup:%s %s\n' "$GREY" "$R" "$BACKUP"
+  printf '    %sfull log:%s %s\n\n' "$GREY" "$R" "$LOG"
+}
+
 main() {
+  if [[ $UPDATE_MODE -eq 1 ]]; then
+    run_update
+    return
+  fi
+
   banner
   preflight
   choose_tier
@@ -635,6 +786,7 @@ main() {
   phase "Enabling system services"         ph_services
   phase "Configuring CPU temp sensor"      ph_sensors    || warn "temp sensor setup failed"
   phase "Deploying dotfiles"               ph_deploy     || die "Deploying configs failed."
+  print_deploy_report
   phase "Installing themes"                ph_themes
   phase "Post-install setup"               ph_post
   phase "Building Moonlit Settings app"     ph_settings_app || warn "settings app build failed"

@@ -152,6 +152,19 @@ It asks for `sudo` up front, shows the full package and action list to confirm b
 | **Developer** | Minimal plus VS Code, Neovim config, Ranger, dgop |
 | **Full** ★ | Everything plus the Catppuccin SDDM theme and Discord/Steam/Spotify |
 
+### Updating
+
+Already installed and pulled a newer version of the repo? Don't just re-run a full install — use update mode instead:
+
+```bash
+git pull
+./install.sh --update
+```
+
+This only refreshes dotfiles (no packages, no tier menu) for whichever config categories you already have installed. It's safe to run any time: any file you never touched by hand gets brought forward to the new version automatically, and any file you *did* customize is left completely alone — the new version is saved next to it as `<file>.moonlit-new` so you can `diff` and merge whatever you want, same idea as pacman's `.pacnew`. Your accent, palette, keybinds, and everything else set through Moonlit Settings is untouched either way — that lives in `~/.config/moonlit/`, which the installer never writes to.
+
+The very first `--update` after pulling this feature in is the one exception: since there's no history yet of what was originally shipped vs. what you've since edited, it plays it safe and treats every changed file as "possibly yours," so you may see more `.moonlit-new` files than usual that one time. Every update after that is precise.
+
 ### Manual
 
 Prefer to do it by hand, or running NVIDIA? It is not a copy-paste job, so read the guide.

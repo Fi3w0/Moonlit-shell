@@ -118,6 +118,7 @@ The bar itself shows workspaces (a pill for the active one, a dot for occupied),
 |-----|--------|
 | `SUPER` + `Q` | Kitty |
 | `SUPER` + `Space` | Rofi launcher |
+| `SUPER` + `,` | Moonlit Settings |
 | `SUPER` + `B` | Wallpaper picker |
 | `SUPER` + `Shift` + `B` | Random wallpaper |
 | `SUPER` + `1`–`4` | Switch workspace |
@@ -125,6 +126,9 @@ The bar itself shows workspaces (a pill for the active one, a dot for occupied),
 | `SUPER` + `W` | Close window |
 | `SUPER` + `Tab` | Cycle windows |
 | `SUPER` + `P` | Toggle float |
+| `ALT` + `Tab` | Window overview (live thumbnails, click/arrows to switch) |
+| `ALT` + `.` | Emoji picker |
+| `ALT` + `/` | Keybinds cheatsheet |
 | `ALT` + `S` | Screenshot region to clipboard |
 | `ALT` + `D` | Screenshot full to clipboard |
 

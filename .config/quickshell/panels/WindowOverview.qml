@@ -10,6 +10,15 @@ import "../services"
 // live-thumbnail grid of every open window (across all workspaces). Click a
 // thumbnail (or arrow-key + Enter) to focus it; Escape or click-empty to
 // close without switching.
+//
+// Multi-monitor: this panel is instantiated per-screen (see shell.qml) and
+// only opens on whichever monitor currently has focus, same as the
+// wallpaper picker. The grid itself shows every toplevel globally (not
+// filtered to the panel's own screen) so you can switch to a window on
+// another monitor too. Only verified on a single-monitor machine so far —
+// worth a real look on a two-monitor rig: does opening it on monitor B
+// while the target window is on monitor A still focus + raise correctly,
+// and does the panel itself only ever appear on the focused monitor.
 PanelWindow {
     id: root
     signal close()
@@ -34,15 +43,21 @@ PanelWindow {
         return 0
     }
 
+    // Toplevel.activate() (wlr-foreign-toplevel-management) only requests
+    // surface activation — Hyprland doesn't reliably follow it with a
+    // workspace switch, so picking a window on another workspace left you
+    // stranded looking at the old one. `hyprctl dispatch focuswindow` is
+    // Hyprland-native and does switch workspace + monitor to bring the
+    // window into view, which is what a task switcher actually needs.
     function activate(toplevel) {
         if (!toplevel) return
-        toplevel.wayland.activate()
+        Hyprland.dispatch("focuswindow address:" + toplevel.address)
         root.close()
     }
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.75)
+        color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.78)
 
         NumberAnimation on opacity { from: 0; to: 1; duration: 180; running: true; easing.type: Easing.OutCubic }
 
@@ -50,13 +65,13 @@ PanelWindow {
 
         ColumnLayout {
             anchors.centerIn: parent
-            spacing: 18
+            spacing: 20
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
                 text: Hyprland.toplevels.values.length > 0 ? "Windows" : "No windows open"
-                color: Config.text
-                font { pixelSize: 16; bold: true; family: root.nfFont }
+                color: Config.accent
+                font { pixelSize: 17; bold: true; family: root.nfFont }
             }
 
             GridView {
@@ -65,11 +80,11 @@ PanelWindow {
                 Layout.preferredWidth: columns * cellWidth
                 Layout.preferredHeight: Math.min(
                     Math.ceil(Hyprland.toplevels.values.length / columns) * cellHeight,
-                    root.height - 160)
+                    root.height - 170)
                 Layout.maximumWidth: root.width - 80
 
-                cellWidth: 260
-                cellHeight: 190
+                cellWidth: 280
+                cellHeight: 205
                 interactive: false
                 model: Hyprland.toplevels
 
@@ -81,25 +96,33 @@ PanelWindow {
                     height: grid.cellHeight
                     property bool hov: false
                     readonly property bool selected: root.selectedIndex === index
+                    readonly property bool picked: cell.hov || cell.selected
 
                     Rectangle {
+                        id: card
                         anchors.fill: parent
-                        anchors.margins: 10
-                        radius: 14
-                        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.96)
-                        border.width: cell.selected || cell.modelData.activated ? 2 : 1
-                        border.color: (cell.hov || cell.selected || cell.modelData.activated)
+                        anchors.margins: 12
+                        radius: 16
+                        color: Qt.rgba(Config.base.r, Config.base.g, Config.base.b, 0.97)
+                        border.width: cell.picked ? 2 : 1
+                        border.color: cell.picked
                             ? Config.accent
                             : Qt.rgba(Config.text.r, Config.text.g, Config.text.b, 0.08)
-                        y: cell.hov || cell.selected ? -4 : 0
-                        Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-                        Behavior on border.color { ColorAnimation { duration: 120 } }
+                        // Unselected cards recede slightly so the picked one reads
+                        // as the obvious next action, not just another tile.
+                        opacity: cell.picked ? 1.0 : 0.82
+                        scale: cell.picked ? 1.0 : 0.97
+                        y: cell.picked ? -4 : 0
+                        Behavior on y { NumberAnimation { duration: 130; easing.type: Easing.OutCubic } }
+                        Behavior on scale { NumberAnimation { duration: 130; easing.type: Easing.OutCubic } }
+                        Behavior on opacity { NumberAnimation { duration: 130 } }
+                        Behavior on border.color { ColorAnimation { duration: 130 } }
                         clip: true
 
                         ScreencopyView {
                             anchors.fill: parent
-                            anchors.margins: 8
-                            anchors.bottomMargin: 28
+                            anchors.margins: 9
+                            anchors.bottomMargin: 32
                             captureSource: cell.modelData.wayland
                             live: true
                         }
@@ -107,7 +130,7 @@ PanelWindow {
                         // Workspace badge
                         Rectangle {
                             visible: cell.modelData.workspace !== null
-                            anchors { top: parent.top; left: parent.left; margins: 8 }
+                            anchors { top: parent.top; left: parent.left; margins: 9 }
                             width: wsLabel.implicitWidth + 10; height: 18; radius: 6
                             color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.85)
                             Text {
@@ -119,13 +142,27 @@ PanelWindow {
                             }
                         }
 
+                        // Currently-focused-before-opening indicator — a small dot,
+                        // not a border, so it never competes visually with the
+                        // selection/hover highlight above.
+                        Rectangle {
+                            visible: cell.modelData.activated
+                            anchors { top: parent.top; right: parent.right; margins: 12 }
+                            width: 7; height: 7; radius: 3.5
+                            color: Config.accent
+                        }
+
+                        // Gradient title fade instead of a hard bar — the label reads
+                        // as part of the thumbnail, not a strip pasted over it.
                         Rectangle {
                             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-                            height: 26
-                            color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.55)
+                            height: 44
+                            gradient: Gradient {
+                                GradientStop { position: 0.0; color: "transparent" }
+                                GradientStop { position: 1.0; color: Qt.rgba(Config.crust.r, Config.crust.g, Config.crust.b, 0.8) }
+                            }
                             Text {
-                                anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
-                                verticalAlignment: Text.AlignVCenter
+                                anchors { bottom: parent.bottom; left: parent.left; right: parent.right; margins: 8 }
                                 text: cell.modelData.title
                                 color: Config.text
                                 font { pixelSize: 11; family: root.nfFont }

@@ -326,6 +326,38 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			container.NewHBox(container.NewCenter(archSwatchBox), container.NewCenter(archHexLabel)),
 			container.NewCenter(archPick), nil))
 
+	// Rofi accent — the launcher's prompt icon + selected-item border.
+	rofiSwatch := canvas.NewCircle(hexToColor(cfg.RofiAccent))
+	rofiSwatch.StrokeColor = hexToColor(cSurface1)
+	rofiSwatch.StrokeWidth = 1
+	rofiSwatchBox := container.NewGridWrap(fyne.NewSize(44, 44), rofiSwatch)
+	rofiHexLabel := canvas.NewText(cfg.RofiAccent, hexToColor(cText))
+	rofiHexLabel.TextStyle = fyne.TextStyle{Monospace: true}
+	rofiHexLabel.TextSize = 15
+	applyRofiAccent := func(c color.Color) {
+		cfg.RofiAccent = colorToHex(c)
+		rofiSwatch.FillColor = c
+		rofiSwatch.Refresh()
+		rofiHexLabel.Text = cfg.RofiAccent
+		rofiHexLabel.Refresh()
+		if err := saveConfig(*cfg); err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
+		if err := applyRofi(*cfg); err != nil {
+			dialog.ShowError(err, w)
+		}
+	}
+	rofiPick := widget.NewButton("Pick…", func() {
+		p := dialog.NewColorPicker("Rofi accent", "Launcher prompt icon + selected item", applyRofiAccent, w)
+		p.Advanced = true
+		p.Show()
+	})
+	rofiCard := widget.NewCard("Rofi", "The launcher's accent color — prompt icon + selected item border",
+		container.NewBorder(nil, nil,
+			container.NewHBox(container.NewCenter(rofiSwatchBox), container.NewCenter(rofiHexLabel)),
+			container.NewCenter(rofiPick), nil))
+
 	flavors := []string{"Mocha", "Macchiato", "Frappé", "Latte"}
 	flavorKey := map[string]string{"Mocha": "mocha", "Macchiato": "macchiato", "Frappé": "frappe", "Latte": "latte"}
 	keyFlavor := map[string]string{"mocha": "Mocha", "macchiato": "Macchiato", "frappe": "Frappé", "latte": "Latte"}
@@ -352,9 +384,10 @@ func themeTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		palette.SetSelected(keyFlavor[d.Flavor])
 		applyAccent(hexToColor(d.Accent))
 		applyArchLogo(hexToColor(d.ArchLogoColor))
+		applyRofiAccent(hexToColor(d.RofiAccent))
 	})
 
-	body := container.NewVBox(accentCard, archLogoCard, wallustCard, paletteCard, hintText("Applies instantly — safe, can’t break anything."))
+	body := container.NewVBox(accentCard, archLogoCard, rofiCard, wallustCard, paletteCard, hintText("Applies instantly — safe, can’t break anything."))
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 
@@ -954,6 +987,7 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 				return
 			}
 			_ = applyHypr(*cfg)
+			_ = applyRofi(*cfg)
 			dialog.ShowInformation("Imported", "Config imported and applied. Reopen Moonlit Settings to refresh the controls.", w)
 		}, w).Show()
 	})
@@ -968,6 +1002,7 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 				return
 			}
 			_ = applyHypr(*cfg)
+			_ = applyRofi(*cfg)
 			dialog.ShowInformation("Reset", "All settings restored. Reopen to refresh the controls.", w)
 		}, w)
 	})

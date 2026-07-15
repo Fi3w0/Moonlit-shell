@@ -60,6 +60,7 @@ type Config struct {
 	PowerPersist  bool               `json:"powerPersist"`   // enable systemd service for reboot survival
 	WallustEnabled bool              `json:"wallustEnabled"`  // auto-generate colors from wallpaper
 	WallustMode    string             `json:"wallustMode"`    // "accent" | "full" (full = palette too)
+	RofiAccent    string             `json:"rofiAccent"` // rofi prompt icon + selected-item border
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
 }
@@ -80,6 +81,7 @@ func defaultConfig() Config {
 	return Config{
 		Accent:        "#cba6f7", // moonlight mauve
 		ArchLogoColor: "#eba0ac", // Catppuccin maroon (rose/red)
+		RofiAccent:    "#f38ba8", // Catppuccin pink — matches the theme's current default
 		Flavor:        "mocha",
 		BarStyle:      "islands",
 		BarPosition:   "top",

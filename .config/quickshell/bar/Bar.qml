@@ -515,7 +515,7 @@ PanelWindow {
 
             BarMod {
                 icon: "󰤨"; label: ""
-                value: sysStats.wifiSsid !== "" ? sysStats.wifiSsid : (sysStats.wifiSignal + "%")
+                value: (Config.showNetworkName && sysStats.wifiSsid !== "") ? sysStats.wifiSsid : (sysStats.wifiSignal + "%")
                 active: root.activePanel === "net"
                 barColors: root
                 onClicked: root.openPanel("net")
@@ -732,7 +732,7 @@ PanelWindow {
 
             BarMod {
                 icon: "󰤨"; label: ""
-                value: sysStats.wifiSsid !== "" ? sysStats.wifiSsid : (sysStats.wifiSignal + "%")
+                value: (Config.showNetworkName && sysStats.wifiSsid !== "") ? sysStats.wifiSsid : (sysStats.wifiSignal + "%")
                 active: root.activePanel === "net"
                 barColors: root
                 onClicked: root.openPanel("net")

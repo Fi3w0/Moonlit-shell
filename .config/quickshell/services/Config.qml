@@ -28,6 +28,7 @@ Singleton {
     readonly property bool   showTemp:       adapter.showTemp
     readonly property bool   showBattery:    adapter.showBattery
     readonly property bool   showRecording:  adapter.showRecording
+    readonly property bool   showNetworkName: adapter.showNetworkName
     readonly property int    toastDuration:  adapter.toastDuration
     readonly property int    maxToasts:      adapter.maxToasts
     readonly property string toastPosition:  adapter.toastPosition
@@ -121,6 +122,7 @@ Singleton {
             property bool   showTemp: true
             property bool   showBattery: true
             property bool   showRecording: true
+            property bool   showNetworkName: true
             property int    toastDuration: 4200
             property int    maxToasts: 5
             property string toastPosition: "auto"

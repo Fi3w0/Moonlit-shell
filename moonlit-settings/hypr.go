@@ -50,7 +50,7 @@ func renderHyprConf(c Config) string {
 	if len(c.Keybinds) > 0 {
 		b.WriteString("# Keybind overrides (unbind default, then rebind)\n")
 		for _, kb := range c.Keybinds {
-			if kb.Combo == kb.Default && kb.Dispatcher == "" {
+			if kb.Combo == kb.Default {
 				continue
 			}
 			fmt.Fprintf(&b, "unbind = %s\n", kb.Default)

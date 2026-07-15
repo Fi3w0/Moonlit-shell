@@ -123,6 +123,20 @@ func markFirstRunDone() {
 	os.WriteFile(firstRunFlag(), []byte("1"), 0o644)
 }
 
+// mergeKeybinds re-attaches the curated, non-persisted keybind metadata
+// (label/dispatcher/default — all `json:"-"`) to whatever combos were loaded
+// from JSON, whether from config.json or an imported file.
+func mergeKeybinds(saved map[string]Keybind) map[string]Keybind {
+	merged := curatedKeybinds()
+	for id, def := range merged {
+		if s, ok := saved[id]; ok && s.Combo != "" {
+			def.Combo = s.Combo
+		}
+		merged[id] = def
+	}
+	return merged
+}
+
 // loadConfig merges the saved file over defaults, so new fields always have
 // sane values and the curated keybind metadata (label/dispatcher) is restored.
 func loadConfig() Config {
@@ -130,15 +144,7 @@ func loadConfig() Config {
 	if data, err := os.ReadFile(configPath()); err == nil {
 		_ = json.Unmarshal(data, &c)
 	}
-	// Re-attach non-persisted metadata to whatever combos were loaded.
-	merged := curatedKeybinds()
-	for id, def := range merged {
-		if saved, ok := c.Keybinds[id]; ok && saved.Combo != "" {
-			def.Combo = saved.Combo
-		}
-		merged[id] = def
-	}
-	c.Keybinds = merged
+	c.Keybinds = mergeKeybinds(c.Keybinds)
 	return c
 }
 

@@ -915,6 +915,7 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 				dialog.ShowError(fmt.Errorf("not a valid config: %v", e), w)
 				return
 			}
+			nc.Keybinds = mergeKeybinds(nc.Keybinds)
 			*cfg = nc
 			if e := saveConfig(*cfg); e != nil {
 				dialog.ShowError(e, w)

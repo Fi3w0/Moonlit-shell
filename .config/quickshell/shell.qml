@@ -236,7 +236,6 @@ ShellRoot {
     // `qs ipc call notify send Moonlit "Title" "Body"` for internal shell messages.
     IpcHandler {
         target: "notify"
-        property int count: notifItems.length
         function send(app: string, title: string, body: string): void {
             pushNotification(app, title, body)
             if (!sys.dnd)

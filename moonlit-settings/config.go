@@ -58,8 +58,14 @@ type Config struct {
 	WallpaperDir  string             `json:"wallpaperDir"`   // path, default ~/Pictures/Wallpapers
 	PowerProfile  string             `json:"powerProfile"`   // powersave | schedutil | performance
 	PowerPersist  bool               `json:"powerPersist"`   // enable systemd service for reboot survival
-	WallustEnabled bool              `json:"wallustEnabled"`  // auto-generate accent from wallpaper
+	WallustEnabled bool              `json:"wallustEnabled"`  // auto-generate colors from wallpaper
+	WallustMode    string            `json:"wallustMode"`     // "accent" (accent only) | "full" (accent + tinted palette)
 	RofiAccent    string             `json:"rofiAccent"` // rofi prompt icon + selected-item border
+	// Palette is a wallust-generated neutral ramp (base…text). Populated only
+	// in "full" wallust mode; empty means the shell falls back to the Flavor
+	// ramp. Keys mirror services/Config.qml (base, mantle, crust, surface0-2,
+	// overlay0-2, subtext0-1, text).
+	Palette       map[string]string  `json:"palette"`
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
 }
@@ -97,6 +103,8 @@ func defaultConfig() Config {
 		PowerProfile:  "schedutil",
 		PowerPersist:  false,
 		WallustEnabled: false,
+		WallustMode:    "accent",
+		Palette:        map[string]string{},
 		Hypr: HyprSettings{
 			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
 			GapsIn: 3, GapsOut: 8, BorderSize: 2,

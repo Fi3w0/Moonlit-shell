@@ -50,7 +50,21 @@ Singleton {
         "frappe":    { base:"#303446", mantle:"#292c3c", crust:"#232634", surface0:"#414559", surface1:"#51576d", surface2:"#626880", overlay0:"#737994", overlay1:"#838ba7", overlay2:"#949cbb", subtext0:"#a5adce", subtext1:"#b5bfe2", text:"#c6d0f5" },
         "latte":     { base:"#eff1f5", mantle:"#e6e9ef", crust:"#dce0e8", surface0:"#ccd0da", surface1:"#bcc0cc", surface2:"#acb0be", overlay0:"#9ca0b0", overlay1:"#8c8fa1", overlay2:"#7c7f93", subtext0:"#6c6f85", subtext1:"#5c5f77", text:"#4c4f69" }
     })
-    readonly property var _p: _flavors[flavor] !== undefined ? _flavors[flavor] : _flavors["mocha"]
+    readonly property var _flavorRamp: _flavors[flavor] !== undefined ? _flavors[flavor] : _flavors["mocha"]
+
+    // Optional wallust-generated neutral ramp (moonlit-settings "full palette"
+    // mode). When present it overrides the flavor ramp; empty/absent means we
+    // just use the flavor. Accent stays separate on top either way.
+    readonly property var _custom: adapter.palette
+    readonly property bool _hasCustom: _custom !== undefined && _custom !== null
+                                       && _custom.base !== undefined && _custom.base !== ""
+    readonly property var _p: {
+        if (!_hasCustom) return _flavorRamp
+        var out = {}
+        for (var k in _flavorRamp)
+            out[k] = (_custom[k] !== undefined && _custom[k] !== "") ? _custom[k] : _flavorRamp[k]
+        return out
+    }
 
     readonly property color base:     _p.base
     readonly property color mantle:   _p.mantle
@@ -88,6 +102,8 @@ Singleton {
             property int    maxToasts: 5
             property string toastPosition: "auto"
             property string wallpaperDir: "~/Pictures/Wallpapers"
+            // Wallust "full palette" neutral ramp; empty object = use `flavor`.
+            property var palette: ({})
         }
     }
 }

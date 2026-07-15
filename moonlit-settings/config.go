@@ -58,8 +58,7 @@ type Config struct {
 	WallpaperDir  string             `json:"wallpaperDir"`   // path, default ~/Pictures/Wallpapers
 	PowerProfile  string             `json:"powerProfile"`   // powersave | schedutil | performance
 	PowerPersist  bool               `json:"powerPersist"`   // enable systemd service for reboot survival
-	WallustEnabled bool              `json:"wallustEnabled"`  // auto-generate colors from wallpaper
-	WallustMode    string             `json:"wallustMode"`    // "accent" | "full" (full = palette too)
+	WallustEnabled bool              `json:"wallustEnabled"`  // auto-generate accent from wallpaper
 	RofiAccent    string             `json:"rofiAccent"` // rofi prompt icon + selected-item border
 	Hypr          HyprSettings       `json:"hyprland"`
 	Keybinds      map[string]Keybind `json:"keybinds"`
@@ -98,7 +97,6 @@ func defaultConfig() Config {
 		PowerProfile:  "schedutil",
 		PowerPersist:  false,
 		WallustEnabled: false,
-		WallustMode:    "accent",
 		Hypr: HyprSettings{
 			Rounding: 10, ActiveOpacity: 1.0, InactiveOpacity: 0.92,
 			GapsIn: 3, GapsOut: 8, BorderSize: 2,
@@ -114,17 +112,12 @@ func configPath() string {
 	return filepath.Join(home, ".config", "moonlit", "config.json")
 }
 
-func firstRunFlag() string {
-	return filepath.Join(filepath.Dir(configPath()), ".first-run-done")
-}
-
+// isFirstRun is true until the config file exists — writing it (the wizard's
+// "Get Started") is what ends the first-run state, so no separate flag file is
+// needed.
 func isFirstRun() bool {
 	_, err := os.Stat(configPath())
 	return os.IsNotExist(err)
-}
-
-func markFirstRunDone() {
-	os.WriteFile(firstRunFlag(), []byte("1"), 0o644)
 }
 
 // mergeKeybinds re-attaches the curated, non-persisted keybind metadata

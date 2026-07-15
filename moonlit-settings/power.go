@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // validGovernors is the fixed whitelist of governor names this app will
@@ -19,13 +19,8 @@ var validGovernors = map[string]bool{
 }
 
 // powerServicePath is a SYSTEM (root) unit, not a --user one. Applying a
-// governor needs root — writing scaling_governor or running cpupower fails
-// for a normal user. A --user service has no way to become root at boot
-// (no polkit agent running that early, nothing to answer a password
-// prompt), so it would silently fail every single boot. Installing this as
-// a system unit needs one pkexec prompt now, when the user flips the
-// toggle; after that systemd just runs it as root directly at every boot,
-// no auth needed.
+// governor needs root, so this has to run as root at boot — a --user unit
+// can't get there on its own.
 func powerServicePath() string {
 	return "/etc/systemd/system/moonlit-power.service"
 }
@@ -39,8 +34,6 @@ func oldUserPowerServicePath() string {
 }
 
 // renderPowerService bakes the (validated) governor directly into the unit.
-// No runtime config.json read, no python3 dependency, nothing to fail at
-// boot besides cpupower/sysfs itself.
 func renderPowerService(gov string) string {
 	script := fmt.Sprintf(
 		`if command -v cpupower >/dev/null; then cpupower frequency-set -g %s; `+
@@ -56,39 +49,82 @@ func renderPowerService(gov string) string {
 		"WantedBy=multi-user.target\n"
 }
 
-// syncPowerService installs or removes the system-level persistence unit.
-// The unit content is base64-encoded before being embedded in the pkexec
-// shell command, so nothing about it needs shell-quoting or escaping —
-// there is no injection surface even though it's technically "interpolated
-// into a shell string".
-func syncPowerService(gov string, enable bool) error {
-	// Best-effort cleanup of the old, broken --user unit from earlier
-	// versions of this app, so it doesn't linger as a silently-failing
-	// duplicate alongside the working system unit.
-	if old := oldUserPowerServicePath(); fileExists(old) {
-		exec.Command("systemctl", "--user", "disable", "--now", "moonlit-power.service").Run()
-		os.Remove(old)
-	}
+// runSudo runs argv as root via `sudo -S`, feeding the password on stdin so
+// it never appears in argv or `ps`. -k drops any cached sudo timestamp
+// first, so the password just typed into the app is always the one that
+// actually gets checked, not silently skipped because some unrelated
+// terminal still has an active sudo session.
+func runSudo(password string, argv ...string) error {
+	return runSudoStdin(password, "", argv...)
+}
 
-	if !enable {
-		cmd := exec.Command("pkexec", "sh", "-c", fmt.Sprintf(
-			"systemctl disable --now moonlit-power.service 2>/dev/null; rm -f %s; systemctl daemon-reload",
-			powerServicePath()))
-		return cmd.Run()
+// runSudoStdin is runSudo but also forwards extraStdin to the target
+// command after the password line — e.g. `sudo -S tee <path>` reading the
+// file content it should write straight from stdin, no shell quoting of
+// file contents needed anywhere.
+func runSudoStdin(password, extraStdin string, argv ...string) error {
+	cmd := exec.Command("sudo", append([]string{"-k", "-S"}, argv...)...)
+	cmd.Stdin = strings.NewReader(password + "\n" + extraStdin)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		text := string(out)
+		switch {
+		case strings.Contains(text, "Sorry, try again") || strings.Contains(text, "incorrect password attempt"):
+			return fmt.Errorf("incorrect password")
+		case strings.Contains(text, "not in the sudoers"):
+			return fmt.Errorf("this user is not allowed to use sudo")
+		}
+		msg := strings.TrimSpace(text)
+		if msg == "" {
+			msg = err.Error()
+		}
+		return fmt.Errorf("%s", msg)
 	}
-
-	if !validGovernors[gov] {
-		return fmt.Errorf("refusing to persist unknown governor %q", gov)
-	}
-
-	encoded := base64.StdEncoding.EncodeToString([]byte(renderPowerService(gov)))
-	script := fmt.Sprintf(
-		"echo %s | base64 -d > %s && systemctl daemon-reload && systemctl enable --now moonlit-power.service",
-		encoded, powerServicePath())
-	return exec.Command("pkexec", "sh", "-c", script).Run()
+	return nil
 }
 
 func fileExists(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
+}
+
+func cleanupOldUserPowerService() {
+	if old := oldUserPowerServicePath(); fileExists(old) {
+		exec.Command("systemctl", "--user", "disable", "--now", "moonlit-power.service").Run()
+		os.Remove(old)
+	}
+}
+
+// installPowerService writes and enables the persistence unit. Two sudo
+// calls, but only one password prompt in the UI — both reuse the same
+// typed password.
+func installPowerService(password, gov string) error {
+	cleanupOldUserPowerService()
+	if !validGovernors[gov] {
+		return fmt.Errorf("refusing to persist unknown governor %q", gov)
+	}
+	if err := runSudoStdin(password, renderPowerService(gov), "tee", powerServicePath()); err != nil {
+		return fmt.Errorf("writing service file: %w", err)
+	}
+	if err := runSudo(password, "systemctl", "daemon-reload"); err != nil {
+		return fmt.Errorf("daemon-reload: %w", err)
+	}
+	if err := runSudo(password, "systemctl", "enable", "--now", "moonlit-power.service"); err != nil {
+		return fmt.Errorf("enabling service: %w", err)
+	}
+	return nil
+}
+
+func removePowerService(password string) error {
+	cleanupOldUserPowerService()
+	if err := runSudo(password, "systemctl", "disable", "--now", "moonlit-power.service"); err != nil {
+		// Not installed is fine; anything else is worth surfacing.
+		if !strings.Contains(err.Error(), "does not exist") && !strings.Contains(err.Error(), "not loaded") {
+			return fmt.Errorf("disabling service: %w", err)
+		}
+	}
+	if err := runSudo(password, "rm", "-f", powerServicePath()); err != nil {
+		return fmt.Errorf("removing service file: %w", err)
+	}
+	return runSudo(password, "systemctl", "daemon-reload")
 }

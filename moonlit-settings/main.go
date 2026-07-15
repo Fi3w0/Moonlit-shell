@@ -581,6 +581,23 @@ func wallpaperTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	return container.NewBorder(nil, footer(reset), nil, nil, container.NewPadded(body))
 }
 
+// sudoPasswordDialog shows a small password box — only ever opened from an
+// explicit click — and calls run with what was typed if the user confirms.
+func sudoPasswordDialog(w fyne.Window, message string, run func(password string)) {
+	pw := widget.NewPasswordEntry()
+	pw.SetPlaceHolder("sudo password")
+	content := container.NewVBox(widget.NewLabel(message), pw)
+	d := dialog.NewCustomConfirm("Admin password needed", "Run", "Cancel", content, func(ok bool) {
+		if !ok {
+			return
+		}
+		run(pw.Text)
+	}, w)
+	d.Resize(fyne.NewSize(340, 160))
+	d.Show()
+	w.Canvas().Focus(pw)
+}
+
 // ── Power tab: CPU governor toggle ───────────────────────────────────────
 func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	save := func() {
@@ -592,23 +609,38 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		if !validGovernors[gov] {
 			return
 		}
+		var argv []string
 		if _, err := exec.LookPath("cpupower"); err == nil {
-			exec.Command("pkexec", "cpupower", "frequency-set", "-g", gov).Start()
-			return
+			argv = []string{"cpupower", "frequency-set", "-g", gov}
+		} else {
+			argv = []string{"sh", "-c",
+				fmt.Sprintf("echo %s | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null", gov)}
 		}
-		cmd := exec.Command("pkexec", "sh", "-c",
-			fmt.Sprintf("echo %s | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null", gov))
-		cmd.Start()
+		sudoPasswordDialog(w, "Applying the CPU governor needs admin privileges.", func(pw string) {
+			go func() {
+				if err := runSudo(pw, argv...); err != nil {
+					dialog.ShowError(fmt.Errorf("apply governor: %v", err), w)
+				}
+			}()
+		})
 	}
-	// syncPowerService shells out to pkexec synchronously, so run it off the
-	// UI thread — otherwise the whole app freezes until the polkit prompt
-	// is answered.
+	// installPowerService/removePowerService shell out to sudo synchronously,
+	// so run them off the UI thread — otherwise the app freezes until sudo
+	// returns.
 	runSyncPower := func(gov string, enable bool) {
-		go func() {
-			if err := syncPowerService(gov, enable); err != nil {
-				dialog.ShowError(fmt.Errorf("persist after reboot: %v", err), w)
-			}
-		}()
+		sudoPasswordDialog(w, "Persisting the CPU governor across reboots needs admin privileges.", func(pw string) {
+			go func() {
+				var err error
+				if enable {
+					err = installPowerService(pw, gov)
+				} else {
+					err = removePowerService(pw)
+				}
+				if err != nil {
+					dialog.ShowError(fmt.Errorf("persist after reboot: %v", err), w)
+				}
+			}()
+		})
 	}
 
 	labelToKey := map[string]string{
@@ -648,7 +680,19 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 		runSyncPower(cfg.PowerProfile, b)
 	})
 
+	// sync reflects cfg into the widgets WITHOUT re-triggering their
+	// OnChanged side effects (which apply the governor / prompt for a
+	// password). This matters because makeTabs() constructs every tab's
+	// body eagerly regardless of which one is visible, so this runs on
+	// every app launch — Select.SetSelected fires OnChanged unconditionally
+	// in Fyne, so without suppressing it here, just opening the app would
+	// silently re-apply the governor (and, now, pop the password dialog)
+	// every single time.
 	sync := func() {
+		selOnChanged, checkOnChanged := sel.OnChanged, persistCheck.OnChanged
+		sel.OnChanged, persistCheck.OnChanged = nil, nil
+		defer func() { sel.OnChanged, persistCheck.OnChanged = selOnChanged, checkOnChanged }()
+
 		if label, ok := keyToLabel[cfg.PowerProfile]; ok {
 			sel.SetSelected(label)
 		} else if len(avail) > 0 {
@@ -669,12 +713,17 @@ func powerTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 
 	reset := resetButton(func() {
 		d := defaultConfig()
+		wasPersist := cfg.PowerPersist
 		cfg.PowerProfile = d.PowerProfile
 		cfg.PowerPersist = d.PowerPersist
 		sync()
 		save()
 		applyGov(d.PowerProfile)
-		runSyncPower(d.PowerProfile, d.PowerPersist)
+		if wasPersist {
+			// Only prompt for a password if there's actually a persisted
+			// service to tear down — defaultConfig always has persist off.
+			runSyncPower(d.PowerProfile, false)
+		}
 	})
 
 	body := container.NewVBox(govCard, persistCard, descCard)

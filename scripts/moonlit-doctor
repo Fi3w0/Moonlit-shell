@@ -4,6 +4,8 @@ set -u
 ok_count=0
 warn_count=0
 fail_count=0
+fail_msgs=()
+warn_msgs=()
 
 if [[ -t 1 ]]; then
   R=$'\e[0m'
@@ -17,8 +19,8 @@ else
 fi
 
 ok() { ok_count=$((ok_count + 1)); printf '%s✓%s %s\n' "$GREEN" "$R" "$*"; }
-warn() { warn_count=$((warn_count + 1)); printf '%s!%s %s\n' "$YELLOW" "$R" "$*"; }
-fail() { fail_count=$((fail_count + 1)); printf '%s✗%s %s\n' "$RED" "$R" "$*"; }
+warn() { warn_count=$((warn_count + 1)); warn_msgs+=("$*"); printf '%s!%s %s\n' "$YELLOW" "$R" "$*"; }
+fail() { fail_count=$((fail_count + 1)); fail_msgs+=("$*"); printf '%s✗%s %s\n' "$RED" "$R" "$*"; }
 info() { printf '%s::%s %s\n' "$BLUE" "$R" "$*"; }
 
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -213,6 +215,34 @@ main() {
   check_paths "$repo"
 
   printf '\n%sSummary:%s %d ok, %d warnings, %d failures\n' "$BLUE" "$R" "$ok_count" "$warn_count" "$fail_count"
+
+  if (( fail_count > 0 )); then
+    printf '%s✗ Something is wrong — %d check(s) failed.%s\n' "$RED" "$fail_count" "$R"
+  elif (( warn_count > 0 )); then
+    printf '%s! Mostly good — %d warning(s), nothing critical.%s\n' "$YELLOW" "$warn_count" "$R"
+  else
+    printf '%s✓ Everything is good — all checks passed.%s\n' "$GREEN" "$R"
+  fi
+
+  if (( fail_count > 0 || warn_count > 0 )); then
+    local log="$HOME/.config/moonlit/doctor.log"
+    mkdir -p "$(dirname "$log")"
+    {
+      printf 'moonlit-doctor run: %s\n' "$(date -Iseconds)"
+      printf '%d ok, %d warnings, %d failures\n\n' "$ok_count" "$warn_count" "$fail_count"
+      if (( fail_count > 0 )); then
+        printf 'FAILURES:\n'
+        printf '  - %s\n' "${fail_msgs[@]}"
+        printf '\n'
+      fi
+      if (( warn_count > 0 )); then
+        printf 'WARNINGS:\n'
+        printf '  - %s\n' "${warn_msgs[@]}"
+      fi
+    } > "$log"
+    printf '%sDetails logged to %s%s\n' "$DIM" "$log" "$R"
+  fi
+
   if (( fail_count > 0 )); then
     exit 1
   fi

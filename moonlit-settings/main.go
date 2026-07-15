@@ -1022,13 +1022,16 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			exe, _ := os.Executable()
 			doc = filepath.Join(filepath.Dir(exe), "..", "..", "scripts", "moonlit-doctor")
 		}
-		cmd := exec.Command("kitty", "-e", doc)
+		cmd := exec.Command("kitty", "--hold", "-e", doc)
 		if err := cmd.Start(); err != nil {
 			dialog.ShowError(fmt.Errorf("could not launch health check: %v", err), w)
 		}
 	})
 	health.Importance = widget.MediumImportance
-	healthCard := widget.NewCard("Diagnostics", "Check that everything is wired up correctly", health)
+	healthCard := widget.NewCard("Diagnostics", "Check that everything is wired up correctly", container.NewVBox(
+		health,
+		hintText("Opens a terminal with a pass/fail summary. If anything's wrong, details are also saved to ~/.config/moonlit/doctor.log."),
+	))
 
 	screenshot := widget.NewButton("Export as PNG", func() {
 		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {

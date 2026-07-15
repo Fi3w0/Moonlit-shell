@@ -32,6 +32,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -90,23 +91,25 @@ func main() {
 		return makeTabs(&cfg, w)
 	}()
 	w.SetContent(container.NewBorder(header(), nil, nil, nil, content))
-	w.Resize(fyne.NewSize(500, 600))
+	w.Resize(fyne.NewSize(680, 620))
 	w.ShowAndRun()
 }
 
 // makeTabs returns the full tab container shared by main() and the wizard.
+// A left sidebar (not top tabs) is used because 8 tabs don't fit a top bar
+// at a reasonable window width without overflowing into a "…" menu.
 func makeTabs(cfg *Config, w fyne.Window) *container.AppTabs {
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Theme", themeTab(cfg, w)),
-		container.NewTabItem("Bar", barTab(cfg, w)),
-		container.NewTabItem("Notifications", notifTab(cfg, w)),
-		container.NewTabItem("Wallpapers", wallpaperTab(cfg, w)),
-		container.NewTabItem("Power", powerTab(cfg, w)),
-		container.NewTabItem("Hyprland", hyprTab(cfg, w)),
-		container.NewTabItem("Keys", keybindTab(cfg, w)),
-		container.NewTabItem("About", aboutTab(cfg, w)),
+		container.NewTabItemWithIcon("Theme", theme.ColorPaletteIcon(), themeTab(cfg, w)),
+		container.NewTabItemWithIcon("Bar", theme.GridIcon(), barTab(cfg, w)),
+		container.NewTabItemWithIcon("Notifications", theme.MailComposeIcon(), notifTab(cfg, w)),
+		container.NewTabItemWithIcon("Wallpapers", theme.MediaPhotoIcon(), wallpaperTab(cfg, w)),
+		container.NewTabItemWithIcon("Power", theme.ComputerIcon(), powerTab(cfg, w)),
+		container.NewTabItemWithIcon("Hyprland", theme.DesktopIcon(), hyprTab(cfg, w)),
+		container.NewTabItemWithIcon("Keys", theme.ListIcon(), keybindTab(cfg, w)),
+		container.NewTabItemWithIcon("About", theme.InfoIcon(), aboutTab(cfg, w)),
 	)
-	tabs.SetTabLocation(container.TabLocationTop)
+	tabs.SetTabLocation(container.TabLocationLeading)
 	return tabs
 }
 
@@ -964,7 +967,7 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 	healthCard := widget.NewCard("Diagnostics", "Check that everything is wired up correctly", health)
 
 	screenshot := widget.NewButton("Export as PNG", func() {
-		dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
+		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
 			if err != nil || wc == nil {
 				return
 			}
@@ -975,7 +978,9 @@ func aboutTab(cfg *Config, w fyne.Window) fyne.CanvasObject {
 			} else {
 				dialog.ShowInformation("Exported", "Config card saved as PNG.", w)
 			}
-		}, w).Show()
+		}, w)
+		d.SetFileName("moonlit-config-card.png")
+		d.Show()
 	})
 	screenshot.Importance = widget.MediumImportance
 	shareCard := widget.NewCard("Share", "Export a pretty config card to show off your rice",

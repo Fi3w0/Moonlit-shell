@@ -11,6 +11,10 @@ PanelWindow {
     id: root
 
     required property string activePanel
+    // Machine-wide stats/status poller, owned by shell.qml and shared by every
+    // monitor's bar (battery, updates, recording, temp — polled once, not once
+    // per screen). See the `sharedSys` object in shell.qml.
+    required property var shared
     signal openPanel(string name)
     signal showOsd(string kind, real value)
     signal showToast(string app, string title, string body)
@@ -50,111 +54,22 @@ PanelWindow {
     readonly property bool volMuted:  Pipewire.defaultAudioSink?.audio?.muted ?? false
     readonly property bool btPowered: Bluetooth.defaultAdapter?.enabled ?? false
 
-    // ── Battery via sysfs ────────────────────────────────────────────────
-    property real battPct:      100
-    property bool battCharging: false
-    property int updateCount: 0
-    property int pacmanUpdateCount: 0
-    property int aurUpdateCount: 0
-    property string aurHelper: ""
-    property bool recordingActive: false
-    property bool tempWarned: false
-
-    Process {
-        id: battProc
-        command: ["sh", "-c", "paste <(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || echo 100) <(cat /sys/class/power_supply/BAT0/status 2>/dev/null || echo Unknown)"]
-        stdout: SplitParser {
-            onRead: d => {
-                var p = d.trim().split("\t")
-                if (p.length >= 2) {
-                    var n = parseInt(p[0])
-                    if (!isNaN(n)) root.battPct = n
-                    var s = p[1].trim()
-                    root.battCharging = (s === "Charging" || s === "Full")
-                }
-            }
-        }
-        running: true
-    }
-    Timer { interval: 30000; running: true; repeat: true; onTriggered: battProc.running = true }
-
-    // ── Shell-polled stats (CPU/RAM/WiFi) ────────────────────────────────
-    SystemStats { id: sysStats }
+    // ── Machine-wide stats + status ──────────────────────────────────────
+    // Battery, update counts, recording and the CPU-temp warning are polled
+    // exactly once in shell.qml (see `sharedSys`) and bound here, so a
+    // multi-monitor setup doesn't run N copies of every poll or fire a toast
+    // per screen. Only rofi (a per-bar launcher) stays local.
+    readonly property real   battPct:           shared.battPct
+    readonly property bool   battCharging:       shared.battCharging
+    readonly property int    updateCount:        shared.updateCount
+    readonly property int    pacmanUpdateCount:  shared.pacmanUpdateCount
+    readonly property int    aurUpdateCount:     shared.aurUpdateCount
+    readonly property string aurHelper:          shared.aurHelper
+    readonly property bool   recordingActive:    shared.recordingActive
+    readonly property var    sysStats:           shared.stats
 
     // ── Rofi via Hyprland dispatch (gets proper Wayland env) ─────────────
     Process { id: rofiProc; command: ["hyprctl", "dispatch", "exec", "rofi -show combi"] }
-
-    Process {
-        id: updateProc
-        command: ["sh", "-c", "if command -v checkupdates >/dev/null 2>&1; then p=$(checkupdates 2>/dev/null | wc -l); else p=$(pacman -Qu 2>/dev/null | wc -l); fi; if command -v paru >/dev/null 2>&1; then h=paru; a=$(paru -Qua 2>/dev/null | wc -l); elif command -v yay >/dev/null 2>&1; then h=yay; a=$(yay -Qua 2>/dev/null | wc -l); else h=; a=0; fi; printf '%s %s %s\\n' \"$p\" \"$a\" \"$h\""]
-        stdout: SplitParser {
-            onRead: d => {
-                var p = d.trim().split(/\s+/)
-                root.pacmanUpdateCount = parseInt(p[0]) || 0
-                root.aurUpdateCount = parseInt(p[1]) || 0
-                root.aurHelper = p.length >= 3 ? p[2] : ""
-                root.updateCount = root.pacmanUpdateCount + root.aurUpdateCount
-            }
-        }
-    }
-    Timer {
-        interval: 1800000; running: true; repeat: true; triggeredOnStart: true
-        onTriggered: updateProc.running = true
-    }
-    // Wake detector: QML timers pause during suspend, so on resume the
-    // wall-clock jumps far more than the tick interval. When it does, the
-    // machine just woke from sleep -> refresh everything immediately instead
-    // of waiting out each widget's own poll interval.
-    Timer {
-        property double last: Date.now()
-        interval: 30000; running: true; repeat: true
-        onTriggered: {
-            var now = Date.now()
-            if (now - last > interval * 3) {
-                battProc.running = true
-                recordingProc.running = true
-                sysStats.refresh()
-                updateRecheck.restart()
-            }
-            last = now
-        }
-    }
-    // Debounce: re-check a few seconds after a pacman transaction settles.
-    Timer {
-        id: updateRecheck
-        interval: 4000; repeat: false
-        onTriggered: updateProc.running = true
-    }
-    // Re-run the check whenever pacman writes to its log (install/upgrade/remove).
-    FileView {
-        path: "/var/log/pacman.log"
-        watchChanges: true
-        onFileChanged: updateRecheck.restart()
-    }
-
-    Process {
-        id: recordingProc
-        command: ["sh", "-c", "pgrep -x 'obs|wf-recorder|gpu-screen-recorder|kooha|simplescreenrecorder' >/dev/null && echo 1 || echo 0"]
-        stdout: SplitParser { onRead: d => root.recordingActive = d.trim() === "1" }
-    }
-    // Recording is a rarely-toggled background status; 10s keeps pgrep (~26ms)
-    // off the hot path without a noticeable delay on the indicator.
-    Timer {
-        interval: 10000; running: true; repeat: true; triggeredOnStart: true
-        onTriggered: recordingProc.running = true
-    }
-
-    Timer {
-        interval: 10000; running: true; repeat: true
-        onTriggered: {
-            if (sysStats.cpuTemp >= 75 && !root.tempWarned) {
-                root.showToast("Moonlit", "Temperature warning", "CPU is " + Math.round(sysStats.cpuTemp) + "C")
-                root.tempWarned = true
-            } else if (sysStats.cpuTemp < 68) {
-                root.tempWarned = false
-            }
-        }
-    }
 
     // ── Window setup ─────────────────────────────────────────────────────
     // barPosition drives the anchoring: top = horizontal strip, left/right =
@@ -358,7 +273,7 @@ PanelWindow {
                     spacing: 1
                     Text {
                         text: String.fromCodePoint(0xf186)
-                        color: root.activePanel === "cal" ? root.accent : root.accent
+                        color: root.accent
                         font { pixelSize: 13; family: root.nfFont }
                         Layout.alignment: Qt.AlignHCenter
                     }

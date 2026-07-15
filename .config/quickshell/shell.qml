@@ -103,6 +103,117 @@ ShellRoot {
         running: sys.nightLight
     }
 
+    // ── Shared, machine-wide stats + status pollers ──────────────────────
+    // These used to live inside Bar.qml, so every monitor ran its own battery /
+    // update / recording polls and could fire duplicate toasts. Hoisted here so
+    // they run exactly once; each screen's Bar binds to these values via its
+    // `shared` property.
+    QtObject {
+        id: sharedSys
+
+        property real   battPct:           100
+        property bool   battCharging:       false
+        property int    updateCount:        0
+        property int    pacmanUpdateCount:  0
+        property int    aurUpdateCount:     0
+        property string aurHelper:          ""
+        property bool   recordingActive:    false
+        property bool   tempWarned:         false
+
+        // CPU/RAM/WiFi/temp — one instance for the whole shell.
+        property var stats: SystemStats { }
+
+        // Battery via sysfs.
+        property var battProc: Process {
+            command: ["sh", "-c", "paste <(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || echo 100) <(cat /sys/class/power_supply/BAT0/status 2>/dev/null || echo Unknown)"]
+            stdout: SplitParser {
+                onRead: d => {
+                    var p = d.trim().split("\t")
+                    if (p.length >= 2) {
+                        var n = parseInt(p[0])
+                        if (!isNaN(n)) sharedSys.battPct = n
+                        var s = p[1].trim()
+                        sharedSys.battCharging = (s === "Charging" || s === "Full")
+                    }
+                }
+            }
+            running: true
+        }
+        property var battTimer: Timer { interval: 30000; running: true; repeat: true; onTriggered: sharedSys.battProc.running = true }
+
+        // Pending updates (pacman + AUR helper).
+        property var updateProc: Process {
+            command: ["sh", "-c", "if command -v checkupdates >/dev/null 2>&1; then p=$(checkupdates 2>/dev/null | wc -l); else p=$(pacman -Qu 2>/dev/null | wc -l); fi; if command -v paru >/dev/null 2>&1; then h=paru; a=$(paru -Qua 2>/dev/null | wc -l); elif command -v yay >/dev/null 2>&1; then h=yay; a=$(yay -Qua 2>/dev/null | wc -l); else h=; a=0; fi; printf '%s %s %s\\n' \"$p\" \"$a\" \"$h\""]
+            stdout: SplitParser {
+                onRead: d => {
+                    var p = d.trim().split(/\s+/)
+                    sharedSys.pacmanUpdateCount = parseInt(p[0]) || 0
+                    sharedSys.aurUpdateCount = parseInt(p[1]) || 0
+                    sharedSys.aurHelper = p.length >= 3 ? p[2] : ""
+                    sharedSys.updateCount = sharedSys.pacmanUpdateCount + sharedSys.aurUpdateCount
+                }
+            }
+        }
+        property var updateTimer: Timer {
+            interval: 1800000; running: true; repeat: true; triggeredOnStart: true
+            onTriggered: sharedSys.updateProc.running = true
+        }
+        // Debounce: re-check a few seconds after a pacman transaction settles.
+        property var updateRecheck: Timer {
+            interval: 4000; repeat: false
+            onTriggered: sharedSys.updateProc.running = true
+        }
+        // Re-run the check whenever pacman writes to its log.
+        property var pacmanLog: FileView {
+            path: "/var/log/pacman.log"
+            watchChanges: true
+            onFileChanged: sharedSys.updateRecheck.restart()
+        }
+
+        // Screen-recording indicator.
+        property var recordingProc: Process {
+            command: ["sh", "-c", "pgrep -x 'obs|wf-recorder|gpu-screen-recorder|kooha|simplescreenrecorder' >/dev/null && echo 1 || echo 0"]
+            stdout: SplitParser { onRead: d => sharedSys.recordingActive = d.trim() === "1" }
+        }
+        property var recordingTimer: Timer {
+            interval: 10000; running: true; repeat: true; triggeredOnStart: true
+            onTriggered: sharedSys.recordingProc.running = true
+        }
+
+        // Wake detector: QML timers pause during suspend, so on resume the
+        // wall-clock jumps far more than the tick interval. When it does, the
+        // machine just woke -> refresh everything immediately.
+        property var wakeTimer: Timer {
+            property double last: Date.now()
+            interval: 30000; running: true; repeat: true
+            onTriggered: {
+                var now = Date.now()
+                if (now - last > interval * 3) {
+                    sharedSys.battProc.running = true
+                    sharedSys.recordingProc.running = true
+                    sharedSys.stats.refresh()
+                    sharedSys.updateRecheck.restart()
+                }
+                last = now
+            }
+        }
+
+        // CPU-temp warning — one toast for the machine, not one per monitor.
+        property var tempTimer: Timer {
+            interval: 10000; running: true; repeat: true
+            onTriggered: {
+                if (sharedSys.stats.cpuTemp >= 75 && !sharedSys.tempWarned) {
+                    var msg = "CPU is " + Math.round(sharedSys.stats.cpuTemp) + "C"
+                    pushNotification("Moonlit", "Temperature warning", msg)
+                    if (!sys.dnd) toastRelay.notify("Moonlit", "Temperature warning", msg)
+                    sharedSys.tempWarned = true
+                } else if (sharedSys.stats.cpuTemp < 68) {
+                    sharedSys.tempWarned = false
+                }
+            }
+        }
+    }
+
     QtObject {
         id: toastRelay
         signal notify(string app, string title, string body)
@@ -187,6 +298,7 @@ ShellRoot {
             // ── Bar ──────────────────────────────────────────────────────
             property var bar: Bar {
                 screen:      scope.modelData
+                shared:      sharedSys
                 activePanel: scope.activePanel
                 onOpenPanel: p  => scope.open(p)
                 onShowOsd:  (k,v) => scope.showOsd(k, v)

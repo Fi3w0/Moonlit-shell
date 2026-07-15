@@ -1,0 +1,19 @@
+/* Keybinds cheatsheet — chains the live moonlit theme, sized for a compact
+ * single-column text list instead of the base app-grid layout. Static
+ * @theme chain, see emoji.rasi for why. */
+@theme "~/.config/rofi/themes/moonlit-colors.rasi"
+
+window {
+    width: 460px;
+}
+listview {
+    columns: 1;
+    lines: 9;
+}
+element {
+    padding: 6px 12px;
+}
+element-text {
+    font: "JetBrainsMono Nerd Font Mono 11";
+    horizontal-align: 0;
+}

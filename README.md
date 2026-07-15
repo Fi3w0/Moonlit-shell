@@ -11,9 +11,9 @@
 [![Wayland](https://img.shields.io/badge/Wayland-89dceb?style=for-the-badge&logo=wayland&logoColor=1e1e2e)](https://wayland.freedesktop.org)
 [![Quickshell](https://img.shields.io/badge/Quickshell-a6e3a1?style=for-the-badge&logo=qt&logoColor=1e1e2e)](https://quickshell.outfoxxed.me)
 
-[![Catppuccin Mocha](https://img.shields.io/badge/Catppuccin%20Mocha-f5c2e7?style=for-the-badge&logo=catppuccin&logoColor=1e1e2e)](https://catppuccin.com)
+[![Catppuccin](https://img.shields.io/badge/Catppuccin-cba6f7?style=for-the-badge&logo=catppuccin&logoColor=1e1e2e)](https://catppuccin.com)
 [![License GPLv3](https://img.shields.io/badge/License-GPLv3-f9e2af?style=for-the-badge&logoColor=1e1e2e)](LICENSE)
-[![Status](https://img.shields.io/badge/status-experimental-fab387?style=for-the-badge)](#status--roadmap)
+[![Status](https://img.shields.io/badge/status-active%20development-a6e3a1?style=for-the-badge)](#status--roadmap)
 
 <br>
 
@@ -25,7 +25,9 @@
 
 ## Overview
 
-Moonlit Shell is a complete, cohesive desktop rather than a pile of glued-together scripts. The bar and every panel are written like a real application in Quickshell (a Qt6/QML shell framework) and talk to the system over IPC, so nothing races and nothing breaks in surprising ways. From the SDDM login to the lock screen to the wallpaper carousel, every surface is soaked in Catppuccin Mocha and tuned for a calm, nocturnal workflow.
+Moonlit Shell is a complete, cohesive desktop rather than a pile of glued-together scripts. The bar and every panel are written like a real application in Quickshell (a Qt6/QML shell framework) and talk to the system over IPC, so nothing races and nothing breaks in surprising ways. From the SDDM login to the lock screen to the wallpaper carousel, every surface shares one theme and is tuned for a calm, nocturnal workflow.
+
+It ships with its own settings app, **Moonlit Settings** — a standalone GUI for the accent color, palette, bar layout, Hyprland behavior, and keybinds, all applied live with no QML editing required. Nothing here is a static rice you fork once and never touch again; it is meant to be reconfigured.
 
 It is my daily driver on a ThinkPad T14, rebuilt from the ground up after my old Waybar setup kept hitting walls: no proper WiFi dialog, no Bluetooth pairing UI, no clipboard history, no wallpaper picker. Quickshell let me solve all of that properly, once.
 
@@ -33,12 +35,25 @@ It is my daily driver on a ThinkPad T14, rebuilt from the ground up after my old
 
 ## Highlights
 
-- **Custom Quickshell bar** with workspaces, window title, a styled system tray, and live stats read straight from `/proc` and `sysfs`, no external daemon.
+- **Custom Quickshell bar** with workspaces, window title, a styled system tray, and live stats read straight from `/proc` and `sysfs`, no external daemon. Dockable to the top, left, or right edge, in either a floating-islands or classic-solid style.
 - **Twelve real panels**, including full WiFi connect, Bluetooth pairing, clipboard history, an audio/MPRIS hub, a system monitor, and a wallpaper carousel.
+- **A Mission-Control-style window overview** (`Alt`+`Tab`) — live thumbnails of every open window in a grid, click or arrow-key to switch.
+- **Moonlit Settings**, a standalone Go/Fyne app for theming the entire shell live: accent color, Catppuccin palette (Mocha/Macchiato/Frappé/Latte), wallpaper-driven color extraction via `wallust`, bar layout, Hyprland gaps/blur/animations, and a full keybind editor with conflict detection.
 - **Frosted glass everywhere**, Hyprland blur flowing through the bar, panels, Thunar, and Hyprlock over your live wallpaper.
-- **One coherent theme**, Catppuccin Mocha applied across Hyprland, Kitty, Rofi, Fish, Neovim, Ranger, Fastfetch, dgop, GTK, and the SDDM login screen.
 - **Wallpaper carousel** with momentum scrolling, applied instantly via `awww` and remembered across reboots.
-- **Automated installer** with Minimal, Developer, and Full presets (see [Installation](#installation)).
+- **Automated installer** with Minimal, Developer, and Full presets, plus a safe `--update` mode for pulling in new dotfile versions without clobbering your changes (see [Installation](#installation)).
+
+---
+
+## Moonlit Settings
+
+<p align="center">
+  <img src="assets/screenshots/moonlit-settings.png" alt="Moonlit Settings" width="850"/>
+</p>
+
+Every visual and behavioral knob in the shell runs through one JSON file, `~/.config/moonlit/config.json`, which Quickshell watches and reloads live — no restart, no QML editing. **Moonlit Settings** is the GUI for it: eight tabs (Theme, Bar, Notifications, Wallpapers, Power, Hyprland, Keys, About), a first-run wizard, auto-backups before every save, and import/export so you can carry a config between machines. It installs to `~/.local/bin`, shows up in Rofi, and opens with `SUPER`+`,`.
+
+Changes to theme and bar settings apply instantly and can't break anything. Deeper Hyprland changes (gaps, blur, animations) go through an explicit **Apply** step with a warning, since those touch `hyprctl reload` directly.
 
 ---
 
@@ -55,16 +70,6 @@ It is my daily driver on a ThinkPad T14, rebuilt from the ground up after my old
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/power-menu.png" alt="Power Menu" width="850"/>
-  <br><i>Power menu with Lock, Logout, Sleep, Reboot, Shutdown</i>
-</p>
-
-<p align="center">
-  <img src="assets/screenshots/moonlit-settings.png" alt="Moonlit Settings" width="850"/>
-  <br><i>Moonlit Settings — the standalone Go/Fyne app for theming the whole shell live</i>
-</p>
-
-<p align="center">
   <img src="assets/screenshots/window-overview.png" alt="Window Overview" width="850"/>
   <br><i>Mission-Control-style window overview (Alt+Tab), live thumbnails included</i>
 </p>
@@ -72,6 +77,11 @@ It is my daily driver on a ThinkPad T14, rebuilt from the ground up after my old
 <p align="center">
   <img src="assets/screenshots/sidebar-left-audio.png" alt="Vertical Side Bar" width="850"/>
   <br><i>The bar docked to the left edge instead of the top, with the audio panel open</i>
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/power-menu.png" alt="Power Menu" width="850"/>
+  <br><i>Power menu with Lock, Logout, Sleep, Reboot, Shutdown</i>
 </p>
 
 ---
@@ -92,8 +102,9 @@ A Quickshell bar that is more functional than most full desktop environments I h
 | **Clipboard** | `cliphist` history with copy-to-clipboard and clear |
 | **Wallpaper Picker** | Circular carousel with momentum scrolling, click to apply via `awww` |
 | **OSD** | Volume and brightness popups triggered by any source (keys, sliders, scripts) |
+| **Window Overview** | `Alt`+`Tab` — live thumbnail grid of every open window across every workspace, click or arrow-key to switch |
 
-The bar itself shows workspaces (a pill for the active one, a dot for occupied), the current window title, a system tray with styled context menus, and real-time stats.
+The bar itself shows workspaces (a pill for the active one, a dot for occupied), the current window title, a system tray with styled context menus, and real-time stats. It can be docked to the top, left, or right edge, and switched between a floating-islands or classic-solid style — all from Moonlit Settings, live.
 
 ---
 
@@ -110,7 +121,7 @@ The bar itself shows workspaces (a pill for the active one, a dot for occupied),
 | Lock Screen | Hyprlock (frosted glass, live wallpaper) |
 | Login | SDDM (catppuccin-mocha-mauve) |
 | Audio | PipeWire and WirePlumber |
-| Theme | Catppuccin Mocha |
+| Theme | Catppuccin (Mocha/Macchiato/Frappé/Latte, live-switchable) |
 | Font | JetBrainsMono Nerd Font Mono |
 | Icons | Moonlit-Terminal for GTK/Thunar, Papirus-Dark fallback |
 | Cursor | Bibata-Modern-Classic |
@@ -219,14 +230,16 @@ A few behaviors worth knowing:
 
 ## Status &amp; Roadmap
 
-Moonlit Shell is in active development. **Expect bugs, expect rough edges, and use at your own risk.** It is not a finished product yet.
+Moonlit Shell is under active development and is my daily driver, but it is still my personal dotfiles before it is a polished product — expect the occasional rough edge, and treat the installer as experimental on anything but a fresh Arch install.
 
-Planned for the road ahead:
+What's shipped: the full Quickshell bar and panel set, the Moonlit Settings app (theme, bar, notifications, wallpapers, power, Hyprland, keybinds, import/export), the window overview, and a `--update`-safe installer.
 
-- More installer presets (minimal / max / dev / gaming) so everyone can land on a setup they enjoy.
+Still on the list:
+
+- A couple more Rofi modes (calculator, expanded clipboard search) — the emoji picker and keybind cheatsheet are already in.
+- Wider multi-monitor testing for the window overview; it's built to handle it but has only been verified on a single-display machine so far.
 - A showcase video of the desktop in motion.
-- Custom and further-themed apps.
-- Bug fixes and ongoing updates to track new Arch and Hyprland releases.
+- Ongoing updates to track new Arch and Hyprland releases.
 
 ---
 

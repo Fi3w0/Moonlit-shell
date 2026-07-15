@@ -1179,13 +1179,13 @@ func cardText(img *image.RGBA, x, y int, s string, c *image.Uniform, size int) {
 	// Simple 6×9 block font — renders ASCII letters/digits/symbols as small
 	// pixel blocks. Lowercase = uppercase, missing glyphs render as blank.
 	for i, ch := range s {
-		drawGlyph(img, x+i*(size+1), y, ch, c, size)
+		drawGlyph(img, x+i*(size*6), y, ch, c, size)
 	}
 }
 
-// drawGlyph renders a single character at (x,y) using a 5×8 pixel font
-// scaled up to the requested size. The glyph data is a 5-byte bitmap where
-// each byte = one row (top to bottom), each bit = on/off (msb = left).
+// drawGlyph renders a single character at (x,y) using a classic 5×7 column-major
+// font scaled up to the requested size. Each byte is one column (left to right);
+// bit N of that byte is row N (bit0 = top row).
 var glyphs = map[rune][]byte{
 	'A': {0x7E, 0x11, 0x11, 0x11, 0x7E, 0x00, 0x00, 0x00},
 	'B': {0x7F, 0x49, 0x49, 0x49, 0x36, 0x00, 0x00, 0x00},
@@ -1246,10 +1246,10 @@ func drawGlyph(img *image.RGBA, x, y int, ch rune, c *image.Uniform, scale int) 
 			return // unknown glyph
 		}
 	}
-	for row := 0; row < 8; row++ {
-		b := g[row]
-		for col := 0; col < 5; col++ {
-			if (b>>(4-col))&1 != 0 {
+	for col := 0; col < 5; col++ {
+		b := g[col]
+		for row := 0; row < 8; row++ {
+			if (b>>row)&1 != 0 {
 				fillRect(img, x+col*scale, y+row*scale, scale, scale, c)
 			}
 		}
@@ -1300,7 +1300,7 @@ func renderCard(cfg *Config) image.Image {
 		if kb, ok := cfg.Keybinds[id]; ok {
 			txt := kb.Label + "  " + kb.Combo
 			cardText(img, x, 372, txt, cardPalette["text"], 1)
-			x += len(txt)*7 + 30
+			x += len(txt)*6 + 30
 		}
 	}
 

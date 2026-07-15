@@ -98,10 +98,11 @@ def toggle_panel(name: str):
     qs_ipc("panel", "toggle", name)
 
 
-def set_bar_position(position: str):
+def set_config(**kwargs):
+    """Set live config keys, return their original values for restoring later."""
     cfg = json.loads(CONFIG_PATH.read_text())
-    original = cfg.get("barPosition", "top")
-    cfg["barPosition"] = position
+    original = {k: cfg.get(k) for k in kwargs}
+    cfg.update(kwargs)
     CONFIG_PATH.write_text(json.dumps(cfg, indent=4))
     time.sleep(1.0)  # live-reload settle
     return original
@@ -124,6 +125,9 @@ def main():
     parked = park_existing_windows()
     time.sleep(0.6)
     prime_bar_title()
+
+    print("Hiding WiFi network name (real name, not for screenshots)...")
+    orig_privacy = set_config(showNetworkName=False)
 
     try:
         print("1/7 hero-desktop")
@@ -179,15 +183,16 @@ def main():
         time.sleep(0.5)
 
         print("7/7 side bar (left) + audio panel")
-        orig_pos = set_bar_position("left")
+        orig_pos = set_config(barPosition="left")["barPosition"]
         toggle_panel("audio")
         shot("sidebar-left-audio")
         toggle_panel("audio")
         time.sleep(0.4)
-        set_bar_position(orig_pos)
+        set_config(barPosition=orig_pos)
         time.sleep(1.0)
 
     finally:
+        set_config(**orig_privacy)
         time.sleep(0.4)
         print("Restoring parked windows...")
         restore_windows(parked)
